@@ -10,10 +10,18 @@ from analytics.detector import (
     DetectionResult,
     DetectionType,
 )
+from analytics.metrics import (
+    FaultAnalysisRecord,
+    MetricsCalculator,
+    MetricsSummary,
+)
 
 __all__ = [
     "AnomalyDetector",
     "DetectorConfig",
     "DetectionResult",
     "DetectionType",
+    "FaultAnalysisRecord",
+    "MetricsCalculator",
+    "MetricsSummary",
 ]

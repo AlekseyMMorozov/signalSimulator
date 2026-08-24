@@ -8,10 +8,10 @@
 - **Точки входа:** compact_code.py, generate_structure.py, .venv\Lib\site-packages\pip\__main__.py, .venv\Lib\site-packages\pip\_vendor\cachecontrol\_cmd.py, .venv\Lib\site-packages\pip\_vendor\distro\distro.py, .venv\Lib\site-packages\pip\_vendor\distro\__main__.py, .venv\Lib\site-packages\pip\_vendor\packaging\_musllinux.py, .venv\Lib\site-packages\pip\_vendor\platformdirs\__main__.py, .venv\Lib\site-packages\pip\_vendor\requests\certs.py, .venv\Lib\site-packages\pip\_vendor\requests\help.py, .venv\Lib\site-packages\pip\_vendor\rich\abc.py, .venv\Lib\site-packages\pip\_vendor\rich\align.py, .venv\Lib\site-packages\pip\_vendor\rich\box.py, .venv\Lib\site-packages\pip\_vendor\rich\cells.py, .venv\Lib\site-packages\pip\_vendor\rich\color.py, .venv\Lib\site-packages\pip\_vendor\rich\columns.py, .venv\Lib\site-packages\pip\_vendor\rich\console.py, .venv\Lib\site-packages\pip\_vendor\rich\control.py, .venv\Lib\site-packages\pip\_vendor\rich\default_styles.py, .venv\Lib\site-packages\pip\_vendor\rich\diagnose.py, .venv\Lib\site-packages\pip\_vendor\rich\emoji.py, .venv\Lib\site-packages\pip\_vendor\rich\highlighter.py, .venv\Lib\site-packages\pip\_vendor\rich\json.py, .venv\Lib\site-packages\pip\_vendor\rich\layout.py, .venv\Lib\site-packages\pip\_vendor\rich\live.py, .venv\Lib\site-packages\pip\_vendor\rich\logging.py, .venv\Lib\site-packages\pip\_vendor\rich\markup.py, .venv\Lib\site-packages\pip\_vendor\rich\padding.py, .venv\Lib\site-packages\pip\_vendor\rich\pager.py, .venv\Lib\site-packages\pip\_vendor\rich\palette.py, .venv\Lib\site-packages\pip\_vendor\rich\panel.py, .venv\Lib\site-packages\pip\_vendor\rich\pretty.py, .venv\Lib\site-packages\pip\_vendor\rich\progress.py, .venv\Lib\site-packages\pip\_vendor\rich\progress_bar.py, .venv\Lib\site-packages\pip\_vendor\rich\prompt.py, .venv\Lib\site-packages\pip\_vendor\rich\repr.py, .venv\Lib\site-packages\pip\_vendor\rich\rule.py, .venv\Lib\site-packages\pip\_vendor\rich\scope.py, .venv\Lib\site-packages\pip\_vendor\rich\segment.py, .venv\Lib\site-packages\pip\_vendor\rich\spinner.py, .venv\Lib\site-packages\pip\_vendor\rich\status.py, .venv\Lib\site-packages\pip\_vendor\rich\styled.py, .venv\Lib\site-packages\pip\_vendor\rich\syntax.py, .venv\Lib\site-packages\pip\_vendor\rich\table.py, .venv\Lib\site-packages\pip\_vendor\rich\text.py, .venv\Lib\site-packages\pip\_vendor\rich\theme.py, .venv\Lib\site-packages\pip\_vendor\rich\traceback.py, .venv\Lib\site-packages\pip\_vendor\rich\tree.py, .venv\Lib\site-packages\pip\_vendor\rich\_log_render.py, .venv\Lib\site-packages\pip\_vendor\rich\_ratio.py, .venv\Lib\site-packages\pip\_vendor\rich\_win32_console.py, .venv\Lib\site-packages\pip\_vendor\rich\_windows.py, .venv\Lib\site-packages\pip\_vendor\rich\_wrap.py, .venv\Lib\site-packages\pip\_vendor\rich\__init__.py, .venv\Lib\site-packages\pip\_vendor\rich\__main__.py, .venv\Lib\site-packages\pip\_vendor\chardet\cli\chardetect.py
 
 ## Статистика проекта
-- Папок: 4
-- Python-файлов: 13
-- Всего файлов: 13
-- Классов: 39
+- Папок: 5
+- Python-файлов: 16
+- Всего файлов: 16
+- Классов: 41
 - Функций: 0
 
 ## Дерево проекта
@@ -32,6 +32,10 @@ signalSimulator/
     scheduler.py
     signals.py
     simulator.py
+  ui/
+    __init__.py
+    main_window.py
+    plot_window.py
   main.py
 ```
 
@@ -44,6 +48,7 @@ signalSimulator/
 #### Импорты
 - **Сторонние библиотеки:**
   - `from analytics.detector import AnomalyDetector, DetectorConfig, DetectionResult, DetectionType`
+  - `from analytics.metrics import FaultAnalysisRecord, MetricsCalculator, MetricsSummary`
 
 ### Файл: `detector.py`
 > analytics/detector.py
@@ -958,11 +963,184 @@ Args:
 - `def reset(self) -> None`
   - Сброс состояния движка (очистка историй и меток).
 
+### Файл: `__init__.py`
+
+### Файл: `main_window.py`
+> ui/main_window.py
+
+Главное окно приложения — центральная панель управления симуляцией.
+Содержит панель управления временем, список графиков, меню и кнопки
+для открытия вспомогательных окон.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from typing import Optional`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtCore import pyqtSignal, Qt`
+  - `from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QListWidget, QListWidgetItem, QMenuBar, QMenu, QMessageBox, QFileDialog`
+  - `from core.clock import GlobalClock`
+  - `from core.config import ConfigManager, ConfigError`
+#### Классы
+##### `class MainWindow(QMainWindow)`
+> Главное окно приложения.
+
+Обеспечивает управление временем симуляции, списком графиков,
+открытие/закрытие журнала событий и сохранение/загрузку конфигураций.
+
+Signals:
+    plot_open_requested: Запрос на открытие окна графика (plot_id).
+    plot_add_requested: Запрос на создание нового графика.
+    plot_remove_requested: Запрос на удаление графика (plot_id).
+    journal_toggled: Журнал открыт (True) или закрыт (False).
+    hidden_markers_toggled: Режим скрытых меток включён (True) или выключен (False).
+Методы:
+- `def __init__(self, parent: Optional[QWidget]) -> None`
+  - Инициализация главного окна.
+
+Args:
+    parent: Родительский виджет.
+- `def _init_menu(self) -> None`
+  - Создание строки меню.
+- `def _init_ui(self) -> None`
+  - Создание основного интерфейса.
+- `def _create_time_panel(self) -> QWidget`
+  - Создание панели управления временем.
+- `def _create_plots_panel(self) -> QWidget`
+  - Создание панели управления графиками.
+- `def _connect_signals(self) -> None`
+  - Подключение внутренних сигналов.
+- `def add_plot_to_list(self, plot_id: str, name: str) -> None`
+  - Добавить график в список на главном окне.
+
+Args:
+    plot_id: Идентификатор графика.
+    name: Отображаемое название графика.
+- `def remove_plot_from_list(self, plot_id: str) -> None`
+  - Удалить график из списка на главном окне.
+
+Args:
+    plot_id: Идентификатор графика.
+- `def get_selected_plot_id(self) -> Optional[str]`
+  - Получить идентификатор выбранного графика.
+- `def _on_start(self) -> None`
+  - Запуск симуляции.
+- `def _on_stop(self) -> None`
+  - Остановка симуляции.
+- `def _on_reset(self) -> None`
+  - Сброс симуляции.
+- `def _on_speed_change(self, multiplier: int) -> None`
+  - Изменение множителя ускорения времени.
+- `def _on_time_updated(self, time_ms: int) -> None`
+  - Обновление отображения времени.
+- `def _on_toggle_hidden_markers(self) -> None`
+  - Переключение режима скрытых меток.
+- `def _on_add_plot(self) -> None`
+  - Запрос на создание нового графика.
+- `def _on_open_plot(self) -> None`
+  - Запрос на открытие окна выбранного графика.
+- `def _on_remove_plot(self) -> None`
+  - Запрос на удаление выбранного графика.
+- `def _on_plot_selection_changed(self, current: Optional[QListWidgetItem], previous) -> None`
+  - Обработка изменения выбора в списке графиков.
+- `def _on_toggle_journal(self) -> None`
+  - Переключение видимости журнала событий.
+- `def _on_save_config(self) -> None`
+  - Сохранение текущей конфигурации в файл.
+- `def _on_load_config(self) -> None`
+  - Загрузка конфигурации из файла.
+- `def _collect_current_config(self) -> dict`
+  - Собрать текущую конфигурацию для сохранения.
+- `def _apply_loaded_config(self, config_data: dict) -> None`
+  - Применить загруженную конфигурацию.
+
+### Файл: `plot_window.py`
+> ui/plot_window.py
+
+Отдельное окно графика телеметрии с отрисовкой сигнала в реальном времени.
+Содержит кривую сигнала, пределы допустимых значений, метки неисправностей
+и обнаружений, а также кнопку фиксации обнаружения оператором.
+Окно не зависит от движка симуляции: данные поступают через публичный
+метод `update_data`, а подписку выполняет координатор (главное окно).
+#### Импорты
+- **Стандартная библиотека:**
+  - `from typing import List, Optional, Tuple`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtCore import pyqtSignal`
+  - `from PyQt6.QtWidgets import QHBoxLayout, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget`
+  - `import numpy as np`
+  - `import pyqtgraph as pg`
+#### Классы
+##### `class PlotWindow(QMainWindow)`
+> Окно графика телеметрии.
+
+Отображает сигнал в реальном времени с пределами допустимых значений,
+скрытыми метками неисправностей и метками обнаружений. Данные поступают
+через публичный метод `update_data` (слабая связанность с движком).
+
+Signals:
+    detection_requested: Оператор нажал кнопку обнаружения (передаёт `plot_id`).
+    window_closed: Окно закрыто (передаёт `plot_id`).
+Методы:
+- `def __init__(self, plot_id: str, name: str, unit: str, min_allowed: float, max_allowed: float, observation_interval_ms: int, parent: Optional[QWidget]) -> None`
+  - Инициализация окна графика.
+
+Args:
+    plot_id: Уникальный идентификатор графика.
+    name: Название графика.
+    unit: Единица измерения.
+    min_allowed: Минимально допустимое значение.
+    max_allowed: Максимально допустимое значение.
+    observation_interval_ms: Интервал наблюдения (длительность по оси X).
+    parent: Родительский виджет.
+- `def _init_ui(self) -> None`
+  - Создание интерфейса окна.
+- `def update_data(self, times: List[int], values: List[float]) -> None`
+  - Обновить данные графика (публичный метод для координатора).
+
+Новые точки добавляются к накопленной истории, после чего
+применяется децимация и выполняется перерисовка.
+
+Args:
+    times: Список времён в миллисекундах.
+    values: Список значений сигнала.
+- `def add_fault_marker(self, time_ms: int, fault_type: str) -> None`
+  - Добавить скрытую метку неисправности (вертикальная линия + подпись типа).
+
+Метка видима только при включённом режиме скрытых меток.
+
+Args:
+    time_ms: Время внедрения неисправности.
+    fault_type: Тип неисправности (отображается в подписи).
+- `def add_operator_marker(self, time_ms: int) -> None`
+  - Добавить метку обнаружения оператором (вертикальная линия).
+- `def add_detector_marker(self, time_ms: int) -> None`
+  - Добавить метку обнаружения детектором (вертикальная линия).
+- `def set_hidden_markers_visible(self, visible: bool) -> None`
+  - Переключить видимость скрытых меток неисправностей.
+- `def _decimate(self, times: List[int], values: List[float]) -> Tuple[List[int], List[float]]`
+  - Децимация данных для отрисовки.
+
+Если точек не больше `MAX_DISPLAY_POINTS` — возвращает как есть.
+Иначе применяет min-max децимацию по блокам, сохраняя пики и впадины.
+
+Args:
+    times: Полная история времён.
+    values: Полная история значений.
+
+Returns:
+    Кортеж (прореженные времена, прореженные значения).
+- `def _on_detect_clicked(self) -> None`
+  - Обработчик нажатия кнопки обнаружения.
+- `def closeEvent(self, event) -> None`
+  - Обработка закрытия окна.
+
 ### Файл: `main.py`
 
 ## Граф зависимостей между файлами
 (Файл -> импортируемый модуль)
 - `__init__.py` → `analytics.detector`
+- `__init__.py` → `analytics.metrics`
 - `__init__.py` → `core.clock`
 - `__init__.py` → `core.config`
 - `__init__.py` → `core.event_log`
@@ -993,10 +1171,22 @@ Args:
 - `faults.py` → `math`
 - `faults.py` → `random`
 - `faults.py` → `typing`
+- `main_window.py` → `PyQt6.QtCore`
+- `main_window.py` → `PyQt6.QtWidgets`
+- `main_window.py` → `core.clock`
+- `main_window.py` → `core.config`
+- `main_window.py` → `logging`
+- `main_window.py` → `typing`
 - `metrics.py` → `core.event_log`
 - `metrics.py` → `dataclasses`
 - `metrics.py` → `logging`
 - `metrics.py` → `typing`
+- `plot_window.py` → `PyQt6.QtCore`
+- `plot_window.py` → `PyQt6.QtWidgets`
+- `plot_window.py` → `logging`
+- `plot_window.py` → `numpy`
+- `plot_window.py` → `pyqtgraph`
+- `plot_window.py` → `typing`
 - `scheduler.py` → `dataclasses`
 - `scheduler.py` → `logging`
 - `scheduler.py` → `random`
