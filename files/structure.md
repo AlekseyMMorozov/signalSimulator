@@ -8,26 +8,202 @@
 - **Точки входа:** compact_code.py, generate_structure.py, .venv\Lib\site-packages\pip\__main__.py, .venv\Lib\site-packages\pip\_vendor\cachecontrol\_cmd.py, .venv\Lib\site-packages\pip\_vendor\distro\distro.py, .venv\Lib\site-packages\pip\_vendor\distro\__main__.py, .venv\Lib\site-packages\pip\_vendor\packaging\_musllinux.py, .venv\Lib\site-packages\pip\_vendor\platformdirs\__main__.py, .venv\Lib\site-packages\pip\_vendor\requests\certs.py, .venv\Lib\site-packages\pip\_vendor\requests\help.py, .venv\Lib\site-packages\pip\_vendor\rich\abc.py, .venv\Lib\site-packages\pip\_vendor\rich\align.py, .venv\Lib\site-packages\pip\_vendor\rich\box.py, .venv\Lib\site-packages\pip\_vendor\rich\cells.py, .venv\Lib\site-packages\pip\_vendor\rich\color.py, .venv\Lib\site-packages\pip\_vendor\rich\columns.py, .venv\Lib\site-packages\pip\_vendor\rich\console.py, .venv\Lib\site-packages\pip\_vendor\rich\control.py, .venv\Lib\site-packages\pip\_vendor\rich\default_styles.py, .venv\Lib\site-packages\pip\_vendor\rich\diagnose.py, .venv\Lib\site-packages\pip\_vendor\rich\emoji.py, .venv\Lib\site-packages\pip\_vendor\rich\highlighter.py, .venv\Lib\site-packages\pip\_vendor\rich\json.py, .venv\Lib\site-packages\pip\_vendor\rich\layout.py, .venv\Lib\site-packages\pip\_vendor\rich\live.py, .venv\Lib\site-packages\pip\_vendor\rich\logging.py, .venv\Lib\site-packages\pip\_vendor\rich\markup.py, .venv\Lib\site-packages\pip\_vendor\rich\padding.py, .venv\Lib\site-packages\pip\_vendor\rich\pager.py, .venv\Lib\site-packages\pip\_vendor\rich\palette.py, .venv\Lib\site-packages\pip\_vendor\rich\panel.py, .venv\Lib\site-packages\pip\_vendor\rich\pretty.py, .venv\Lib\site-packages\pip\_vendor\rich\progress.py, .venv\Lib\site-packages\pip\_vendor\rich\progress_bar.py, .venv\Lib\site-packages\pip\_vendor\rich\prompt.py, .venv\Lib\site-packages\pip\_vendor\rich\repr.py, .venv\Lib\site-packages\pip\_vendor\rich\rule.py, .venv\Lib\site-packages\pip\_vendor\rich\scope.py, .venv\Lib\site-packages\pip\_vendor\rich\segment.py, .venv\Lib\site-packages\pip\_vendor\rich\spinner.py, .venv\Lib\site-packages\pip\_vendor\rich\status.py, .venv\Lib\site-packages\pip\_vendor\rich\styled.py, .venv\Lib\site-packages\pip\_vendor\rich\syntax.py, .venv\Lib\site-packages\pip\_vendor\rich\table.py, .venv\Lib\site-packages\pip\_vendor\rich\text.py, .venv\Lib\site-packages\pip\_vendor\rich\theme.py, .venv\Lib\site-packages\pip\_vendor\rich\traceback.py, .venv\Lib\site-packages\pip\_vendor\rich\tree.py, .venv\Lib\site-packages\pip\_vendor\rich\_log_render.py, .venv\Lib\site-packages\pip\_vendor\rich\_ratio.py, .venv\Lib\site-packages\pip\_vendor\rich\_win32_console.py, .venv\Lib\site-packages\pip\_vendor\rich\_windows.py, .venv\Lib\site-packages\pip\_vendor\rich\_wrap.py, .venv\Lib\site-packages\pip\_vendor\rich\__init__.py, .venv\Lib\site-packages\pip\_vendor\rich\__main__.py, .venv\Lib\site-packages\pip\_vendor\chardet\cli\chardetect.py
 
 ## Статистика проекта
-- Папок: 3
-- Python-файлов: 6
-- Всего файлов: 6
-- Классов: 26
+- Папок: 4
+- Python-файлов: 13
+- Всего файлов: 13
+- Классов: 39
 - Функций: 0
 
 ## Дерево проекта
 ```
 signalSimulator/
+  analytics/
+    __init__.py
+    detector.py
+    metrics.py
   core/
+    __init__.py
     clock.py
     config.py
+    event_log.py
   simulation/
+    __init__.py
     faults.py
     scheduler.py
     signals.py
+    simulator.py
   main.py
 ```
 
 ## Содержимое файлов (сигнатуры с docstring)
+
+### Файл: `__init__.py`
+> analytics/__init__.py
+Инициализация пакета `analytics` — аналитика и обнаружение аномалий.
+Содержит модули детектирования и подсчёта метрик.
+#### Импорты
+- **Сторонние библиотеки:**
+  - `from analytics.detector import AnomalyDetector, DetectorConfig, DetectionResult, DetectionType`
+
+### Файл: `detector.py`
+> analytics/detector.py
+
+Лёгкая статистическая модель обнаружения аномалий и трендов в реальном времени.
+Реализует три уровня анализа: пороговый контроль, статистическая проверка
+(отклонение от скользящего среднего) и обнаружение тренда (линейная регрессия).
+Все параметры настраиваются через DetectorConfig для управления из интерфейса.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from collections import deque`
+  - `from dataclasses import dataclass, field`
+  - `from enum import Enum, auto`
+  - `from typing import Any, Dict, List, Optional`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `import numpy as np`
+#### Классы
+##### `class DetectionType(Enum)`
+> Типы обнаружений.
+##### `@dataclass class DetectionResult`
+> Результат обнаружения.
+
+Содержит время, тип обнаружения, описание, текущее значение
+и произвольные метаданные (например, направление тренда).
+Методы:
+- `def __str__(self) -> str`
+  - Строковое представление результата.
+##### `@dataclass class DetectorConfig`
+> Конфигурация детектора.
+
+Все параметры могут быть изменены из интерфейса настроек.
+Сериализуется в словарь для сохранения в конфигурации.
+Методы:
+- `def to_dict(self) -> Dict[str, Any]`
+  - Сериализация конфигурации в словарь.
+- `@classmethod def from_dict(cls, data: Dict[str, Any]) -> 'DetectorConfig'`
+  - Создание конфигурации из словаря (мягкая валидация).
+##### `class AnomalyDetector`
+> Лёгкая статистическая модель для обнаружения аномалий и трендов.
+
+Создаётся отдельно для каждого графика. Метод `process(time_ms, value)`
+вызывается на каждой новой точке и возвращает список обнаружений.
+Параметры настраиваются через `DetectorConfig` и могут быть изменены
+в любой момент через `set_config` (для интерфейса настроек).
+Методы:
+- `def __init__(self, min_allowed: float, max_allowed: float, config: Optional[DetectorConfig]) -> None`
+  - Инициализация детектора.
+
+Args:
+    min_allowed: Минимально допустимое значение сигнала.
+    max_allowed: Максимально допустимое значение сигнала.
+    config: Конфигурация детектора. По умолчанию — стандартная.
+- `def set_config(self, config: DetectorConfig) -> None`
+  - Обновить конфигурацию детектора (вызывается из интерфейса настроек).
+- `def get_config(self) -> DetectorConfig`
+  - Получить текущую конфигурацию детектора.
+- `def process(self, time_ms: int, value: float) -> List[DetectionResult]`
+  - Обработать новую точку данных.
+
+Добавляет точку в скользящее окно и выполняет все три уровня анализа.
+
+Args:
+    time_ms: Логическое время точки в миллисекундах.
+    value: Значение сигнала.
+
+Returns:
+    Список обнаружений (может быть пустым).
+- `def reset(self) -> None`
+  - Сброс скользящего окна.
+- `def _trim_window(self) -> None`
+  - Обрезать скользящее окно до размера из конфигурации.
+- `def _check_threshold(self, time_ms: int, value: float) -> List[DetectionResult]`
+  - Пороговый контроль: выход за допустимые пределы.
+- `def _check_statistical(self, time_ms: int, value: float) -> List[DetectionResult]`
+  - Статистическая проверка: отклонение от скользящего среднего.
+- `def _check_trend(self, time_ms: int) -> List[DetectionResult]`
+  - Обнаружение тренда: линейная регрессия по скользящему окну.
+
+### Файл: `metrics.py`
+> analytics/metrics.py
+
+Подсчёт метрик сравнения эффективности обнаружения неисправностей оператором
+и детектором. Строится на основе событий из журнала. Позволяет оценить,
+на сколько процентов детектор быстрее оператора, а также число ложных
+срабатываний и пропусков.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from dataclasses import dataclass, field`
+  - `from typing import Dict, List, Optional, Set`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from core.event_log import EventRecord, EventType`
+#### Классы
+##### `@dataclass class FaultAnalysisRecord`
+> Результат анализа одной неисправности.
+##### `@dataclass class MetricsSummary`
+> Агрегированные метрики сравнения оператора и детектора.
+Методы:
+- `def to_dict(self) -> Dict[str, float]`
+  - Сериализация метрик в словарь.
+##### `class MetricsCalculator`
+> Калькулятор метрик сравнения оператора и детектора.
+
+Анализирует события из журнала и вычисляет:
+- количество обнаруженных неисправностей (оператором, детектором, обоими);
+- средние задержки обнаружения;
+- ложные срабатывания;
+- пропущенные неисправности;
+- процентное соотношение, на сколько детектор быстрее оператора.
+
+Логика пропуска:
+- Для трендовых неисправностей (деградация): пропуск, если не обнаружена
+  до выхода графика за пороговые значения.
+- Для остальных неисправностей: пропуск, если не обнаружена до внедрения
+  следующей неисправности на том же графике.
+Методы:
+- `def __init__(self, trend_fault_types: Optional[Set[str]]) -> None`
+  - Инициализация калькулятора метрик.
+
+Args:
+    trend_fault_types: Множество типов неисправностей, для которых
+        выход за порог считается индикатором пропуска.
+        По умолчанию — {"degradation"}.
+- `def calculate(self, events: List[EventRecord]) -> MetricsSummary`
+  - Вычислить метрики по списку событий журнала.
+
+Args:
+    events: Список записей журнала событий.
+
+Returns:
+    MetricsSummary: Агрегированные метрики.
+- `def _extract_events(self, events: List[EventRecord], event_type: EventType) -> Dict[str, List[EventRecord]]`
+  - Группировка событий по идентификатору графика.
+- `def _analyze_plot(self, plot_id: str, faults: List[EventRecord], operator_detections: List[EventRecord], detector_detections: List[EventRecord], limit_exceeded: List[EventRecord]) -> tuple`
+  - Анализ неисправностей для одного графика.
+
+Возвращает кортеж (список записей анализа, ложные оператора, ложные детектора).
+- `def _find_first_detection(self, detections: List[EventRecord], start_ms: int, end_ms: float) -> Optional[EventRecord]`
+  - Поиск первого обнаружения в временном окне [start_ms, end_ms).
+- `def _has_preceding_fault(self, faults: List[EventRecord], time_ms: int) -> bool`
+  - Проверка, была ли неисправность до указанного времени.
+- `def _is_missed(self, fault_type: str, record: FaultAnalysisRecord, next_injection_time: float, limit_exceeded: List[EventRecord]) -> bool`
+  - Определение, является ли неисправность пропущенной.
+
+Для трендовых неисправностей: пропуск, если не обнаружена до выхода за порог.
+Для остальных: пропуск, если не обнаружена до следующей неисправности.
+- `def _aggregate(self, records: List[FaultAnalysisRecord], operator_fp: int, detector_fp: int) -> MetricsSummary`
+  - Агрегация результатов анализа в итоговые метрики.
+
+### Файл: `__init__.py`
+> core/__init__.py
+
+Инициализация пакета `core` — ядро системы симуляции.
+Содержит модули управления временем, конфигурациями и журналом событий.
+#### Импорты
+- **Сторонние библиотеки:**
+  - `from core.clock import GlobalClock`
+  - `from core.config import ConfigManager, ConfigError`
+  - `from core.event_log import EventLog, EventRecord, EventType`
 
 ### Файл: `clock.py`
 > signalSimulator/core/clock.py
@@ -185,6 +361,95 @@ Returns:
 
 Returns:
     str: Имя файла в формате 'config_YYYYMMDD_HHMMSS.json'.
+
+### Файл: `event_log.py`
+> core/event_log.py
+
+Центральный журнал событий симуляции.
+Фиксирует все значимые события с логическим временем и используется
+как источник данных для отдельного окна логов и для аналитики.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from dataclasses import dataclass, field`
+  - `from enum import Enum, auto`
+  - `from typing import Any, Dict, List, Optional`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtCore import QObject, pyqtSignal`
+#### Классы
+##### `class EventType(Enum)`
+> Типы событий симуляции.
+##### `@dataclass class EventRecord`
+> Запись события в журнале.
+
+Содержит логическое время, тип события, связанный график,
+текстовое описание и произвольные метаданные для аналитики.
+Методы:
+- `def __str__(self) -> str`
+  - Строковое представление записи для отображения в логах.
+##### `class EventLog(QObject)`
+> Журнал событий симуляции.
+
+Хранит все записи за сессию и испускает сигнал `event_added`
+при добавлении новой записи. Окно логов подписывается на сигнал
+для автоматического обновления. Аналитика читает записи через
+методы фильтрации.
+Методы:
+- `def __init__(self, parent: Optional[QObject]) -> None`
+  - Инициализация журнала событий.
+
+Args:
+    parent: Родительский QObject для управления временем жизни.
+- `def add(self, time_ms: int, event_type: EventType, description: str, plot_id: Optional[str], metadata: Optional[Dict[str, Any]]) -> EventRecord`
+  - Добавить запись события в журнал.
+
+Создаёт запись, сохраняет её и испускает сигнал `event_added`.
+
+Args:
+    time_ms: Логическое время события в миллисекундах.
+    event_type: Тип события.
+    description: Текстовое описание события.
+    plot_id: Идентификатор связанного графика (опционально).
+    metadata: Дополнительные данные для аналитики (опционально).
+
+Returns:
+    EventRecord: Созданная запись.
+- `def get_records(self, event_type: Optional[EventType], plot_id: Optional[str], start_ms: Optional[int], end_ms: Optional[int]) -> List[EventRecord]`
+  - Получить записи журнала с фильтрацией.
+
+Все параметры опциональны. При отсутствии параметра фильтр
+по нему не применяется.
+
+Args:
+    event_type: Тип события (опционально).
+    plot_id: Идентификатор графика (опционально).
+    start_ms: Нижняя граница времени в мс (опционально).
+    end_ms: Верхняя граница времени в мс (опционально).
+
+Returns:
+    Список подходящих записей.
+- `def get_all(self) -> List[EventRecord]`
+  - Получить все записи журнала.
+
+Returns:
+    Список всех записей.
+- `def get_count(self) -> int`
+  - Получить количество записей в журнале.
+
+Returns:
+    Количество записей.
+- `def clear(self) -> None`
+  - Очистить журнал событий.
+
+### Файл: `__init__.py`
+> simulation/__init__.py
+Инициализация пакета `simulation` — слой симуляции сигналов и неисправностей.
+Содержит генераторы сигналов, типы неисправностей и планировщик случайного внедрения.
+#### Импорты
+- **Сторонние библиотеки:**
+  - `from simulation.faults import Fault, DropoutFault, SpikeFault, NoiseFault, DegradationFault, FaultChain, FaultFactory`
+  - `from simulation.scheduler import FaultInjectionEvent, FaultTemplate, RandomFaultRule, FaultScheduler`
+  - `from simulation.signals import SignalGenerator, CompositeSignal, SawtoothSignal, TriangleSignal, SineSignal, StepSignal, LinearSignal, SquareSignal, ExponentialSignal, NoiseSignal, ConstantSignal, SignalFactory`
 
 ### Файл: `faults.py`
 > simulation/faults.py
@@ -592,10 +857,118 @@ Returns:
 - `@classmethod def available_types(cls) -> List[str]`
   - Вернуть список доступных типов сигналов.
 
+### Файл: `simulator.py`
+> simulation/simulator.py
+
+Движок симуляции — центральный связующий компонент.
+Объединяет часы, генераторы сигналов, неисправности, планировщик и журнал
+событий. Вычисляет значения графиков на каждом тике времени с шагом
+1 симуляционная секунда и обрабатывает события внедрения неисправностей.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from typing import Any, Dict, List, Optional, Tuple`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtCore import QObject, pyqtSignal`
+  - `from core.clock import GlobalClock`
+  - `from core.event_log import EventLog, EventType`
+  - `from simulation.faults import Fault, FaultChain, FaultFactory`
+  - `from simulation.scheduler import FaultInjectionEvent, FaultScheduler`
+  - `from simulation.signals import SignalGenerator`
+  - `import numpy as np`
+#### Классы
+##### `class HistoryBuffer`
+> Эффективный буфер истории значений сигнала.
+
+Хранит данные в виде блоков (чанков) `numpy` массивов, что позволяет
+работать с большими объёмами данных (например, телеметрия за несколько
+симуляционных лет) без чрезмерного потребления памяти.
+Методы:
+- `def __init__(self) -> None`
+- `def append(self, time_ms: int, value: float) -> None`
+  - Добавить точку (время, значение) в буфер.
+- `def _flush_pending(self) -> None`
+  - Сбросить накопленные точки в чанки `numpy`.
+- `def get_all_times(self) -> np.ndarray`
+  - Получить все времена как единый массив.
+- `def get_all_values(self) -> np.ndarray`
+  - Получить все значения как единый массив.
+- `def get_last(self, n: int) -> Tuple[np.ndarray, np.ndarray]`
+  - Получить последние `n` точек (для отображения).
+- `def get_count(self) -> int`
+  - Получить общее количество точек.
+- `def clear(self) -> None`
+  - Очистить буфер.
+##### `class PlotState`
+> Состояние одного графика симуляции.
+Методы:
+- `def __init__(self, plot_id: str, name: str, unit: str, max_unit_value: float, signal: SignalGenerator, min_allowed: float, max_allowed: float, observation_interval_ms: int) -> None`
+##### `class SimulationEngine(QObject)`
+> Движок симуляции.
+
+Подписывается на сигнал `time_updated` глобальных часов, генерирует
+данные графиков с шагом 1 симуляционная секунда, обрабатывает события
+планировщика неисправностей и ведёт журнал событий.
+Методы:
+- `def __init__(self, clock: GlobalClock, event_log: EventLog, scheduler: Optional[FaultScheduler], parent: Optional[QObject]) -> None`
+  - Инициализация движка симуляции.
+
+Args:
+    clock: Глобальные часы симуляции.
+    event_log: Журнал событий.
+    scheduler: Планировщик случайных неисправностей (опционально).
+    parent: Родительский QObject.
+- `def add_plot(self, plot_id: str, name: str, unit: str, max_unit_value: float, signal: SignalGenerator, min_allowed: float, max_allowed: float, observation_interval_ms: int) -> PlotState`
+  - Добавить график в симуляцию.
+- `def remove_plot(self, plot_id: str) -> None`
+  - Удалить график из симуляции.
+- `def get_plot(self, plot_id: str) -> Optional[PlotState]`
+  - Получить состояние графика по ID.
+- `def get_all_plot_ids(self) -> List[str]`
+  - Получить список всех идентификаторов графиков.
+- `def _on_time_updated(self, time_ms: int) -> None`
+  - Обработка тика часов: генерация данных и обработка событий.
+- `def _generate_points(self, plot: PlotState, current_time_ms: int) -> None`
+  - Генерация точек для графика до текущего времени с шагом 1 секунда.
+- `def inject_fault(self, plot_id: str, fault_type: str, fault_params: Dict[str, Any]) -> Optional[Fault]`
+  - Ручное внедрение неисправности на график.
+
+Создаёт неисправность через фабрику, добавляет в цепочку,
+активирует и фиксирует скрытую метку.
+
+Args:
+    plot_id: Идентификатор графика.
+    fault_type: Тип неисправности.
+    fault_params: Параметры неисправности.
+
+Returns:
+    Созданная неисправность или `None` при ошибке.
+- `def process_injection_events(self, events: List[FaultInjectionEvent]) -> None`
+  - Обработка событий внедрения от планировщика.
+
+Для каждого события создаёт неисправность, добавляет в цепочку
+графика, активирует и фиксирует скрытую метку.
+
+Args:
+    events: Список событий внедрения.
+- `def record_operator_detection(self, plot_id: str) -> None`
+  - Фиксация обнаружения неисправности оператором.
+- `def record_detector_detection(self, plot_id: str) -> None`
+  - Фиксация обнаружения неисправности детектором.
+- `def reset(self) -> None`
+  - Сброс состояния движка (очистка историй и меток).
+
 ### Файл: `main.py`
 
 ## Граф зависимостей между файлами
 (Файл -> импортируемый модуль)
+- `__init__.py` → `analytics.detector`
+- `__init__.py` → `core.clock`
+- `__init__.py` → `core.config`
+- `__init__.py` → `core.event_log`
+- `__init__.py` → `simulation.faults`
+- `__init__.py` → `simulation.scheduler`
+- `__init__.py` → `simulation.signals`
 - `clock.py` → `PyQt6.QtCore`
 - `clock.py` → `logging`
 - `clock.py` → `typing`
@@ -604,11 +977,26 @@ Returns:
 - `config.py` → `logging`
 - `config.py` → `pathlib`
 - `config.py` → `typing`
+- `detector.py` → `collections`
+- `detector.py` → `dataclasses`
+- `detector.py` → `enum`
+- `detector.py` → `logging`
+- `detector.py` → `numpy`
+- `detector.py` → `typing`
+- `event_log.py` → `PyQt6.QtCore`
+- `event_log.py` → `dataclasses`
+- `event_log.py` → `enum`
+- `event_log.py` → `logging`
+- `event_log.py` → `typing`
 - `faults.py` → `abc`
 - `faults.py` → `logging`
 - `faults.py` → `math`
 - `faults.py` → `random`
 - `faults.py` → `typing`
+- `metrics.py` → `core.event_log`
+- `metrics.py` → `dataclasses`
+- `metrics.py` → `logging`
+- `metrics.py` → `typing`
 - `scheduler.py` → `dataclasses`
 - `scheduler.py` → `logging`
 - `scheduler.py` → `random`
@@ -618,3 +1006,12 @@ Returns:
 - `signals.py` → `math`
 - `signals.py` → `random`
 - `signals.py` → `typing`
+- `simulator.py` → `PyQt6.QtCore`
+- `simulator.py` → `core.clock`
+- `simulator.py` → `core.event_log`
+- `simulator.py` → `logging`
+- `simulator.py` → `numpy`
+- `simulator.py` → `simulation.faults`
+- `simulator.py` → `simulation.scheduler`
+- `simulator.py` → `simulation.signals`
+- `simulator.py` → `typing`
