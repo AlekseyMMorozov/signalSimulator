@@ -1,6 +1,5 @@
 """
 ui/main_window.py
-
 Главное окно приложения — центральная панель управления симуляцией.
 Содержит панель управления временем, список графиков, меню и кнопки
 для открытия вспомогательных окон.
@@ -47,18 +46,19 @@ class MainWindow(QMainWindow):
     journal_toggled = pyqtSignal(bool)
     hidden_markers_toggled = pyqtSignal(bool)
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, clock: GlobalClock, parent: Optional[QWidget] = None) -> None:
         """
         Инициализация главного окна.
 
         Args:
+            clock: Глобальные часы симуляции.
             parent: Родительский виджет.
         """
         super().__init__(parent)
         self.setWindowTitle("signalSimulator")
         self.setMinimumSize(800, 600)
 
-        self._clock = GlobalClock()
+        self._clock = clock
         self._config_manager = ConfigManager()
         self._journal_visible = False
         self._hidden_markers_visible = False

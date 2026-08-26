@@ -1,6 +1,5 @@
 """
-signalSimulator/core/clock.py
-
+core/clock.py
 Модуль управления глобальным логическим временем симуляции.
 Обеспечивает единый источник времени для всех компонентов системы.
 """
@@ -9,7 +8,7 @@ import logging
 from typing import Optional
 from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
-# Настройка логирования
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,8 +16,7 @@ class GlobalClock(QObject):
     """
     Глобальные часы симуляции с поддержкой ускорения времени.
 
-    Реализует паттерн Singleton для обеспечения единого источника времени
-    во всем приложении. Генерирует периодические сигналы обновления времени.
+    Генерирует периодические сигналы обновления времени.
 
     Attributes:
         time_updated (pyqtSignal): Сигнал, испускаемый при каждом обновлении времени.
@@ -34,15 +32,6 @@ class GlobalClock(QObject):
     # Интервал тика в миллисекундах реального времени
     TICK_INTERVAL_MS = 1000
 
-    _instance: Optional['GlobalClock'] = None
-
-    def __new__(cls, *args, **kwargs) -> 'GlobalClock':
-        """Реализация паттерна Singleton."""
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
-
     def __init__(self, parent: Optional[QObject] = None) -> None:
         """
         Инициализация глобальных часов.
@@ -50,9 +39,6 @@ class GlobalClock(QObject):
         Args:
             parent: Родительский QObject для управления временем жизни.
         """
-        if self._initialized:
-            return
-
         super().__init__(parent)
 
         # Логическое время в миллисекундах
@@ -69,7 +55,6 @@ class GlobalClock(QObject):
         self._timer.setInterval(self.TICK_INTERVAL_MS)
         self._timer.timeout.connect(self._on_tick)
 
-        self._initialized = True
         logger.info(f"GlobalClock инициализирован. Интервал тика: {self.TICK_INTERVAL_MS}мс")
 
     def start(self) -> None:

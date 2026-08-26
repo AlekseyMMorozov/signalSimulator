@@ -5,14 +5,14 @@
 - **Версия:** не указана
 - **Описание:** нет
 - **Зависимости:** не найдены
-- **Точки входа:** compact_code.py, generate_structure.py, .venv\Lib\site-packages\pip\__main__.py, .venv\Lib\site-packages\pip\_vendor\cachecontrol\_cmd.py, .venv\Lib\site-packages\pip\_vendor\distro\distro.py, .venv\Lib\site-packages\pip\_vendor\distro\__main__.py, .venv\Lib\site-packages\pip\_vendor\packaging\_musllinux.py, .venv\Lib\site-packages\pip\_vendor\platformdirs\__main__.py, .venv\Lib\site-packages\pip\_vendor\requests\certs.py, .venv\Lib\site-packages\pip\_vendor\requests\help.py, .venv\Lib\site-packages\pip\_vendor\rich\abc.py, .venv\Lib\site-packages\pip\_vendor\rich\align.py, .venv\Lib\site-packages\pip\_vendor\rich\box.py, .venv\Lib\site-packages\pip\_vendor\rich\cells.py, .venv\Lib\site-packages\pip\_vendor\rich\color.py, .venv\Lib\site-packages\pip\_vendor\rich\columns.py, .venv\Lib\site-packages\pip\_vendor\rich\console.py, .venv\Lib\site-packages\pip\_vendor\rich\control.py, .venv\Lib\site-packages\pip\_vendor\rich\default_styles.py, .venv\Lib\site-packages\pip\_vendor\rich\diagnose.py, .venv\Lib\site-packages\pip\_vendor\rich\emoji.py, .venv\Lib\site-packages\pip\_vendor\rich\highlighter.py, .venv\Lib\site-packages\pip\_vendor\rich\json.py, .venv\Lib\site-packages\pip\_vendor\rich\layout.py, .venv\Lib\site-packages\pip\_vendor\rich\live.py, .venv\Lib\site-packages\pip\_vendor\rich\logging.py, .venv\Lib\site-packages\pip\_vendor\rich\markup.py, .venv\Lib\site-packages\pip\_vendor\rich\padding.py, .venv\Lib\site-packages\pip\_vendor\rich\pager.py, .venv\Lib\site-packages\pip\_vendor\rich\palette.py, .venv\Lib\site-packages\pip\_vendor\rich\panel.py, .venv\Lib\site-packages\pip\_vendor\rich\pretty.py, .venv\Lib\site-packages\pip\_vendor\rich\progress.py, .venv\Lib\site-packages\pip\_vendor\rich\progress_bar.py, .venv\Lib\site-packages\pip\_vendor\rich\prompt.py, .venv\Lib\site-packages\pip\_vendor\rich\repr.py, .venv\Lib\site-packages\pip\_vendor\rich\rule.py, .venv\Lib\site-packages\pip\_vendor\rich\scope.py, .venv\Lib\site-packages\pip\_vendor\rich\segment.py, .venv\Lib\site-packages\pip\_vendor\rich\spinner.py, .venv\Lib\site-packages\pip\_vendor\rich\status.py, .venv\Lib\site-packages\pip\_vendor\rich\styled.py, .venv\Lib\site-packages\pip\_vendor\rich\syntax.py, .venv\Lib\site-packages\pip\_vendor\rich\table.py, .venv\Lib\site-packages\pip\_vendor\rich\text.py, .venv\Lib\site-packages\pip\_vendor\rich\theme.py, .venv\Lib\site-packages\pip\_vendor\rich\traceback.py, .venv\Lib\site-packages\pip\_vendor\rich\tree.py, .venv\Lib\site-packages\pip\_vendor\rich\_log_render.py, .venv\Lib\site-packages\pip\_vendor\rich\_ratio.py, .venv\Lib\site-packages\pip\_vendor\rich\_win32_console.py, .venv\Lib\site-packages\pip\_vendor\rich\_windows.py, .venv\Lib\site-packages\pip\_vendor\rich\_wrap.py, .venv\Lib\site-packages\pip\_vendor\rich\__init__.py, .venv\Lib\site-packages\pip\_vendor\rich\__main__.py, .venv\Lib\site-packages\pip\_vendor\chardet\cli\chardetect.py
+- **Точки входа:** compact_code.py, generate_structure.py, main.py, .venv\Lib\site-packages\pip\__main__.py, .venv\Lib\site-packages\pip\_vendor\cachecontrol\_cmd.py, .venv\Lib\site-packages\pip\_vendor\distro\distro.py, .venv\Lib\site-packages\pip\_vendor\distro\__main__.py, .venv\Lib\site-packages\pip\_vendor\packaging\_musllinux.py, .venv\Lib\site-packages\pip\_vendor\platformdirs\__main__.py, .venv\Lib\site-packages\pip\_vendor\requests\certs.py, .venv\Lib\site-packages\pip\_vendor\requests\help.py, .venv\Lib\site-packages\pip\_vendor\rich\abc.py, .venv\Lib\site-packages\pip\_vendor\rich\align.py, .venv\Lib\site-packages\pip\_vendor\rich\box.py, .venv\Lib\site-packages\pip\_vendor\rich\cells.py, .venv\Lib\site-packages\pip\_vendor\rich\color.py, .venv\Lib\site-packages\pip\_vendor\rich\columns.py, .venv\Lib\site-packages\pip\_vendor\rich\console.py, .venv\Lib\site-packages\pip\_vendor\rich\control.py, .venv\Lib\site-packages\pip\_vendor\rich\default_styles.py, .venv\Lib\site-packages\pip\_vendor\rich\diagnose.py, .venv\Lib\site-packages\pip\_vendor\rich\emoji.py, .venv\Lib\site-packages\pip\_vendor\rich\highlighter.py, .venv\Lib\site-packages\pip\_vendor\rich\json.py, .venv\Lib\site-packages\pip\_vendor\rich\layout.py, .venv\Lib\site-packages\pip\_vendor\rich\live.py, .venv\Lib\site-packages\pip\_vendor\rich\logging.py, .venv\Lib\site-packages\pip\_vendor\rich\markup.py, .venv\Lib\site-packages\pip\_vendor\rich\padding.py, .venv\Lib\site-packages\pip\_vendor\rich\pager.py, .venv\Lib\site-packages\pip\_vendor\rich\palette.py, .venv\Lib\site-packages\pip\_vendor\rich\panel.py, .venv\Lib\site-packages\pip\_vendor\rich\pretty.py, .venv\Lib\site-packages\pip\_vendor\rich\progress.py, .venv\Lib\site-packages\pip\_vendor\rich\progress_bar.py, .venv\Lib\site-packages\pip\_vendor\rich\prompt.py, .venv\Lib\site-packages\pip\_vendor\rich\repr.py, .venv\Lib\site-packages\pip\_vendor\rich\rule.py, .venv\Lib\site-packages\pip\_vendor\rich\scope.py, .venv\Lib\site-packages\pip\_vendor\rich\segment.py, .venv\Lib\site-packages\pip\_vendor\rich\spinner.py, .venv\Lib\site-packages\pip\_vendor\rich\status.py, .venv\Lib\site-packages\pip\_vendor\rich\styled.py, .venv\Lib\site-packages\pip\_vendor\rich\syntax.py, .venv\Lib\site-packages\pip\_vendor\rich\table.py, .venv\Lib\site-packages\pip\_vendor\rich\text.py, .venv\Lib\site-packages\pip\_vendor\rich\theme.py, .venv\Lib\site-packages\pip\_vendor\rich\traceback.py, .venv\Lib\site-packages\pip\_vendor\rich\tree.py, .venv\Lib\site-packages\pip\_vendor\rich\_log_render.py, .venv\Lib\site-packages\pip\_vendor\rich\_ratio.py, .venv\Lib\site-packages\pip\_vendor\rich\_win32_console.py, .venv\Lib\site-packages\pip\_vendor\rich\_windows.py, .venv\Lib\site-packages\pip\_vendor\rich\_wrap.py, .venv\Lib\site-packages\pip\_vendor\rich\__init__.py, .venv\Lib\site-packages\pip\_vendor\rich\__main__.py, .venv\Lib\site-packages\pip\_vendor\chardet\cli\chardetect.py
 
 ## Статистика проекта
 - Папок: 5
-- Python-файлов: 16
-- Всего файлов: 16
-- Классов: 41
-- Функций: 0
+- Python-файлов: 21
+- Всего файлов: 21
+- Классов: 47
+- Функций: 2
 
 ## Дерево проекта
 ```
@@ -34,7 +34,12 @@ signalSimulator/
     simulator.py
   ui/
     __init__.py
+    fault_rule_dialog.py
+    fault_template_dialog.py
+    fault_window.py
+    log_window.py
     main_window.py
+    plot_creation_dialog.py
     plot_window.py
   main.py
 ```
@@ -964,6 +969,262 @@ Args:
   - Сброс состояния движка (очистка историй и меток).
 
 ### Файл: `__init__.py`
+> ui/__init__.py
+
+Инициализация пакета `ui` — графический интерфейс приложения.
+Содержит модули главного окна, окон графиков, неисправностей,
+журнала событий и диалогов создания/настройки.
+#### Импорты
+- **Сторонние библиотеки:**
+  - `from ui.fault_rule_dialog import FaultRuleDialog`
+  - `from ui.fault_template_dialog import FaultTemplateDialog`
+  - `from ui.fault_window import FaultWindow`
+  - `from ui.log_window import LogWindow`
+  - `from ui.main_window import MainWindow`
+  - `from ui.plot_creation_dialog import PlotCreationDialog`
+  - `from ui.plot_window import PlotWindow`
+
+### Файл: `fault_rule_dialog.py`
+> ui/fault_rule_dialog.py
+Модальный диалог создания правила автоматического внедрения неисправностей.
+Позволяет настроить название правила, выбрать шаблон неисправности,
+задать период проверки, вероятность срабатывания и режим внедрения.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from typing import List, Optional`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QRadioButton, QSpinBox, QVBoxLayout, QWidget`
+  - `from simulation.scheduler import FaultTemplate, RandomFaultRule`
+#### Классы
+##### `class FaultRuleDialog(QDialog)`
+> Модальный диалог создания правила автоматического внедрения неисправностей.
+
+Позволяет настроить:
+- Название правила
+- Выбор шаблона (из списка)
+- Период проверки (N мс)
+- Вероятность срабатывания (X в долях 0.0–1.0)
+- Режим внедрения: один / все / случайное подмножество
+Методы:
+- `def __init__(self, available_templates: List[FaultTemplate], parent: Optional[QWidget]) -> None`
+  - Инициализация диалога правила.
+
+Args:
+    available_templates: Список доступных шаблонов для выбора.
+    parent: Родительский виджет.
+- `def _init_ui(self) -> None`
+  - Создание интерфейса диалога.
+- `def _on_accept(self) -> None`
+  - Обработчик нажатия кнопки ОК.
+- `def get_rule(self) -> Optional[RandomFaultRule]`
+  - Получить созданное правило.
+
+### Файл: `fault_template_dialog.py`
+> ui/fault_template_dialog.py
+Модальный диалог создания и редактирования шаблона неисправности.
+Позволяет настроить название, тип неисправности, динамические параметры
+и характер действия (постоянная, разовая, периодическая).
+#### Импорты
+- **Стандартная библиотека:**
+  - `from typing import Optional`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget`
+  - `from simulation.faults import FaultFactory`
+  - `from simulation.scheduler import FaultTemplate`
+#### Классы
+##### `class FaultTemplateDialog(QDialog)`
+> Модальный диалог создания/редактирования шаблона неисправности.
+
+Позволяет настроить:
+- Название шаблона
+- Тип неисправности (dropout, spike, noise, degradation)
+- Динамические поля параметров (аналогично настройке сигналов)
+- Характер: постоянная / разовая / периодическая
+- Для разовой и периодической: длительность и период
+Методы:
+- `def __init__(self, template: Optional[FaultTemplate], parent: Optional[QWidget]) -> None`
+  - Инициализация диалога шаблона.
+
+Args:
+    template: Существующий шаблон для редактирования (опционально).
+    parent: Родительский виджет.
+- `def _init_ui(self) -> None`
+  - Создание интерфейса диалога.
+- `def _on_character_changed(self) -> None`
+  - Обработчик изменения характера неисправности.
+- `def _update_fault_params_fields(self) -> None`
+  - Обновление полей параметров неисправности при смене типа.
+- `def _add_param(self, param_name: str, label: str, default_value: float) -> None`
+  - Добавить поле параметра неисправности в форму.
+- `def _load_template(self, template: FaultTemplate) -> None`
+  - Загрузить параметры существующего шаблона в форму.
+- `def _on_accept(self) -> None`
+  - Обработчик нажатия кнопки ОК.
+- `def get_template(self) -> Optional[FaultTemplate]`
+  - Получить созданный/обновлённый шаблон.
+
+### Файл: `fault_window.py`
+> ui/fault_window.py
+Окно управления неисправностями с тремя вкладками: Шаблоны, Ручное внедрение, Правила.
+Позволяет создавать заготовки неисправностей, внедрять их вручную на выбранные графики
+и настраивать автоматическое внедрение через правила с параметрами периода и вероятности.
+Диалоги создания шаблонов и правил вынесены в отдельные модули.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from typing import Optional`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtCore import pyqtSignal`
+  - `from PyQt6.QtWidgets import QComboBox`
+  - `from PyQt6.QtWidgets import QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QTabWidget, QVBoxLayout, QWidget`
+  - `from simulation.scheduler import FaultScheduler, FaultTemplate`
+  - `from simulation.simulator import SimulationEngine`
+  - `from ui.fault_rule_dialog import FaultRuleDialog`
+  - `from ui.fault_template_dialog import FaultTemplateDialog`
+#### Классы
+##### `class FaultWindow(QMainWindow)`
+> Окно управления неисправностями с тремя вкладками.
+
+Вкладка "Шаблоны": создание, редактирование и удаление заготовок неисправностей.
+Вкладка "Ручное внедрение": внедрение шаблона на выбранный график.
+Вкладка "Правила": настройка автоматического внедрения с периодом и вероятностью.
+
+Signals:
+    fault_injected: Неисправность внедрена вручную (plot_id, fault_type, fault_params).
+Методы:
+- `def __init__(self, scheduler: FaultScheduler, engine: SimulationEngine, parent: Optional[QWidget]) -> None`
+  - Инициализация окна управления неисправностями.
+
+Args:
+    scheduler: Планировщик случайных неисправностей.
+    engine: Движок симуляции.
+    parent: Родительский виджет.
+- `def _init_ui(self) -> None`
+  - Создание интерфейса окна.
+- `def _create_templates_tab(self) -> QWidget`
+  - Создание вкладки 'Шаблоны'.
+- `def _create_manual_tab(self) -> QWidget`
+  - Создание вкладки 'Ручное внедрение'.
+- `def _create_rules_tab(self) -> QWidget`
+  - Создание вкладки 'Правила'.
+- `def _refresh_templates_list(self) -> None`
+  - Обновить список шаблонов на вкладке 'Шаблоны'.
+- `def _refresh_plots_combo(self) -> None`
+  - Обновить выпадающий список графиков на вкладке 'Ручное внедрение'.
+- `def _refresh_manual_templates_list(self) -> None`
+  - Обновить список шаблонов с кнопками 'Внедрить' на вкладке 'Ручное внедрение'.
+- `def _refresh_rules_list(self) -> None`
+  - Обновить список правил на вкладке 'Правила'.
+- `def _on_create_template(self) -> None`
+  - Создание нового шаблона.
+- `def _on_edit_template(self) -> None`
+  - Редактирование выбранного шаблона.
+- `def _on_delete_template(self) -> None`
+  - Удаление выбранного шаблона.
+- `def _on_inject_fault(self, template: FaultTemplate) -> None`
+  - Внедрение неисправности из шаблона на выбранный график.
+- `def _on_create_rule(self) -> None`
+  - Создание нового правила.
+- `def _on_toggle_rule(self) -> None`
+  - Включение/выключение выбранного правила.
+- `def _on_delete_rule(self) -> None`
+  - Удаление выбранного правила.
+
+### Файл: `log_window.py`
+> ui/log_window.py
+
+Отдельное окно журнала событий симуляции.
+Отображает записи журнала в виде текстового лога в реальном времени,
+поддерживает фильтрацию по типу события, графику и времени,
+а также автоматическую прокрутку к последним записям.
+Окно открывается и закрывается из главного окна через координатор.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from typing import List, Optional, Tuple`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtCore import Qt`
+  - `from PyQt6.QtWidgets import QCheckBox, QComboBox, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QPlainTextEdit, QVBoxLayout, QWidget`
+  - `from core.event_log import EventLog, EventRecord, EventType`
+#### Классы
+##### `class LogWindow(QMainWindow)`
+> Окно журнала событий симуляции.
+
+Отображает записи журнала в виде текстового лога (по одной строке на запись).
+Подписывается на сигнал `EventLog.event_added` для автоматического
+отображения новых записей. Поддерживает фильтрацию по типу события,
+графику и диапазону времени, а также автопрокрутку.
+
+Формат строки лога: `ЧЧ:ММ:СС.мс | ТИП_СОБЫТИЯ | график | Описание`
+Методы:
+- `def __init__(self, event_log: EventLog, parent: Optional[QWidget]) -> None`
+  - Инициализация окна журнала.
+
+Args:
+    event_log: Журнал событий (источник записей).
+    parent: Родительский виджет.
+- `def _init_ui(self) -> None`
+  - Создание интерфейса окна журнала.
+- `def _on_event_added(self, record: EventRecord) -> None`
+  - Обработчик новой записи журнала (сигнал `event_added`).
+
+Добавляет запись в список и отображает, если она подходит под фильтр.
+
+Args:
+    record: Новая запись журнала.
+- `def _apply_filter(self) -> None`
+  - Применить текущий фильтр и перерисовать лог.
+- `def _get_filter_params(self) -> Tuple[str, str, Optional[int], Optional[int]]`
+  - Получить текущие параметры фильтра из элементов интерфейса.
+
+Returns:
+    Кортеж (тип события или "Все типы", подстрока графика, время от, время до).
+- `def _parse_time_ms(self, text: str) -> Optional[int]`
+  - Разобрать текст поля времени в миллисекунды.
+
+Пустая строка означает отсутствие ограничения.
+
+Args:
+    text: Текст из поля ввода.
+
+Returns:
+    int или None, если пусто или некорректно.
+- `def _matches_filter(self, record: EventRecord, type_filter: str, plot_filter: str, start_ms: Optional[int], end_ms: Optional[int]) -> bool`
+  - Проверить, подходит ли запись под текущий фильтр.
+
+Args:
+    record: Запись журнала.
+    type_filter: Тип события или "Все типы".
+    plot_filter: Подстрока для фильтрации по графику.
+    start_ms: Нижняя граница времени (или None).
+    end_ms: Верхняя граница времени (или None).
+
+Returns:
+    bool: Подходит ли запись под фильтр.
+- `def _append_record_to_view(self, record: EventRecord) -> None`
+  - Добавить запись в текстовый лог.
+
+Формат: `ЧЧ:ММ:СС.мс | ТИП_СОБЫТИЯ | график | Описание`
+
+Args:
+    record: Запись журнала.
+- `def _update_count(self) -> None`
+  - Обновить счётчик записей с учётом фильтра.
+- `def _scroll_to_bottom(self) -> None`
+  - Прокрутить лог к последней записи.
+- `def closeEvent(self, event) -> None`
+  - Обработка закрытия окна журнала.
+#### Функции
+- `def format_time_ms(time_ms: int) -> str`
+  - Форматировать время в миллисекундах в строку ЧЧ:ММ:СС.мс.
+
+Args:
+    time_ms: Время в миллисекундах.
+
+Returns:
+    str: Отформатированное время (например, "00:05:23.456").
 
 ### Файл: `main_window.py`
 > ui/main_window.py
@@ -1053,6 +1314,85 @@ Args:
 - `def _apply_loaded_config(self, config_data: dict) -> None`
   - Применить загруженную конфигурацию.
 
+### Файл: `plot_creation_dialog.py`
+> ui/plot_creation_dialog.py
+
+Модальный диалог создания нового графика телеметрии.
+Позволяет настроить все параметры графика: название, единицу измерения,
+тип сигнала с его параметрами, допустимые пределы и интервал наблюдения.
+Вызывается из главного окна по сигналу plot_add_requested.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from typing import Any, Dict, Optional`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtCore import Qt`
+  - `from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QSpinBox, QVBoxLayout, QWidget`
+  - `from simulation.signals import SignalFactory`
+#### Классы
+##### `class PlotCreationDialog(QDialog)`
+> Модальный диалог создания нового графика телеметрии.
+
+Позволяет настроить:
+- Основные параметры (название, единица, макс. значение)
+- Интервал наблюдения (через пресеты или ручной ввод в секундах)
+- Допустимые пределы (min_allowed, max_allowed)
+- Тип сигнала и его параметры (динамически меняются)
+
+После подтверждения результат доступен через метод get_plot_params().
+Методы:
+- `def __init__(self, parent: Optional[QWidget]) -> None`
+  - Инициализация диалога создания графика.
+
+Args:
+    parent: Родительский виджет.
+- `def _init_ui(self) -> None`
+  - Создание интерфейса диалога.
+- `def _on_preset_changed(self, index: int) -> None`
+  - Обработчик изменения пресета интервала.
+
+При выборе пресета подставляет значение в поле ручного ввода.
+
+Args:
+    index: Индекс выбранного пресета.
+- `def _update_signal_params_fields(self) -> None`
+  - Обновление полей параметров сигнала при смене типа.
+
+Удаляет старые поля и создаёт новые в соответствии с выбранным типом сигнала.
+- `def _add_signal_param(self, param_name: str, label: str, default_value: float, is_int: bool) -> None`
+  - Добавить поле параметра сигнала в форму.
+
+Args:
+    param_name: Имя параметра (используется как ключ в словаре).
+    label: Отображаемая метка.
+    default_value: Значение по умолчанию.
+    is_int: Если True, используется QSpinBox (целое), иначе QDoubleSpinBox.
+- `def _on_accept(self) -> None`
+  - Обработчик нажатия кнопки ОК.
+
+Выполняет валидацию и при успехе сохраняет параметры и закрывает диалог.
+- `def _validate(self) -> bool`
+  - Валидация введённых данных.
+
+Returns:
+    bool: True, если данные корректны, False иначе.
+- `def get_plot_params(self) -> Optional[Dict[str, Any]]`
+  - Получить параметры графика после подтверждения диалога.
+
+Returns:
+    dict: Словарь параметров графика, или None если диалог был отменён.
+          Структура:
+          {
+              "name": str,
+              "unit": str,
+              "max_unit_value": float,
+              "observation_interval_ms": int,
+              "min_allowed": float,
+              "max_allowed": float,
+              "signal_type": str,
+              "signal_params": dict
+          }
+
 ### Файл: `plot_window.py`
 > ui/plot_window.py
 
@@ -1136,6 +1476,63 @@ Returns:
   - Обработка закрытия окна.
 
 ### Файл: `main.py`
+> main.py
+
+Точка входа в приложение signalSimulator.
+Инициализирует все компоненты системы (часы, журнал, движок, планировщик, окна)
+и координирует их взаимодействие через паттерн Coordinator.
+#### Импорты
+- **Стандартная библиотека:**
+  - `import logging`
+  - `import sys`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtWidgets import QApplication`
+  - `from analytics.detector import AnomalyDetector`
+  - `from core.clock import GlobalClock`
+  - `from core.config import ConfigManager`
+  - `from core.event_log import EventLog`
+  - `from simulation.scheduler import FaultScheduler`
+  - `from simulation.signals import SignalFactory`
+  - `from simulation.simulator import SimulationEngine`
+  - `from ui.fault_window import FaultWindow`
+  - `from ui.log_window import LogWindow`
+  - `from ui.main_window import MainWindow`
+  - `from ui.plot_creation_dialog import PlotCreationDialog`
+  - `from ui.plot_window import PlotWindow`
+#### Классы
+##### `class Coordinator`
+> Координатор приложения.
+
+Связывает компоненты бизнес-логики (движок, часы, планировщик)
+с компонентами пользовательского интерфейса, обрабатывая сигналы
+и перенаправляя данные между ними.
+Методы:
+- `def __init__(self) -> None`
+  - Инициализация всех компонентов и подключение сигналов.
+- `def _connect_signals(self) -> None`
+  - Подключение всех сигналов и слотов.
+- `def _on_add_plot(self) -> None`
+  - Обработка запроса на создание нового графика.
+- `def _on_open_plot(self, plot_id: str) -> None`
+  - Показать существующее окно графика.
+- `def _on_remove_plot(self, plot_id: str) -> None`
+  - Удаление графика из симуляции и закрытие его окна.
+- `def _on_toggle_journal(self, visible: bool) -> None`
+  - Показать или скрыть окно журнала событий.
+- `def _on_toggle_hidden_markers(self, visible: bool) -> None`
+  - Обновить видимость скрытых меток во всех открытых окнах графиков.
+- `def _on_plot_data_updated(self, plot_id: str, data: tuple) -> None`
+  - Обработка новых данных графика.
+Обновляет окно графика и прогоняет данные через детектор аномалий.
+- `def _on_fault_injected(self, plot_id: str, fault_type: str, fault_params: dict) -> None`
+  - Добавление скрытой метки неисправности в окно графика при ручном внедрении.
+- `def _on_operator_detection(self, plot_id: str) -> None`
+  - Фиксация обнаружения оператором и добавление метки.
+- `def _on_plot_window_closed(self, plot_id: str) -> None`
+  - Обработка закрытия окна графика пользователем (удаление из словаря).
+#### Функции
+- `def main() -> None`
+  - Точка входа в приложение.
 
 ## Граф зависимостей между файлами
 (Файл -> импортируемый модуль)
@@ -1147,6 +1544,13 @@ Returns:
 - `__init__.py` → `simulation.faults`
 - `__init__.py` → `simulation.scheduler`
 - `__init__.py` → `simulation.signals`
+- `__init__.py` → `ui.fault_rule_dialog`
+- `__init__.py` → `ui.fault_template_dialog`
+- `__init__.py` → `ui.fault_window`
+- `__init__.py` → `ui.log_window`
+- `__init__.py` → `ui.main_window`
+- `__init__.py` → `ui.plot_creation_dialog`
+- `__init__.py` → `ui.plot_window`
 - `clock.py` → `PyQt6.QtCore`
 - `clock.py` → `logging`
 - `clock.py` → `typing`
@@ -1166,11 +1570,49 @@ Returns:
 - `event_log.py` → `enum`
 - `event_log.py` → `logging`
 - `event_log.py` → `typing`
+- `fault_rule_dialog.py` → `PyQt6.QtWidgets`
+- `fault_rule_dialog.py` → `logging`
+- `fault_rule_dialog.py` → `simulation.scheduler`
+- `fault_rule_dialog.py` → `typing`
+- `fault_template_dialog.py` → `PyQt6.QtWidgets`
+- `fault_template_dialog.py` → `logging`
+- `fault_template_dialog.py` → `simulation.faults`
+- `fault_template_dialog.py` → `simulation.scheduler`
+- `fault_template_dialog.py` → `typing`
+- `fault_window.py` → `PyQt6.QtCore`
+- `fault_window.py` → `PyQt6.QtWidgets`
+- `fault_window.py` → `PyQt6.QtWidgets`
+- `fault_window.py` → `logging`
+- `fault_window.py` → `simulation.scheduler`
+- `fault_window.py` → `simulation.simulator`
+- `fault_window.py` → `typing`
+- `fault_window.py` → `ui.fault_rule_dialog`
+- `fault_window.py` → `ui.fault_template_dialog`
 - `faults.py` → `abc`
 - `faults.py` → `logging`
 - `faults.py` → `math`
 - `faults.py` → `random`
 - `faults.py` → `typing`
+- `log_window.py` → `PyQt6.QtCore`
+- `log_window.py` → `PyQt6.QtWidgets`
+- `log_window.py` → `core.event_log`
+- `log_window.py` → `logging`
+- `log_window.py` → `typing`
+- `main.py` → `PyQt6.QtWidgets`
+- `main.py` → `analytics.detector`
+- `main.py` → `core.clock`
+- `main.py` → `core.config`
+- `main.py` → `core.event_log`
+- `main.py` → `logging`
+- `main.py` → `simulation.scheduler`
+- `main.py` → `simulation.signals`
+- `main.py` → `simulation.simulator`
+- `main.py` → `sys`
+- `main.py` → `ui.fault_window`
+- `main.py` → `ui.log_window`
+- `main.py` → `ui.main_window`
+- `main.py` → `ui.plot_creation_dialog`
+- `main.py` → `ui.plot_window`
 - `main_window.py` → `PyQt6.QtCore`
 - `main_window.py` → `PyQt6.QtWidgets`
 - `main_window.py` → `core.clock`
@@ -1181,6 +1623,11 @@ Returns:
 - `metrics.py` → `dataclasses`
 - `metrics.py` → `logging`
 - `metrics.py` → `typing`
+- `plot_creation_dialog.py` → `PyQt6.QtCore`
+- `plot_creation_dialog.py` → `PyQt6.QtWidgets`
+- `plot_creation_dialog.py` → `logging`
+- `plot_creation_dialog.py` → `simulation.signals`
+- `plot_creation_dialog.py` → `typing`
 - `plot_window.py` → `PyQt6.QtCore`
 - `plot_window.py` → `PyQt6.QtWidgets`
 - `plot_window.py` → `logging`
