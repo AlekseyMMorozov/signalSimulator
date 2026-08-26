@@ -1,10 +1,10 @@
 """
 ui/plot_creation_dialog.py
 
-Модальный диалог создания нового графика телеметрии.
+Модальный диалог создания и редактирования графика телеметрии.
 Позволяет настроить все параметры графика: название, единицу измерения,
 тип сигнала с его параметрами, допустимые пределы и интервал наблюдения.
-Вызывается из главного окна по сигналу plot_add_requested.
+Вызывается из главного окна по сигналу plot_add_requested или plot_settings_requested.
 """
 
 import logging
@@ -26,64 +26,126 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from simulation.signals import SignalFactory
-
 logger = logging.getLogger(__name__)
 
-# Пресеты интервалов наблюдения (название, значение в секундах)
-INTERVAL_PRESETS = [
-    ("1 минута", 60),
-    ("5 минут", 300),
-    ("10 минут", 600),
-    ("30 минут", 1800),
-    ("1 час", 3600),
-    ("6 часов", 21600),
-    ("12 часов", 43200),
-    ("1 сутки", 86400),
-    ("1 неделя", 604800),
-    ("1 месяц (30 дней)", 2592000),
-    ("6 месяцев", 15552000),
-    ("1 год", 31536000),
-    ("2 года", 63072000),
-    ("Ручной ввод", 0),
-]
+# Сопоставление внутренних ключей сигналов с русскими названиями для интерфейса
+SIGNAL_TYPE_DISPLAY = {
+    "sine": "Синусоида",
+    "sawtooth": "Пилообразный",
+    "triangle": "Треугольный",
+    "step": "Ступенчатый",
+    "linear": "Линейный (тренд)",
+    "square": "Прямоугольный (меандр)",
+    "exponential": "Экспоненциальный",
+    "noise": "Случайный шум",
+    "constant": "Постоянный",
+}
 
-# Доступные типы сигналов
-SIGNAL_TYPES = SignalFactory.available_types()
+
+class PeriodWidget(QWidget):
+    """
+    Виджет для удобного ввода периода с выбором единицы измерения.
+    Автоматически конвертирует выбранное значение и единицу в миллисекунды и обратно.
+    """
+
+    def __init__(self, default_ms: int, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self._spin = QSpinBox()
+        self._spin.setRange(1, 1000000000)
+        self._spin.setToolTip("Числовое значение периода.")
+
+        self._unit_combo = QComboBox()
+        self._unit_combo.addItems(["мс", "с", "мин"])
+        self._unit_combo.setToolTip("Единица измерения периода.")
+
+        # Умный дефолт: если значение кратно 1000, показываем в секундах или минутах для удобства
+        if default_ms >= 1000 and default_ms % 1000 == 0:
+            secs = default_ms // 1000
+            if secs % 60 == 0:
+                self._spin.setValue(secs // 60)
+                self._unit_combo.setCurrentText("мин")
+            else:
+                self._spin.setValue(secs)
+                self._unit_combo.setCurrentText("с")
+        else:
+            self._spin.setValue(default_ms)
+            self._unit_combo.setCurrentText("мс")
+
+        layout.addWidget(self._spin)
+        layout.addWidget(self._unit_combo)
+        layout.addStretch(1)
+
+        self.setToolTip("Время, за которое сигнал совершает один полный цикл.")
+
+    def get_period_ms(self) -> int:
+        """Возвращает период, пересчитанный в миллисекунды."""
+        val = self._spin.value()
+        unit = self._unit_combo.currentText()
+        multipliers = {"мс": 1, "с": 1000, "мин": 60000}
+        return val * multipliers[unit]
+
+    def set_period_ms(self, ms: int) -> None:
+        """
+        Устанавливает период, автоматически выбирая удобную единицу измерения.
+
+        Args:
+            ms: Значение периода в миллисекундах.
+        """
+        try:
+            if ms >= 60000 and ms % 60000 == 0:
+                self._spin.setValue(ms // 60000)
+                self._unit_combo.setCurrentText("мин")
+            elif ms >= 1000 and ms % 1000 == 0:
+                self._spin.setValue(ms // 1000)
+                self._unit_combo.setCurrentText("с")
+            else:
+                self._spin.setValue(ms)
+                self._unit_combo.setCurrentText("мс")
+        except Exception as e:
+            logger.error(f"Ошибка установки периода в виджете: {e}")
 
 
 class PlotCreationDialog(QDialog):
     """
-    Модальный диалог создания нового графика телеметрии.
+    Модальный диалог создания и редактирования графика телеметрии.
 
     Позволяет настроить:
     - Основные параметры (название, единица, макс. значение)
     - Интервал наблюдения (через пресеты или ручной ввод в секундах)
     - Допустимые пределы (min_allowed, max_allowed)
-    - Тип сигнала и его параметры (динамически меняются)
+    - Тип сигнала и его параметры (динамически меняются, период вводится с выбором единицы)
 
+    Если передан initial_params, диалог переходит в режим редактирования и предзаполняет поля.
     После подтверждения результат доступен через метод get_plot_params().
     """
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, parent: QWidget | None = None, initial_params: dict[str, Any] | None = None) -> None:
         """
-        Инициализация диалога создания графика.
+        Инициализация диалога создания/редактирования графика.
 
         Args:
             parent: Родительский виджет.
+            initial_params: Словарь существующих параметров для предзаполнения (режим редактирования).
         """
         super().__init__(parent)
-        self.setWindowTitle("Создание графика")
-        self.setMinimumWidth(500)
+        self.setWindowTitle("Редактирование графика" if initial_params else "Создание графика")
+        self.setMinimumWidth(550)
 
         self._plot_params: dict[str, Any] | None = None
 
         try:
             self._init_ui()
             self._update_signal_params_fields()
-            logger.info("Диалог создания графика инициализирован.")
+
+            if initial_params:
+                self._populate_fields(initial_params)
+
+            logger.info("Диалог графика инициализирован.")
         except Exception as e:
-            logger.error(f"Ошибка инициализации диалога создания графика: {e}")
+            logger.error(f"Ошибка инициализации диалога графика: {e}")
             raise
 
     def _init_ui(self) -> None:
@@ -94,21 +156,24 @@ class PlotCreationDialog(QDialog):
         basic_group = QGroupBox("Основные параметры")
         basic_layout = QFormLayout()
 
-        # Название графика
         self._name_edit = QLineEdit()
         self._name_edit.setPlaceholderText("Например: Сила тока Батарея солнечная 1")
+        self._name_edit.setToolTip("Уникальное имя графика для отображения в списке и заголовке окна.")
         basic_layout.addRow("Название:", self._name_edit)
 
-        # Единица измерения
         self._unit_edit = QLineEdit()
         self._unit_edit.setPlaceholderText("Например: А")
+        self._unit_edit.setToolTip("Единица измерения величины (например: 'А', 'В', 'Па', '°C').")
         basic_layout.addRow("Единица измерения:", self._unit_edit)
 
-        # Максимальное значение единицы
         self._max_unit_spin = QDoubleSpinBox()
         self._max_unit_spin.setRange(0.0, 1e9)
         self._max_unit_spin.setDecimals(4)
         self._max_unit_spin.setValue(10.0)
+        self._max_unit_spin.setToolTip(
+            "Верхняя граница шкалы графика по оси Y. Используется для корректного масштабирования. "
+            "Например, если датчик измеряет до 100 А, укажите 100."
+        )
         basic_layout.addRow("Макс. значение единицы:", self._max_unit_spin)
 
         basic_group.setLayout(basic_layout)
@@ -118,23 +183,38 @@ class PlotCreationDialog(QDialog):
         interval_group = QGroupBox("Интервал наблюдения")
         interval_layout = QVBoxLayout()
 
-        # Пресеты
         preset_layout = QHBoxLayout()
-        preset_layout.addWidget(QLabel("Пресет:"))
+        lbl_preset = QLabel("Пресет:")
+        lbl_preset.setToolTip("Быстрый выбор длительности отображения графика по оси X.")
+        preset_layout.addWidget(lbl_preset)
+
         self._interval_preset_combo = QComboBox()
-        for name, _ in INTERVAL_PRESETS:
+        self._interval_preset_combo.setToolTip("Выберите готовый шаблон длительности.")
+        presets = [
+            ("1 минута", 60), ("5 минут", 300), ("10 минут", 600), ("30 минут", 1800),
+            ("1 час", 3600), ("6 часов", 21600), ("12 часов", 43200), ("1 сутки", 86400),
+            ("1 неделя", 604800), ("1 месяц (30 дней)", 2592000), ("6 месяцев", 15552000),
+            ("1 год", 31536000), ("2 года", 63072000), ("Ручной ввод", 0),
+        ]
+        for name, _ in presets:
             self._interval_preset_combo.addItem(name)
-        self._interval_preset_combo.setCurrentIndex(len(INTERVAL_PRESETS) - 1)  # "Ручной ввод"
+        self._interval_preset_combo.setCurrentIndex(len(presets) - 1)
         self._interval_preset_combo.currentIndexChanged.connect(self._on_preset_changed)
         preset_layout.addWidget(self._interval_preset_combo)
         interval_layout.addLayout(preset_layout)
 
-        # Ручной ввод в секундах
         manual_layout = QHBoxLayout()
-        manual_layout.addWidget(QLabel("Вручную (секунды):"))
+        lbl_manual = QLabel("Вручную (секунды):")
+        lbl_manual.setToolTip(
+            "Длительность отображения графика по оси X в секундах. "
+            "Определяет, какой временной промежуток будет виден на экране целиком."
+        )
+        manual_layout.addWidget(lbl_manual)
+
         self._interval_spin = QSpinBox()
         self._interval_spin.setRange(1, 1000000000)
         self._interval_spin.setValue(60)
+        self._interval_spin.setToolTip("Введите длительность в секундах.")
         manual_layout.addWidget(self._interval_spin)
         interval_layout.addLayout(manual_layout)
 
@@ -149,12 +229,20 @@ class PlotCreationDialog(QDialog):
         self._min_allowed_spin.setRange(-1e9, 1e9)
         self._min_allowed_spin.setDecimals(4)
         self._min_allowed_spin.setValue(0.0)
+        self._min_allowed_spin.setToolTip(
+            "Нижняя граница нормального режима работы. Выход сигнала ниже этого значения "
+            "будет считаться аномалией и отмечаться на графике красной линией."
+        )
         limits_layout.addRow("Минимум:", self._min_allowed_spin)
 
         self._max_allowed_spin = QDoubleSpinBox()
         self._max_allowed_spin.setRange(-1e9, 1e9)
         self._max_allowed_spin.setDecimals(4)
         self._max_allowed_spin.setValue(10.0)
+        self._max_allowed_spin.setToolTip(
+            "Верхняя граница нормального режима работы. Выход сигнала выше этого значения "
+            "будет считаться аномалией и отмечаться на графике красной линией."
+        )
         limits_layout.addRow("Максимум:", self._max_allowed_spin)
 
         limits_group.setLayout(limits_layout)
@@ -164,17 +252,19 @@ class PlotCreationDialog(QDialog):
         signal_group = QGroupBox("Параметры сигнала")
         signal_layout = QVBoxLayout()
 
-        # Выбор типа сигнала
         type_layout = QHBoxLayout()
-        type_layout.addWidget(QLabel("Тип сигнала:"))
+        lbl_type = QLabel("Тип сигнала:")
+        lbl_type.setToolTip("Форма базового сигнала, который будет генерироваться.")
+        type_layout.addWidget(lbl_type)
+
         self._signal_type_combo = QComboBox()
-        for sig_type in SIGNAL_TYPES:
-            self._signal_type_combo.addItem(sig_type)
+        self._signal_type_combo.setToolTip("Выберите форму сигнала из списка.")
+        for internal_key, display_name in SIGNAL_TYPE_DISPLAY.items():
+            self._signal_type_combo.addItem(display_name, internal_key)
         self._signal_type_combo.currentIndexChanged.connect(self._update_signal_params_fields)
         type_layout.addWidget(self._signal_type_combo)
         signal_layout.addLayout(type_layout)
 
-        # Контейнер для динамических полей параметров
         self._signal_params_widget = QWidget()
         self._signal_params_layout = QFormLayout(self._signal_params_widget)
         signal_layout.addWidget(self._signal_params_widget)
@@ -190,20 +280,61 @@ class PlotCreationDialog(QDialog):
         button_box.rejected.connect(self.reject)
         main_layout.addWidget(button_box)
 
-        logger.debug("Интерфейс диалога создания графика создан.")
+        logger.debug("Интерфейс диалога графика создан.")
+
+    def _populate_fields(self, params: dict[str, Any]) -> None:
+        """
+        Предзаполняет поля диалога переданными параметрами (для режима редактирования).
+
+        Args:
+            params: Словарь параметров графика.
+        """
+        try:
+            self._name_edit.setText(params.get("name", ""))
+            self._unit_edit.setText(params.get("unit", ""))
+            self._max_unit_spin.setValue(params.get("max_unit_value", 10.0))
+            self._min_allowed_spin.setValue(params.get("min_allowed", 0.0))
+            self._max_allowed_spin.setValue(params.get("max_allowed", 10.0))
+
+            interval_sec = params.get("observation_interval_ms", 60000) // 1000
+            self._interval_spin.setValue(max(1, interval_sec))
+
+            signal_type = params.get("signal_type", "sine")
+            index = self._signal_type_combo.findData(signal_type)
+            if index != -1:
+                self._signal_type_combo.setCurrentIndex(index)
+
+            signal_params = params.get("signal_params", {})
+            for i in range(self._signal_params_layout.count()):
+                item = self._signal_params_layout.itemAt(i)
+                if item and item.widget():
+                    widget = item.widget()
+                    param_name = widget.property("param_name")
+                    if param_name in signal_params:
+                        val = signal_params[param_name]
+                        if widget.property("is_period"):
+                            widget.set_period_ms(int(val))
+                        else:
+                            widget.setValue(val)
+
+            logger.debug("Поля диалога предзаполнены параметрами.")
+        except Exception as e:
+            logger.error(f"Ошибка предзаполнения полей: {e}")
 
     def _on_preset_changed(self, index: int) -> None:
         """
         Обработчик изменения пресета интервала.
-
         При выборе пресета подставляет значение в поле ручного ввода.
-
-        Args:
-            index: Индекс выбранного пресета.
         """
         try:
-            if 0 <= index < len(INTERVAL_PRESETS):
-                _, value_sec = INTERVAL_PRESETS[index]
+            presets = [
+                ("1 минута", 60), ("5 минут", 300), ("10 минут", 600), ("30 минут", 1800),
+                ("1 час", 3600), ("6 часов", 21600), ("12 часов", 43200), ("1 сутки", 86400),
+                ("1 неделя", 604800), ("1 месяц (30 дней)", 2592000), ("6 месяцев", 15552000),
+                ("1 год", 31536000), ("2 года", 63072000), ("Ручной ввод", 0),
+            ]
+            if 0 <= index < len(presets):
+                _, value_sec = presets[index]
                 if value_sec > 0:
                     self._interval_spin.setValue(value_sec)
                     logger.debug(f"Выбран пресет интервала: {value_sec} сек.")
@@ -213,55 +344,71 @@ class PlotCreationDialog(QDialog):
     def _update_signal_params_fields(self) -> None:
         """
         Обновление полей параметров сигнала при смене типа.
-
         Удаляет старые поля и создаёт новые в соответствии с выбранным типом сигнала.
         """
         try:
-            # Очистка старых полей
             while self._signal_params_layout.count():
                 item = self._signal_params_layout.takeAt(0)
                 widget = item.widget()
                 if widget is not None:
                     widget.deleteLater()
 
-            signal_type = self._signal_type_combo.currentText()
+            signal_type = self._signal_type_combo.currentData()
 
-            # Создание полей в зависимости от типа сигнала
             if signal_type in ["sawtooth", "triangle", "step"]:
-                self._add_signal_param("min_val", "Минимум:", 0.0)
-                self._add_signal_param("max_val", "Максимум:", 10.0)
-                self._add_signal_param("period_ms", "Период (мс):", 10000, is_int=True)
-                self._add_signal_param("offset", "Смещение:", 0.0)
+                self._add_signal_param("min_val", "Минимум:", 0.0,
+                                       tooltip="Нижнее значение сигнала (состояние '0' или 'выключено').")
+                self._add_signal_param("max_val", "Максимум:", 10.0,
+                                       tooltip="Верхнее значение сигнала (состояние '1' или 'включено').")
+                self._add_signal_param("period_ms", "Период:", 10000, is_int=True)
+                self._add_signal_param("offset", "Смещение:", 0.0,
+                                       tooltip="Постоянная величина, добавляемая ко всему сигналу. Сдвигает весь график вверх или вниз.")
 
             elif signal_type == "sine":
-                self._add_signal_param("amplitude", "Амплитуда:", 1.0)
-                self._add_signal_param("period_ms", "Период (мс):", 10000, is_int=True)
-                self._add_signal_param("phase", "Фаза (рад):", 0.0)
-                self._add_signal_param("offset", "Смещение:", 0.0)
+                self._add_signal_param("amplitude", "Амплитуда:", 1.0,
+                                       tooltip="Максимальное отклонение сигнала от центра. Пиковое значение синусоиды.")
+                self._add_signal_param("period_ms", "Период:", 10000, is_int=True)
+                self._add_signal_param("phase", "Фаза (рад):", 0.0,
+                                       tooltip="Начальный сдвиг синусоиды в радианах. 0 — начало с нуля, 1.57 (π/2) — начало с максимума.")
+                self._add_signal_param("offset", "Смещение:", 0.0,
+                                       tooltip="Постоянная величина, добавляемая ко всему сигналу. Сдвигает весь график вверх или вниз.")
 
             elif signal_type == "linear":
-                self._add_signal_param("start_val", "Начальное значение:", 0.0)
-                self._add_signal_param("rate_per_sec", "Скорость (ед/сек):", 0.01)
-                self._add_signal_param("offset", "Смещение:", 0.0)
+                self._add_signal_param("start_val", "Начальное значение:", 0.0,
+                                       tooltip="Значение сигнала в момент времени 0.")
+                self._add_signal_param("rate_per_sec", "Скорость (ед/сек):", 0.01,
+                                       tooltip="На сколько единиц изменяется значение сигнала за одну секунду. Положительное — рост, отрицательное — падение.")
+                self._add_signal_param("offset", "Смещение:", 0.0,
+                                       tooltip="Постоянная величина, добавляемая ко всему сигналу. Сдвигает весь график вверх или вниз.")
 
             elif signal_type == "square":
-                self._add_signal_param("min_val", "Минимум:", 0.0)
-                self._add_signal_param("max_val", "Максимум:", 10.0)
-                self._add_signal_param("period_ms", "Период (мс):", 10000, is_int=True)
-                self._add_signal_param("duty_cycle", "Коэфф. заполнения:", 0.5)
-                self._add_signal_param("offset", "Смещение:", 0.0)
+                self._add_signal_param("min_val", "Минимум:", 0.0,
+                                       tooltip="Нижнее значение сигнала (состояние '0' или 'выключено').")
+                self._add_signal_param("max_val", "Максимум:", 10.0,
+                                       tooltip="Верхнее значение сигнала (состояние '1' или 'включено').")
+                self._add_signal_param("period_ms", "Период:", 10000, is_int=True)
+                self._add_signal_param("duty_cycle", "Коэфф. заполнения:", 0.5,
+                                       tooltip="Доля периода, в течение которой сигнал находится на уровне максимума. 0.5 означает классический меандр (50% времени на максимуме). Диапазон: 0.0 - 1.0.")
+                self._add_signal_param("offset", "Смещение:", 0.0,
+                                       tooltip="Постоянная величина, добавляемая ко всему сигналу. Сдвигает весь график вверх или вниз.")
 
             elif signal_type == "exponential":
-                self._add_signal_param("amplitude", "Амплитуда:", 1.0)
-                self._add_signal_param("rate_per_sec", "Скорость (1/сек):", 0.01)
-                self._add_signal_param("offset", "Смещение:", 0.0)
+                self._add_signal_param("amplitude", "Амплитуда:", 1.0,
+                                       tooltip="Множитель экспоненты. Начальная величина отклонения.")
+                self._add_signal_param("rate_per_sec", "Скорость (1/сек):", 0.01,
+                                       tooltip="Скорость роста или затухания. Положительное — экспоненциальный рост, отрицательное — затухание.")
+                self._add_signal_param("offset", "Смещение:", 0.0,
+                                       tooltip="Постоянная величина, добавляемая ко всему сигналу. Сдвигает весь график вверх или вниз.")
 
             elif signal_type == "noise":
-                self._add_signal_param("mean", "Среднее:", 0.0)
-                self._add_signal_param("sigma", "Сигма:", 1.0)
+                self._add_signal_param("mean", "Среднее:", 0.0,
+                                       tooltip="Центр распределения случайного шума (среднее значение).")
+                self._add_signal_param("sigma", "Сигма:", 1.0,
+                                       tooltip="Сила шума (стандартное отклонение). Чем больше, тем сильнее разброс значений.")
 
             elif signal_type == "constant":
-                self._add_signal_param("value", "Значение:", 5.0)
+                self._add_signal_param("value", "Значение:", 5.0,
+                                       tooltip="Постоянное значение сигнала, которое не меняется со временем.")
 
             logger.debug(f"Обновлены поля параметров сигнала для типа '{signal_type}'.")
         except Exception as e:
@@ -272,24 +419,27 @@ class PlotCreationDialog(QDialog):
         param_name: str,
         label: str,
         default_value: float,
-        is_int: bool = False
+        is_int: bool = False,
+        tooltip: str = ""
     ) -> None:
         """
         Добавить поле параметра сигнала в форму.
-
-        Args:
-            param_name: Имя параметра (используется как ключ в словаре).
-            label: Отображаемая метка.
-            default_value: Значение по умолчанию.
-            is_int: Если True, используется QSpinBox (целое), иначе QDoubleSpinBox.
+        Для периода используется специализированный виджет с выбором единицы измерения.
         """
         try:
-            if is_int:
+            if param_name == "period_ms":
+                widget = PeriodWidget(int(default_value))
+                widget.setProperty("param_name", param_name)
+                widget.setProperty("is_period", True)
+                self._signal_params_layout.addRow(label, widget)
+            elif is_int:
                 spin = QSpinBox()
                 spin.setRange(1, 1000000000)
                 spin.setValue(int(default_value))
                 spin.setProperty("param_name", param_name)
                 spin.setProperty("is_int", True)
+                if tooltip:
+                    spin.setToolTip(tooltip)
                 self._signal_params_layout.addRow(label, spin)
             else:
                 spin = QDoubleSpinBox()
@@ -298,6 +448,8 @@ class PlotCreationDialog(QDialog):
                 spin.setValue(default_value)
                 spin.setProperty("param_name", param_name)
                 spin.setProperty("is_int", False)
+                if tooltip:
+                    spin.setToolTip(tooltip)
                 self._signal_params_layout.addRow(label, spin)
         except Exception as e:
             logger.error(f"Ошибка добавления поля параметра '{param_name}': {e}")
@@ -305,14 +457,12 @@ class PlotCreationDialog(QDialog):
     def _on_accept(self) -> None:
         """
         Обработчик нажатия кнопки ОК.
-
         Выполняет валидацию и при успехе сохраняет параметры и закрывает диалог.
         """
         try:
             if not self._validate():
                 return
 
-            # Сбор основных параметров
             name = self._name_edit.text().strip()
             unit = self._unit_edit.text().strip()
             max_unit_value = self._max_unit_spin.value()
@@ -321,23 +471,24 @@ class PlotCreationDialog(QDialog):
             min_allowed = self._min_allowed_spin.value()
             max_allowed = self._max_allowed_spin.value()
 
-            # Сбор параметров сигнала
-            signal_type = self._signal_type_combo.currentText()
+            signal_type = self._signal_type_combo.currentData()
             signal_params = {}
+
             for i in range(self._signal_params_layout.count()):
                 item = self._signal_params_layout.itemAt(i)
                 if item and item.widget():
                     widget = item.widget()
                     param_name = widget.property("param_name")
-                    is_int = widget.property("is_int")
-                    if param_name:
-                        value = widget.value()
-                        if is_int:
-                            signal_params[param_name] = int(value)
-                        else:
-                            signal_params[param_name] = float(value)
+                    if not param_name:
+                        continue
 
-            # Сохранение параметров
+                    if widget.property("is_period"):
+                        signal_params[param_name] = widget.get_period_ms()
+                    else:
+                        is_int = widget.property("is_int")
+                        value = widget.value()
+                        signal_params[param_name] = int(value) if is_int else float(value)
+
             self._plot_params = {
                 "name": name,
                 "unit": unit,
@@ -349,7 +500,7 @@ class PlotCreationDialog(QDialog):
                 "signal_params": signal_params,
             }
 
-            logger.info(f"Диалог создания графика подтверждён: {name}.")
+            logger.info(f"Параметры графика подтверждены: {name}.")
             self.accept()
         except Exception as e:
             logger.error(f"Ошибка при подтверждении диалога: {e}")
@@ -358,9 +509,6 @@ class PlotCreationDialog(QDialog):
     def _validate(self) -> bool:
         """
         Валидация введённых данных.
-
-        Returns:
-            bool: True, если данные корректны, False иначе.
         """
         try:
             name = self._name_edit.text().strip()
@@ -373,7 +521,7 @@ class PlotCreationDialog(QDialog):
             if min_allowed >= max_allowed:
                 QMessageBox.warning(
                     self, "Ошибка валидации",
-                    "Минимальный предел должен быть меньше максимального."
+                    "Минимальный предел должен быть строго меньше максимального."
                 )
                 return False
 
@@ -385,23 +533,6 @@ class PlotCreationDialog(QDialog):
                 )
                 return False
 
-            # Проверка периода для сигналов, у которых он есть
-            signal_type = self._signal_type_combo.currentText()
-            if signal_type in ["sawtooth", "triangle", "step", "sine", "square"]:
-                for i in range(self._signal_params_layout.count()):
-                    item = self._signal_params_layout.itemAt(i)
-                    if item and item.widget():
-                        widget = item.widget()
-                        param_name = widget.property("param_name")
-                        if param_name == "period_ms":
-                            period = widget.value()
-                            if period <= 0:
-                                QMessageBox.warning(
-                                    self, "Ошибка валидации",
-                                    "Период сигнала должен быть больше нуля."
-                                )
-                                return False
-
             return True
         except Exception as e:
             logger.error(f"Ошибка валидации: {e}")
@@ -410,19 +541,5 @@ class PlotCreationDialog(QDialog):
     def get_plot_params(self) -> dict[str, Any] | None:
         """
         Получить параметры графика после подтверждения диалога.
-
-        Returns:
-            dict: Словарь параметров графика, или None если диалог был отменён.
-                  Структура:
-                  {
-                      "name": str,
-                      "unit": str,
-                      "max_unit_value": float,
-                      "observation_interval_ms": int,
-                      "min_allowed": float,
-                      "max_allowed": float,
-                      "signal_type": str,
-                      "signal_params": dict
-                  }
         """
         return self._plot_params

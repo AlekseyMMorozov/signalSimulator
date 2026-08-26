@@ -8,7 +8,8 @@ main.py
 import logging
 import sys
 
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QMessageBox
 
 from analytics.detector import AnomalyDetector
 from core.clock import GlobalClock
@@ -72,6 +73,7 @@ class Coordinator:
             self.main_window.plot_add_requested.connect(self._on_add_plot)
             self.main_window.plot_open_requested.connect(self._on_open_plot)
             self.main_window.plot_remove_requested.connect(self._on_remove_plot)
+            self.main_window.plot_settings_requested.connect(self._on_plot_settings)
             self.main_window.journal_toggled.connect(self._on_toggle_journal)
             self.main_window.hidden_markers_toggled.connect(self._on_toggle_hidden_markers)
 
@@ -125,6 +127,11 @@ class Coordinator:
                         max_allowed=params["max_allowed"],
                         observation_interval_ms=params["observation_interval_ms"]
                     )
+
+                    # Предотвращаем физическое уничтожение виджета при нажатии на крестик,
+                    # чтобы окно можно было повторно открыть через кнопку "Просмотр".
+                    plot_window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
+
                     plot_window.detection_requested.connect(self._on_operator_detection)
                     plot_window.window_closed.connect(self._on_plot_window_closed)
                     plot_window.set_hidden_markers_visible(self._hidden_markers_visible)
@@ -132,7 +139,7 @@ class Coordinator:
                     self.plot_windows[plot_id] = plot_window
                     plot_window.show()
 
-                    logger.info(f"График '{plot_id}' успешно создан.")
+                    logger.info(f"График '{plot_id}' успешно создан и открыт.")
         except Exception as e:
             logger.error(f"Ошибка при создании графика: {e}")
 
@@ -143,22 +150,89 @@ class Coordinator:
                 self.plot_windows[plot_id].show()
                 self.plot_windows[plot_id].raise_()
                 self.plot_windows[plot_id].activateWindow()
+                logger.debug(f"Окно графика '{plot_id}' отображено.")
         except Exception as e:
             logger.error(f"Ошибка при открытии графика '{plot_id}': {e}")
 
+    def _on_plot_settings(self, plot_id: str) -> None:
+        """Обработка запроса на изменение настроек существующего графика."""
+        try:
+            plot_state = self.engine.get_plot(plot_id)
+            if not plot_state:
+                logger.warning(f"График '{plot_id}' не найден в движке.")
+                return
+
+            # Определяем тип сигнала по имени класса (например, 'SineSignal' -> 'sine')
+            signal_class_name = type(plot_state.signal).__name__
+            signal_type = signal_class_name.replace("Signal", "").lower()
+
+            initial_params = {
+                "name": plot_state.name,
+                "unit": plot_state.unit,
+                "max_unit_value": plot_state.max_unit_value,
+                "min_allowed": plot_state.min_allowed,
+                "max_allowed": plot_state.max_allowed,
+                "observation_interval_ms": plot_state.observation_interval_ms,
+                "signal_type": signal_type,
+                "signal_params": plot_state.signal.get_params()
+            }
+
+            dialog = PlotCreationDialog(self.main_window, initial_params=initial_params)
+            if dialog.exec() == dialog.DialogCode.Accepted:
+                params = dialog.get_plot_params()
+                if params:
+                    # 1. Обновляем состояние в движке
+                    plot_state.name = params["name"]
+                    plot_state.unit = params["unit"]
+                    plot_state.max_unit_value = params["max_unit_value"]
+                    plot_state.min_allowed = params["min_allowed"]
+                    plot_state.max_allowed = params["max_allowed"]
+                    plot_state.observation_interval_ms = params["observation_interval_ms"]
+                    plot_state.signal = SignalFactory.create(params["signal_type"], params["signal_params"])
+
+                    # 2. Обновляем детектор аномалий
+                    if plot_id in self.detectors:
+                        self.detectors[plot_id].min_allowed = params["min_allowed"]
+                        self.detectors[plot_id].max_allowed = params["max_allowed"]
+
+                    # 3. Обновляем список в главном окне
+                    self.main_window.remove_plot_from_list(plot_id)
+                    self.main_window.add_plot_to_list(plot_id, params["name"])
+
+                    # 4. Обновляем открытое окно графика (если оно есть) через публичный метод
+                    if plot_id in self.plot_windows:
+                        self.plot_windows[plot_id].update_settings(
+                            name=params["name"],
+                            unit=params["unit"],
+                            min_allowed=params["min_allowed"],
+                            max_allowed=params["max_allowed"],
+                            observation_interval_ms=params["observation_interval_ms"]
+                        )
+
+                    logger.info(f"Настройки графика '{plot_id}' успешно обновлены.")
+                    QMessageBox.information(
+                        self.main_window,
+                        "Успех",
+                        f"Настройки графика '{params['name']}' успешно обновлены."
+                    )
+        except Exception as e:
+            logger.error(f"Ошибка при обработке запроса настроек графика '{plot_id}': {e}")
+            QMessageBox.critical(self.main_window, "Ошибка", f"Не удалось обновить настройки:\n{e}")
+
     def _on_remove_plot(self, plot_id: str) -> None:
-        """Удаление графика из симуляции и закрытие его окна."""
+        """Удаление графика из симуляции и корректное уничтожение его окна."""
         try:
             self.engine.remove_plot(plot_id)
             self.main_window.remove_plot_from_list(plot_id)
 
             if plot_id in self.plot_windows:
-                self.plot_windows[plot_id].close()
+                # deleteLater гарантирует безопасное и полное уничтожение виджета Qt
+                self.plot_windows[plot_id].deleteLater()
                 del self.plot_windows[plot_id]
             if plot_id in self.detectors:
                 del self.detectors[plot_id]
 
-            logger.info(f"График '{plot_id}' удален.")
+            logger.info(f"График '{plot_id}' полностью удален.")
         except Exception as e:
             logger.error(f"Ошибка при удалении графика '{plot_id}': {e}")
 
@@ -228,13 +302,13 @@ class Coordinator:
             logger.error(f"Ошибка фиксации обнаружения оператором: {e}")
 
     def _on_plot_window_closed(self, plot_id: str) -> None:
-        """Обработка закрытия окна графика пользователем (удаление из словаря)."""
+        """Обработка закрытия окна графика пользователем (окно скрывается, но остается в памяти)."""
         try:
-            if plot_id in self.plot_windows:
-                del self.plot_windows[plot_id]
-                logger.debug(f"Окно графика '{plot_id}' закрыто и удалено из координатора.")
+            # Окно намеренно не удаляется из словаря self.plot_windows,
+            # чтобы кнопка "Просмотр" на главном окне могла его снова отобразить.
+            logger.debug(f"Окно графика '{plot_id}' скрыто и доступно для повторного открытия.")
         except Exception as e:
-            logger.error(f"Ошибка при обработке закрытия окна '{plot_id}': {e}")
+            logger.error(f"Ошибка при обработке скрытия окна '{plot_id}': {e}")
 
 
 def main() -> None:

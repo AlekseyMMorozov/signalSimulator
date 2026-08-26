@@ -2,7 +2,7 @@
 ui/main_window.py
 Главное окно приложения — центральная панель управления симуляцией.
 Содержит панель управления временем, список графиков, меню и кнопки
-для открытия вспомогательных окон.
+для открытия вспомогательных окон и изменения настроек графиков.
 """
 
 import logging
@@ -35,19 +35,22 @@ class MainWindow(QMainWindow):
     Главное окно приложения.
 
     Обеспечивает управление временем симуляции, списком графиков,
-    открытие/закрытие журнала событий и сохранение/загрузку конфигураций.
+    открытие/закрытие журнала событий, сохранение/загрузку конфигураций
+    и запрос на изменение настроек существующих графиков.
 
     Signals:
         plot_open_requested: Запрос на открытие окна графика (plot_id).
         plot_add_requested: Запрос на создание нового графика.
         plot_remove_requested: Запрос на удаление графика (plot_id).
+        plot_settings_requested: Запрос на изменение настроек графика (plot_id).
         journal_toggled: Журнал открыт (True) или закрыт (False).
-        hidden_markers_toggled: Режим скрытых меток включён (True) или выключен (False).
+        hidden_markers_toggled: Режим скрытых меток включён (True) или выключён (False).
     """
 
     plot_open_requested = pyqtSignal(str)
     plot_add_requested = pyqtSignal()
     plot_remove_requested = pyqtSignal(str)
+    plot_settings_requested = pyqtSignal(str)
     journal_toggled = pyqtSignal(bool)
     hidden_markers_toggled = pyqtSignal(bool)
 
@@ -177,12 +180,16 @@ class MainWindow(QMainWindow):
         buttons_layout = QHBoxLayout()
         self._btn_add_plot = QPushButton("➕ Добавить график")
         self._btn_open_plot = QPushButton("📈 Открыть график")
+        self._btn_settings_plot = QPushButton("⚙️ Настройки графика")
         self._btn_remove_plot = QPushButton("🗑 Удалить график")
+
         self._btn_open_plot.setEnabled(False)
+        self._btn_settings_plot.setEnabled(False)
         self._btn_remove_plot.setEnabled(False)
 
         buttons_layout.addWidget(self._btn_add_plot)
         buttons_layout.addWidget(self._btn_open_plot)
+        buttons_layout.addWidget(self._btn_settings_plot)
         buttons_layout.addWidget(self._btn_remove_plot)
         layout.addLayout(buttons_layout)
 
@@ -201,6 +208,7 @@ class MainWindow(QMainWindow):
         # Управление графиками
         self._btn_add_plot.clicked.connect(self._on_add_plot)
         self._btn_open_plot.clicked.connect(self._on_open_plot)
+        self._btn_settings_plot.clicked.connect(self._on_plot_settings)
         self._btn_remove_plot.clicked.connect(self._on_remove_plot)
         self._plots_list.currentItemChanged.connect(self._on_plot_selection_changed)
 
@@ -333,6 +341,15 @@ class MainWindow(QMainWindow):
         else:
             logger.warning("Не выбран график для открытия.")
 
+    def _on_plot_settings(self) -> None:
+        """Запрос на изменение настроек выбранного графика."""
+        plot_id = self.get_selected_plot_id()
+        if plot_id:
+            logger.debug(f"Запрос на изменение настроек графика '{plot_id}'.")
+            self.plot_settings_requested.emit(plot_id)
+        else:
+            logger.warning("Не выбран график для изменения настроек.")
+
     def _on_remove_plot(self) -> None:
         """Запрос на удаление выбранного графика."""
         plot_id = self.get_selected_plot_id()
@@ -346,6 +363,7 @@ class MainWindow(QMainWindow):
         """Обработка изменения выбора в списке графиков."""
         has_selection = current is not None
         self._btn_open_plot.setEnabled(has_selection)
+        self._btn_settings_plot.setEnabled(has_selection)
         self._btn_remove_plot.setEnabled(has_selection)
 
     # --- Обработчики меню ---
@@ -392,7 +410,7 @@ class MainWindow(QMainWindow):
                 self._apply_loaded_config(config_data)
                 logger.info(f"Конфигурация загружена: {filepath}")
             else:
-                logger.debug("Загрузка конфигурации отменена пользователем.")
+                logger.debug("Загрузка конфигурации отменено пользователем.")
         except ConfigError as e:
             logger.error(f"Ошибка загрузки конфигурации: {e}")
             QMessageBox.critical(self, "Ошибка", f"Не удалось загрузить конфигурацию:\n{e}")

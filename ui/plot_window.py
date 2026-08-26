@@ -12,7 +12,7 @@ import logging
 
 import numpy as np
 import pyqtgraph as pg
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -128,15 +128,17 @@ class PlotWindow(QMainWindow):
             [], [], pen=pg.mkPen(color=COLOR_SIGNAL, width=1)
         )
 
-        # Горизонтальные линии пределов
-        self._plot_widget.addItem(
-            pg.InfiniteLine(pos=self._min_allowed, angle=0,
-                            pen=pg.mkPen(color=COLOR_LIMIT, width=1, style=2))
+        # Горизонтальные линии пределов (сохраняем ссылки для последующего обновления)
+        self._min_limit_line = pg.InfiniteLine(
+            pos=self._min_allowed, angle=0,
+            pen=pg.mkPen(color=COLOR_LIMIT, width=1, style=Qt.PenStyle.DashLine)
         )
-        self._plot_widget.addItem(
-            pg.InfiniteLine(pos=self._max_allowed, angle=0,
-                            pen=pg.mkPen(color=COLOR_LIMIT, width=1, style=2))
+        self._max_limit_line = pg.InfiniteLine(
+            pos=self._max_allowed, angle=0,
+            pen=pg.mkPen(color=COLOR_LIMIT, width=1, style=Qt.PenStyle.DashLine)
         )
+        self._plot_widget.addItem(self._min_limit_line)
+        self._plot_widget.addItem(self._max_limit_line)
 
         # Диапазон оси X на весь интервал наблюдения (график умещается целиком)
         self._plot_widget.setXRange(0, self._observation_interval_ms, padding=0)
@@ -161,6 +163,53 @@ class PlotWindow(QMainWindow):
     # ------------------------------------------------------------------
     # Публичные методы (вызываются координатором)
     # ------------------------------------------------------------------
+
+    def update_settings(
+        self,
+        name: str,
+        unit: str,
+        min_allowed: float,
+        max_allowed: float,
+        observation_interval_ms: int
+    ) -> None:
+        """
+        Обновить настройки графика (название, единицы, пределы, интервал) без пересоздания окна.
+
+        Args:
+            name: Новое название графика.
+            unit: Новая единица измерения.
+            min_allowed: Новое минимально допустимое значение.
+            max_allowed: Новое максимально допустимое значение.
+            observation_interval_ms: Новый интервал наблюдения (длительность по оси X).
+        """
+        try:
+            self._name = name
+            self._unit = unit
+            self._min_allowed = float(min_allowed)
+            self._max_allowed = float(max_allowed)
+            self._observation_interval_ms = int(observation_interval_ms)
+
+            # Обновление заголовка и подписей осей
+            self.setWindowTitle(f"{self._name} [{self.plot_id}]")
+            self._plot_widget.setLabel("left", self._name, units=self._unit)
+
+            # Обновление позиций линий пределов
+            self._min_limit_line.setPos(self._min_allowed)
+            self._max_limit_line.setPos(self._max_allowed)
+
+            # Обновление диапазона оси X
+            self._plot_widget.setXRange(0, self._observation_interval_ms, padding=0)
+
+            # Обновление текста метки текущего значения (если данные еще не поступали)
+            if not self._values:
+                self._value_label.setText(f"Текущее значение: — {self._unit}")
+
+            logger.info(
+                f"Настройки окна графика '{self.plot_id}' обновлены. "
+                f"Пределы: [{self._min_allowed}, {self._max_allowed}] {self._unit}."
+            )
+        except Exception as e:
+            logger.error(f"Ошибка обновления настроек окна графика '{self.plot_id}': {e}")
 
     def update_data(self, times: list[int], values: list[float]) -> None:
         """
@@ -209,7 +258,7 @@ class PlotWindow(QMainWindow):
         try:
             line = pg.InfiniteLine(
                 pos=time_ms, angle=90,
-                pen=pg.mkPen(color=COLOR_FAULT_MARKER, width=1, style=2)
+                pen=pg.mkPen(color=COLOR_FAULT_MARKER, width=1, style=Qt.PenStyle.DashLine)
             )
             label = pg.TextItem(fault_type, color=COLOR_FAULT_MARKER, anchor=(0, 1))
             label.setPos(time_ms, self._max_allowed)
@@ -241,7 +290,7 @@ class PlotWindow(QMainWindow):
         try:
             line = pg.InfiniteLine(
                 pos=time_ms, angle=90,
-                pen=pg.mkPen(color=COLOR_DETECTOR_MARKER, width=2, style=2)
+                pen=pg.mkPen(color=COLOR_DETECTOR_MARKER, width=2, style=Qt.PenStyle.DashLine)
             )
             self._plot_widget.addItem(line)
             logger.debug(f"Добавлена метка детектора в {time_ms} мс.")
