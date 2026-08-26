@@ -9,7 +9,6 @@ ui/plot_window.py
 """
 
 import logging
-from typing import List, Optional, Tuple
 
 import numpy as np
 import pyqtgraph as pg
@@ -22,7 +21,6 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +66,7 @@ class PlotWindow(QMainWindow):
         min_allowed: float,
         max_allowed: float,
         observation_interval_ms: int,
-        parent: Optional[QWidget] = None
+        parent: QWidget | None = None
     ) -> None:
         """
         Инициализация окна графика.
@@ -91,11 +89,11 @@ class PlotWindow(QMainWindow):
         self._observation_interval_ms = int(observation_interval_ms)
 
         # Накопленные данные (полная история для децимации)
-        self._times: List[int] = []
-        self._values: List[float] = []
+        self._times: list[int] = []
+        self._values: list[float] = []
 
         # Скрытые метки неисправностей: (вертикальная линия, подпись)
-        self._fault_marker_items: List[Tuple[pg.InfiniteLine, pg.TextItem]] = []
+        self._fault_marker_items: list[tuple[pg.InfiniteLine, pg.TextItem]] = []
         self._hidden_markers_visible = False
 
         try:
@@ -164,7 +162,7 @@ class PlotWindow(QMainWindow):
     # Публичные методы (вызываются координатором)
     # ------------------------------------------------------------------
 
-    def update_data(self, times: List[int], values: List[float]) -> None:
+    def update_data(self, times: list[int], values: list[float]) -> None:
         """
         Обновить данные графика (публичный метод для координатора).
 
@@ -266,7 +264,7 @@ class PlotWindow(QMainWindow):
     # Внутренние методы
     # ------------------------------------------------------------------
 
-    def _decimate(self, times: List[int], values: List[float]) -> Tuple[List[int], List[float]]:
+    def _decimate(self, times: list[int], values: list[float]) -> tuple[list[int], list[float]]:
         """
         Децимация данных для отрисовки.
 
@@ -287,8 +285,8 @@ class PlotWindow(QMainWindow):
         try:
             num_blocks = MAX_DISPLAY_POINTS // 2
             block_size = n / num_blocks
-            dec_times: List[int] = []
-            dec_values: List[float] = []
+            dec_times: list[int] = []
+            dec_values: list[float] = []
             values_arr = np.asarray(values, dtype=np.float64)
 
             for i in range(num_blocks):

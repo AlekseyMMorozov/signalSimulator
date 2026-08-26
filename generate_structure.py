@@ -8,7 +8,6 @@ generate_structure.py
 
 import ast
 import sys
-
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, TypedDict
@@ -19,7 +18,7 @@ PROJECT_ROOT = Path(__file__).parent.resolve()
 IGNORE_DIRS: set[str] = {
     '.git', '.hg', '.svn', '.idea', '.venv', '.env', '__pycache__',
     'logs', 'files', '.pytest_cache', '.mypy_cache', '.ruff_cache',
-    '.coverage', 'htmlcov', '.tox', '.eggs', 'dist', 'build', 'files'
+    '.coverage', 'htmlcov', '.tox', '.eggs', 'dist', 'build'
 }
 IGNORE_FILES: set[str] = {
     'test_db_connection.py',

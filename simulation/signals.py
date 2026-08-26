@@ -9,8 +9,7 @@ import logging
 import math
 import random
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ class SignalGenerator(ABC):
         """
 
     @abstractmethod
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         """
         Получить параметры сигнала в виде словаря (для сериализации).
 
@@ -54,12 +53,12 @@ class CompositeSignal(SignalGenerator):
     сложных сигналов, включая неисправности.
     """
 
-    def __init__(self, signals: Optional[List[SignalGenerator]] = None) -> None:
+    def __init__(self, signals: list[SignalGenerator] | None = None) -> None:
         """
         Args:
             signals: Список вложенных сигналов для суммирования.
         """
-        self._signals: List[SignalGenerator] = signals or []
+        self._signals: list[SignalGenerator] = signals or []
 
     def add_signal(self, signal: SignalGenerator) -> None:
         """Добавить сигнал в композицию."""
@@ -83,7 +82,7 @@ class CompositeSignal(SignalGenerator):
             logger.error(f"Ошибка при вычислении композитного сигнала: {e}")
             return 0.0
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         """Параметры всех вложенных сигналов."""
         return {
             "type": "composite",
@@ -117,7 +116,7 @@ class SawtoothSignal(SignalGenerator):
             logger.error(f"Ошибка вычисления sawtooth: {e}")
             return self.offset + self.min_val
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "sawtooth",
             "min_val": self.min_val,
@@ -157,7 +156,7 @@ class TriangleSignal(SignalGenerator):
             logger.error(f"Ошибка вычисления triangle: {e}")
             return self.offset + self.min_val
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "triangle",
             "min_val": self.min_val,
@@ -190,7 +189,7 @@ class SineSignal(SignalGenerator):
             logger.error(f"Ошибка вычисления sine: {e}")
             return self.offset
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "sine",
             "amplitude": self.amplitude,
@@ -227,7 +226,7 @@ class StepSignal(SignalGenerator):
             logger.error(f"Ошибка вычисления step: {e}")
             return self.offset + self.min_val
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "step",
             "min_val": self.min_val,
@@ -264,7 +263,7 @@ class LinearSignal(SignalGenerator):
             logger.error(f"Ошибка вычисления linear: {e}")
             return self.offset + self.start_val
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "linear",
             "start_val": self.start_val,
@@ -303,7 +302,7 @@ class SquareSignal(SignalGenerator):
             logger.error(f"Ошибка вычисления square: {e}")
             return self.offset + self.min_val
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "square",
             "min_val": self.min_val,
@@ -350,7 +349,7 @@ class ExponentialSignal(SignalGenerator):
             logger.error(f"Ошибка вычисления exponential: {e}")
             return self.offset
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "exponential",
             "amplitude": self.amplitude,
@@ -378,7 +377,7 @@ class NoiseSignal(SignalGenerator):
             logger.error(f"Ошибка генерации шума: {e}")
             return self.mean
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "noise",
             "mean": self.mean,
@@ -395,7 +394,7 @@ class ConstantSignal(SignalGenerator):
     def get_value(self, time_ms: int) -> float:
         return self.value
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {"type": "constant", "value": self.value}
 
 
@@ -406,7 +405,7 @@ class SignalFactory:
     Поддерживает все зарегистрированные типы сигналов.
     """
 
-    _registry: Dict[str, type] = {
+    _registry: dict[str, type] = {
         "sawtooth": SawtoothSignal,
         "triangle": TriangleSignal,
         "sine": SineSignal,
@@ -428,7 +427,7 @@ class SignalFactory:
         logger.info(f"Зарегистрирован новый тип сигнала: {name}")
 
     @classmethod
-    def create(cls, signal_type: str, params: Optional[Dict[str, Any]] = None) -> SignalGenerator:
+    def create(cls, signal_type: str, params: dict[str, Any] | None = None) -> SignalGenerator:
         """
         Создать генератор сигнала по типу и параметрам.
 
@@ -462,6 +461,6 @@ class SignalFactory:
             return ConstantSignal(0.0)
 
     @classmethod
-    def available_types(cls) -> List[str]:
+    def available_types(cls) -> list[str]:
         """Вернуть список доступных типов сигналов."""
         return list(cls._registry.keys())

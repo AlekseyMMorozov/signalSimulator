@@ -8,17 +8,16 @@ simulation/simulator.py
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.clock import GlobalClock
 from core.event_log import EventLog, EventType
-from simulation.signals import SignalGenerator
 from simulation.faults import Fault, FaultChain, FaultFactory
 from simulation.scheduler import FaultInjectionEvent, FaultScheduler
-
+from simulation.signals import SignalGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +38,10 @@ class HistoryBuffer:
     """
 
     def __init__(self) -> None:
-        self._time_chunks: List[np.ndarray] = []
-        self._value_chunks: List[np.ndarray] = []
-        self._pending_times: List[int] = []
-        self._pending_values: List[float] = []
+        self._time_chunks: list[np.ndarray] = []
+        self._value_chunks: list[np.ndarray] = []
+        self._pending_times: list[int] = []
+        self._pending_values: list[float] = []
         self._total_count: int = 0
 
     def append(self, time_ms: int, value: float) -> None:
@@ -79,7 +78,7 @@ class HistoryBuffer:
             return np.array([], dtype=np.float64)
         return np.concatenate(self._value_chunks)
 
-    def get_last(self, n: int) -> Tuple[np.ndarray, np.ndarray]:
+    def get_last(self, n: int) -> tuple[np.ndarray, np.ndarray]:
         """Получить последние `n` точек (для отображения)."""
         times = self.get_all_times()
         values = self.get_all_values()
@@ -125,11 +124,11 @@ class PlotState:
         self.fault_chain = FaultChain()
         self.history = HistoryBuffer()
         # Метки: время внедрения неисправностей (скрытые)
-        self.fault_markers: List[Dict[str, Any]] = []
+        self.fault_markers: list[dict[str, Any]] = []
         # Метки: обнаружения оператором
-        self.operator_markers: List[int] = []
+        self.operator_markers: list[int] = []
         # Метки: обнаружения детектором
-        self.detector_markers: List[int] = []
+        self.detector_markers: list[int] = []
         # Время последней сгенерированной точки
         self.last_generated_time_ms: int = -GENERATION_STEP_MS
 
@@ -152,8 +151,8 @@ class SimulationEngine(QObject):
         self,
         clock: GlobalClock,
         event_log: EventLog,
-        scheduler: Optional[FaultScheduler] = None,
-        parent: Optional[QObject] = None
+        scheduler: FaultScheduler | None = None,
+        parent: QObject | None = None
     ) -> None:
         """
         Инициализация движка симуляции.
@@ -168,7 +167,7 @@ class SimulationEngine(QObject):
         self._clock = clock
         self._event_log = event_log
         self._scheduler = scheduler
-        self._plots: Dict[str, PlotState] = {}
+        self._plots: dict[str, PlotState] = {}
         try:
             self._clock.time_updated.connect(self._on_time_updated)
             logger.info("SimulationEngine инициализирован и подключён к часам.")
@@ -229,11 +228,11 @@ class SimulationEngine(QObject):
         except Exception as e:
             logger.error(f"Ошибка удаления графика '{plot_id}': {e}")
 
-    def get_plot(self, plot_id: str) -> Optional[PlotState]:
+    def get_plot(self, plot_id: str) -> PlotState | None:
         """Получить состояние графика по ID."""
         return self._plots.get(plot_id)
 
-    def get_all_plot_ids(self) -> List[str]:
+    def get_all_plot_ids(self) -> list[str]:
         """Получить список всех идентификаторов графиков."""
         return list(self._plots.keys())
 
@@ -254,8 +253,8 @@ class SimulationEngine(QObject):
 
     def _generate_points(self, plot: PlotState, current_time_ms: int) -> None:
         """Генерация точек для графика до текущего времени с шагом 1 секунда."""
-        new_times: List[int] = []
-        new_values: List[float] = []
+        new_times: list[int] = []
+        new_values: list[float] = []
         try:
             t = plot.last_generated_time_ms + GENERATION_STEP_MS
             while t <= current_time_ms:
@@ -286,7 +285,7 @@ class SimulationEngine(QObject):
         except Exception as e:
             logger.error(f"Ошибка генерации точек для графика '{plot.plot_id}': {e}")
 
-    def inject_fault(self, plot_id: str, fault_type: str, fault_params: Dict[str, Any]) -> Optional[Fault]:
+    def inject_fault(self, plot_id: str, fault_type: str, fault_params: dict[str, Any]) -> Fault | None:
         """
         Ручное внедрение неисправности на график.
 
@@ -336,7 +335,7 @@ class SimulationEngine(QObject):
             logger.error(f"Ошибка внедрения неисправности на график '{plot_id}': {e}")
             return None
 
-    def process_injection_events(self, events: List[FaultInjectionEvent]) -> None:
+    def process_injection_events(self, events: list[FaultInjectionEvent]) -> None:
         """
         Обработка событий внедрения от планировщика.
 

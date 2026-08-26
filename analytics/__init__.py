@@ -6,9 +6,9 @@ analytics/__init__.py
 
 from analytics.detector import (
     AnomalyDetector,
-    DetectorConfig,
     DetectionResult,
     DetectionType,
+    DetectorConfig,
 )
 from analytics.metrics import (
     FaultAnalysisRecord,
@@ -18,9 +18,9 @@ from analytics.metrics import (
 
 __all__ = [
     "AnomalyDetector",
-    "DetectorConfig",
     "DetectionResult",
     "DetectionType",
+    "DetectorConfig",
     "FaultAnalysisRecord",
     "MetricsCalculator",
     "MetricsSummary",

@@ -6,21 +6,20 @@ ui/__init__.py
 журнала событий и диалогов создания/настройки.
 """
 
-from ui.main_window import MainWindow
-from ui.plot_window import PlotWindow
-from ui.log_window import LogWindow
-from ui.plot_creation_dialog import PlotCreationDialog
-from ui.fault_window import FaultWindow
-from ui.fault_template_dialog import FaultTemplateDialog
 from ui.fault_rule_dialog import FaultRuleDialog
-
+from ui.fault_template_dialog import FaultTemplateDialog
+from ui.fault_window import FaultWindow
+from ui.log_window import LogWindow
+from ui.main_window import MainWindow
+from ui.plot_creation_dialog import PlotCreationDialog
+from ui.plot_window import PlotWindow
 
 __all__ = [
-    "MainWindow",
-    "PlotWindow",
-    "LogWindow",
-    "PlotCreationDialog",
-    "FaultWindow",
-    "FaultTemplateDialog",
     "FaultRuleDialog",
+    "FaultTemplateDialog",
+    "FaultWindow",
+    "LogWindow",
+    "MainWindow",
+    "PlotCreationDialog",
+    "PlotWindow",
 ]

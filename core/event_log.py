@@ -9,10 +9,9 @@ core/event_log.py
 import logging
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from PyQt6.QtCore import QObject, pyqtSignal
-
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +57,8 @@ class EventRecord:
     time_ms: int
     event_type: EventType
     description: str
-    plot_id: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    plot_id: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         """Строковое представление записи для отображения в логах."""
@@ -80,7 +79,7 @@ class EventLog(QObject):
     # Сигнал уведомления о новой записи в журнале
     event_added = pyqtSignal(object)
 
-    def __init__(self, parent: Optional[QObject] = None) -> None:
+    def __init__(self, parent: QObject | None = None) -> None:
         """
         Инициализация журнала событий.
 
@@ -88,7 +87,7 @@ class EventLog(QObject):
             parent: Родительский QObject для управления временем жизни.
         """
         super().__init__(parent)
-        self._records: List[EventRecord] = []
+        self._records: list[EventRecord] = []
         logger.info("EventLog инициализирован.")
 
     def add(
@@ -96,8 +95,8 @@ class EventLog(QObject):
         time_ms: int,
         event_type: EventType,
         description: str,
-        plot_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        plot_id: str | None = None,
+        metadata: dict[str, Any] | None = None
     ) -> EventRecord:
         """
         Добавить запись события в журнал.
@@ -140,11 +139,11 @@ class EventLog(QObject):
 
     def get_records(
         self,
-        event_type: Optional[EventType] = None,
-        plot_id: Optional[str] = None,
-        start_ms: Optional[int] = None,
-        end_ms: Optional[int] = None
-    ) -> List[EventRecord]:
+        event_type: EventType | None = None,
+        plot_id: str | None = None,
+        start_ms: int | None = None,
+        end_ms: int | None = None
+    ) -> list[EventRecord]:
         """
         Получить записи журнала с фильтрацией.
 
@@ -176,7 +175,7 @@ class EventLog(QObject):
             logger.error(f"Ошибка фильтрации записей журнала: {e}")
             return []
 
-    def get_all(self) -> List[EventRecord]:
+    def get_all(self) -> list[EventRecord]:
         """
         Получить все записи журнала.
 

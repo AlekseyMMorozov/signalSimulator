@@ -4,36 +4,34 @@ simulation/__init__.py
 Содержит генераторы сигналов, типы неисправностей и планировщик случайного внедрения.
 """
 
-from simulation.signals import (
-    SignalGenerator,
-    CompositeSignal,
-    SawtoothSignal,
-    TriangleSignal,
-    SineSignal,
-    StepSignal,
-    LinearSignal,
-    SquareSignal,
-    ExponentialSignal,
-    NoiseSignal,
-    ConstantSignal,
-    SignalFactory,
-)
-
 from simulation.faults import (
-    Fault,
-    DropoutFault,
-    SpikeFault,
-    NoiseFault,
     DegradationFault,
+    DropoutFault,
+    Fault,
     FaultChain,
     FaultFactory,
+    NoiseFault,
+    SpikeFault,
 )
-
 from simulation.scheduler import (
     FaultInjectionEvent,
+    FaultScheduler,
     FaultTemplate,
     RandomFaultRule,
-    FaultScheduler,
+)
+from simulation.signals import (
+    CompositeSignal,
+    ConstantSignal,
+    ExponentialSignal,
+    LinearSignal,
+    NoiseSignal,
+    SawtoothSignal,
+    SignalFactory,
+    SignalGenerator,
+    SineSignal,
+    SquareSignal,
+    StepSignal,
+    TriangleSignal,
 )
 
 __all__ = [

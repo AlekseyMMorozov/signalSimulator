@@ -10,8 +10,7 @@ simulation/scheduler.py
 import logging
 import random
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +27,7 @@ class FaultInjectionEvent:
     time_ms: int
     plot_id: str
     fault_type: str
-    fault_params: Dict[str, Any]
+    fault_params: dict[str, Any]
     template_id: str = ""
     rule_id: str = ""
 
@@ -48,12 +47,12 @@ class FaultTemplate:
     """
     template_id: str
     fault_type: str
-    fault_params: Dict[str, Any] = field(default_factory=dict)
-    target_plot_ids: List[str] = field(default_factory=list)
+    fault_params: dict[str, Any] = field(default_factory=dict)
+    target_plot_ids: list[str] = field(default_factory=list)
     target_mode: str = "one"
     subset_count: int = 1
 
-    def select_target_plot_ids(self, available_plot_ids: List[str]) -> List[str]:
+    def select_target_plot_ids(self, available_plot_ids: list[str]) -> list[str]:
         """
         Определить целевые графики согласно режиму внедрения.
 
@@ -101,7 +100,7 @@ class RandomFaultRule:
     rule_id: str
     check_interval_ms: int
     probability: float
-    template_ids: List[str] = field(default_factory=list)
+    template_ids: list[str] = field(default_factory=list)
     last_check_time_ms: int = 0
     enabled: bool = True
     initialized: bool = False
@@ -119,8 +118,8 @@ class FaultScheduler:
 
     def __init__(self) -> None:
         """Инициализация планировщика с пустыми реестрами."""
-        self._templates: Dict[str, FaultTemplate] = {}
-        self._rules: Dict[str, RandomFaultRule] = {}
+        self._templates: dict[str, FaultTemplate] = {}
+        self._rules: dict[str, RandomFaultRule] = {}
         logger.info("FaultScheduler инициализирован.")
 
     def add_template(self, template: FaultTemplate) -> None:
@@ -139,11 +138,11 @@ class FaultScheduler:
         else:
             logger.warning(f"Попытка удалить несуществующий шаблон: {template_id}.")
 
-    def get_template(self, template_id: str) -> Optional[FaultTemplate]:
+    def get_template(self, template_id: str) -> FaultTemplate | None:
         """Получить шаблон по ID."""
         return self._templates.get(template_id)
 
-    def list_templates(self) -> List[FaultTemplate]:
+    def list_templates(self) -> list[FaultTemplate]:
         """Получить список всех шаблонов."""
         return list(self._templates.values())
 
@@ -166,15 +165,15 @@ class FaultScheduler:
         else:
             logger.warning(f"Попытка удалить несуществующее правило: {rule_id}.")
 
-    def get_rule(self, rule_id: str) -> Optional[RandomFaultRule]:
+    def get_rule(self, rule_id: str) -> RandomFaultRule | None:
         """Получить правило по ID."""
         return self._rules.get(rule_id)
 
-    def list_rules(self) -> List[RandomFaultRule]:
+    def list_rules(self) -> list[RandomFaultRule]:
         """Получить список всех правил."""
         return list(self._rules.values())
 
-    def tick(self, current_time_ms: int, available_plot_ids: List[str]) -> List[FaultInjectionEvent]:
+    def tick(self, current_time_ms: int, available_plot_ids: list[str]) -> list[FaultInjectionEvent]:
         """
         Обработка одного тика времени.
 
@@ -190,7 +189,7 @@ class FaultScheduler:
         Returns:
             Список событий внедрения неисправностей.
         """
-        events: List[FaultInjectionEvent] = []
+        events: list[FaultInjectionEvent] = []
         try:
             for rule in self._rules.values():
                 if not rule.enabled:
@@ -215,8 +214,8 @@ class FaultScheduler:
         self,
         rule: RandomFaultRule,
         time_ms: int,
-        available_plot_ids: List[str]
-    ) -> List[FaultInjectionEvent]:
+        available_plot_ids: list[str]
+    ) -> list[FaultInjectionEvent]:
         """
         Внутренний метод генерации событий при срабатывании правила.
 
@@ -231,7 +230,7 @@ class FaultScheduler:
         Returns:
             Список событий внедрения.
         """
-        events: List[FaultInjectionEvent] = []
+        events: list[FaultInjectionEvent] = []
         try:
             if not rule.template_ids:
                 logger.warning(f"Правило {rule.rule_id}: нет шаблонов для внедрения.")

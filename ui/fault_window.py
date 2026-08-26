@@ -7,7 +7,6 @@ ui/fault_window.py
 """
 
 import logging
-from typing import Optional
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import (
@@ -25,9 +24,8 @@ from PyQt6.QtWidgets import (
 
 from simulation.scheduler import FaultScheduler, FaultTemplate
 from simulation.simulator import SimulationEngine
-from ui.fault_template_dialog import FaultTemplateDialog
 from ui.fault_rule_dialog import FaultRuleDialog
-
+from ui.fault_template_dialog import FaultTemplateDialog
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +48,7 @@ class FaultWindow(QMainWindow):
         self,
         scheduler: FaultScheduler,
         engine: SimulationEngine,
-        parent: Optional[QWidget] = None
+        parent: QWidget | None = None
     ) -> None:
         """
         Инициализация окна управления неисправностями.

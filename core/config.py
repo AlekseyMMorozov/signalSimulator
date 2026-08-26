@@ -11,7 +11,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-
 # Настройка логирования
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,6 @@ ALLOWED_FAULT_TYPES = [
 
 class ConfigError(Exception):
     """Кастомное исключение для ошибок конфигурации."""
-    pass
 
 
 class ConfigManager:

@@ -6,7 +6,6 @@ ui/fault_rule_dialog.py
 """
 
 import logging
-from typing import List, Optional
 
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -43,8 +42,8 @@ class FaultRuleDialog(QDialog):
 
     def __init__(
             self,
-            available_templates: List[FaultTemplate],
-            parent: Optional[QWidget] = None
+            available_templates: list[FaultTemplate],
+            parent: QWidget | None = None
     ) -> None:
         """
         Инициализация диалога правила.
@@ -58,7 +57,7 @@ class FaultRuleDialog(QDialog):
         self.setMinimumWidth(500)
 
         self._available_templates = available_templates
-        self._result_rule: Optional[RandomFaultRule] = None
+        self._result_rule: RandomFaultRule | None = None
 
         try:
             self._init_ui()
@@ -195,6 +194,6 @@ class FaultRuleDialog(QDialog):
             logger.error(f"Ошибка при подтверждении диалога: {e}")
             QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить правило:\n{e}")
 
-    def get_rule(self) -> Optional[RandomFaultRule]:
+    def get_rule(self) -> RandomFaultRule | None:
         """Получить созданное правило."""
         return self._result_rule

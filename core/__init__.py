@@ -6,15 +6,14 @@ core/__init__.py
 """
 
 from core.clock import GlobalClock
-from core.config import ConfigManager, ConfigError
+from core.config import ConfigError, ConfigManager
 from core.event_log import EventLog, EventRecord, EventType
 
-
 __all__ = [
-    "GlobalClock",
-    "ConfigManager",
     "ConfigError",
+    "ConfigManager",
     "EventLog",
     "EventRecord",
     "EventType",
+    "GlobalClock",
 ]

@@ -11,10 +11,9 @@ import logging
 from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
-
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +38,7 @@ class DetectionResult:
     detection_type: DetectionType
     description: str
     value: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __str__(self) -> str:
         """Строковое представление результата."""
@@ -56,11 +55,11 @@ class DetectorConfig:
     """
     window_size: int = 50
     sigma_factor: float = 3.0
-    trend_threshold: Optional[float] = None
+    trend_threshold: float | None = None
     trend_auto_sigma: float = 3.0
     min_samples: int = 10
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Сериализация конфигурации в словарь."""
         return {
             "window_size": self.window_size,
@@ -71,7 +70,7 @@ class DetectorConfig:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "DetectorConfig":
+    def from_dict(cls, data: dict[str, Any]) -> "DetectorConfig":
         """Создание конфигурации из словаря (мягкая валидация)."""
         try:
             defaults = cls()
@@ -101,7 +100,7 @@ class AnomalyDetector:
         self,
         min_allowed: float,
         max_allowed: float,
-        config: Optional[DetectorConfig] = None
+        config: DetectorConfig | None = None
     ) -> None:
         """
         Инициализация детектора.
@@ -134,7 +133,7 @@ class AnomalyDetector:
         """Получить текущую конфигурацию детектора."""
         return self._config
 
-    def process(self, time_ms: int, value: float) -> List[DetectionResult]:
+    def process(self, time_ms: int, value: float) -> list[DetectionResult]:
         """
         Обработать новую точку данных.
 
@@ -152,7 +151,7 @@ class AnomalyDetector:
             self._values.append(value)
             self._trim_window()
 
-            results: List[DetectionResult] = []
+            results: list[DetectionResult] = []
             results.extend(self._check_threshold(time_ms, value))
             if len(self._values) >= self._config.min_samples:
                 results.extend(self._check_statistical(time_ms, value))
@@ -178,9 +177,9 @@ class AnomalyDetector:
         except Exception as e:
             logger.error(f"Ошибка обрезки скользящего окна: {e}")
 
-    def _check_threshold(self, time_ms: int, value: float) -> List[DetectionResult]:
+    def _check_threshold(self, time_ms: int, value: float) -> list[DetectionResult]:
         """Пороговый контроль: выход за допустимые пределы."""
-        results: List[DetectionResult] = []
+        results: list[DetectionResult] = []
         try:
             if value < self.min_allowed:
                 results.append(DetectionResult(
@@ -202,9 +201,9 @@ class AnomalyDetector:
             logger.error(f"Ошибка порогового контроля: {e}")
         return results
 
-    def _check_statistical(self, time_ms: int, value: float) -> List[DetectionResult]:
+    def _check_statistical(self, time_ms: int, value: float) -> list[DetectionResult]:
         """Статистическая проверка: отклонение от скользящего среднего."""
-        results: List[DetectionResult] = []
+        results: list[DetectionResult] = []
         try:
             values = np.array(self._values, dtype=np.float64)
             if len(values) < 2:
@@ -230,9 +229,9 @@ class AnomalyDetector:
             logger.error(f"Ошибка статистической проверки: {e}")
         return results
 
-    def _check_trend(self, time_ms: int) -> List[DetectionResult]:
+    def _check_trend(self, time_ms: int) -> list[DetectionResult]:
         """Обнаружение тренда: линейная регрессия по скользящему окну."""
-        results: List[DetectionResult] = []
+        results: list[DetectionResult] = []
         try:
             if len(self._values) < 3:
                 return results

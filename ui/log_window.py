@@ -9,9 +9,7 @@ ui/log_window.py
 """
 
 import logging
-from typing import List, Optional, Tuple
 
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -25,7 +23,6 @@ from PyQt6.QtWidgets import (
 )
 
 from core.event_log import EventLog, EventRecord, EventType
-
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +61,7 @@ class LogWindow(QMainWindow):
     Формат строки лога: `ЧЧ:ММ:СС.мс | ТИП_СОБЫТИЯ | график | Описание`
     """
 
-    def __init__(self, event_log: EventLog, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, event_log: EventLog, parent: QWidget | None = None) -> None:
         """
         Инициализация окна журнала.
 
@@ -77,7 +74,7 @@ class LogWindow(QMainWindow):
         self.setMinimumSize(600, 400)
 
         self._event_log = event_log
-        self._records: List[EventRecord] = []
+        self._records: list[EventRecord] = []
 
         try:
             # Загрузка существующих записей журнала
@@ -203,7 +200,7 @@ class LogWindow(QMainWindow):
         except Exception as e:
             logger.error(f"Ошибка применения фильтра журнала: {e}")
 
-    def _get_filter_params(self) -> Tuple[str, str, Optional[int], Optional[int]]:
+    def _get_filter_params(self) -> tuple[str, str, int | None, int | None]:
         """
         Получить текущие параметры фильтра из элементов интерфейса.
 
@@ -220,7 +217,7 @@ class LogWindow(QMainWindow):
             logger.error(f"Ошибка получения параметров фильтра: {e}")
             return "Все типы", "", None, None
 
-    def _parse_time_ms(self, text: str) -> Optional[int]:
+    def _parse_time_ms(self, text: str) -> int | None:
         """
         Разобрать текст поля времени в миллисекунды.
 
@@ -246,8 +243,8 @@ class LogWindow(QMainWindow):
         record: EventRecord,
         type_filter: str,
         plot_filter: str,
-        start_ms: Optional[int],
-        end_ms: Optional[int]
+        start_ms: int | None,
+        end_ms: int | None
     ) -> bool:
         """
         Проверить, подходит ли запись под текущий фильтр.

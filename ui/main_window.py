@@ -6,18 +6,23 @@ ui/main_window.py
 """
 
 import logging
-from typing import Optional
 
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QLabel, QListWidget, QListWidgetItem,
-    QMenuBar, QMenu, QMessageBox, QFileDialog,
+    QFileDialog,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt6.QtCore import pyqtSignal, Qt
 
 from core.clock import GlobalClock
-from core.config import ConfigManager, ConfigError
-
+from core.config import ConfigError, ConfigManager
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +51,7 @@ class MainWindow(QMainWindow):
     journal_toggled = pyqtSignal(bool)
     hidden_markers_toggled = pyqtSignal(bool)
 
-    def __init__(self, clock: GlobalClock, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, clock: GlobalClock, parent: QWidget | None = None) -> None:
         """
         Инициализация главного окна.
 
@@ -240,7 +245,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             logger.error(f"Ошибка удаления графика из списка: {e}")
 
-    def get_selected_plot_id(self) -> Optional[str]:
+    def get_selected_plot_id(self) -> str | None:
         """Получить идентификатор выбранного графика."""
         item = self._plots_list.currentItem()
         if item is not None:
@@ -337,7 +342,7 @@ class MainWindow(QMainWindow):
         else:
             logger.warning("Не выбран график для удаления.")
 
-    def _on_plot_selection_changed(self, current: Optional[QListWidgetItem], previous) -> None:
+    def _on_plot_selection_changed(self, current: QListWidgetItem | None, previous) -> None:
         """Обработка изменения выбора в списке графиков."""
         has_selection = current is not None
         self._btn_open_plot.setEnabled(has_selection)

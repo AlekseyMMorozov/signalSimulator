@@ -4,11 +4,11 @@
 - **Название:** signalSimulator
 - **Версия:** не указана
 - **Описание:** нет
-- **Зависимости:** не найдены
-- **Точки входа:** compact_code.py, generate_structure.py, main.py, .venv\Lib\site-packages\pip\__main__.py, .venv\Lib\site-packages\pip\_vendor\cachecontrol\_cmd.py, .venv\Lib\site-packages\pip\_vendor\distro\distro.py, .venv\Lib\site-packages\pip\_vendor\distro\__main__.py, .venv\Lib\site-packages\pip\_vendor\packaging\_musllinux.py, .venv\Lib\site-packages\pip\_vendor\platformdirs\__main__.py, .venv\Lib\site-packages\pip\_vendor\requests\certs.py, .venv\Lib\site-packages\pip\_vendor\requests\help.py, .venv\Lib\site-packages\pip\_vendor\rich\abc.py, .venv\Lib\site-packages\pip\_vendor\rich\align.py, .venv\Lib\site-packages\pip\_vendor\rich\box.py, .venv\Lib\site-packages\pip\_vendor\rich\cells.py, .venv\Lib\site-packages\pip\_vendor\rich\color.py, .venv\Lib\site-packages\pip\_vendor\rich\columns.py, .venv\Lib\site-packages\pip\_vendor\rich\console.py, .venv\Lib\site-packages\pip\_vendor\rich\control.py, .venv\Lib\site-packages\pip\_vendor\rich\default_styles.py, .venv\Lib\site-packages\pip\_vendor\rich\diagnose.py, .venv\Lib\site-packages\pip\_vendor\rich\emoji.py, .venv\Lib\site-packages\pip\_vendor\rich\highlighter.py, .venv\Lib\site-packages\pip\_vendor\rich\json.py, .venv\Lib\site-packages\pip\_vendor\rich\layout.py, .venv\Lib\site-packages\pip\_vendor\rich\live.py, .venv\Lib\site-packages\pip\_vendor\rich\logging.py, .venv\Lib\site-packages\pip\_vendor\rich\markup.py, .venv\Lib\site-packages\pip\_vendor\rich\padding.py, .venv\Lib\site-packages\pip\_vendor\rich\pager.py, .venv\Lib\site-packages\pip\_vendor\rich\palette.py, .venv\Lib\site-packages\pip\_vendor\rich\panel.py, .venv\Lib\site-packages\pip\_vendor\rich\pretty.py, .venv\Lib\site-packages\pip\_vendor\rich\progress.py, .venv\Lib\site-packages\pip\_vendor\rich\progress_bar.py, .venv\Lib\site-packages\pip\_vendor\rich\prompt.py, .venv\Lib\site-packages\pip\_vendor\rich\repr.py, .venv\Lib\site-packages\pip\_vendor\rich\rule.py, .venv\Lib\site-packages\pip\_vendor\rich\scope.py, .venv\Lib\site-packages\pip\_vendor\rich\segment.py, .venv\Lib\site-packages\pip\_vendor\rich\spinner.py, .venv\Lib\site-packages\pip\_vendor\rich\status.py, .venv\Lib\site-packages\pip\_vendor\rich\styled.py, .venv\Lib\site-packages\pip\_vendor\rich\syntax.py, .venv\Lib\site-packages\pip\_vendor\rich\table.py, .venv\Lib\site-packages\pip\_vendor\rich\text.py, .venv\Lib\site-packages\pip\_vendor\rich\theme.py, .venv\Lib\site-packages\pip\_vendor\rich\traceback.py, .venv\Lib\site-packages\pip\_vendor\rich\tree.py, .venv\Lib\site-packages\pip\_vendor\rich\_log_render.py, .venv\Lib\site-packages\pip\_vendor\rich\_ratio.py, .venv\Lib\site-packages\pip\_vendor\rich\_win32_console.py, .venv\Lib\site-packages\pip\_vendor\rich\_windows.py, .venv\Lib\site-packages\pip\_vendor\rich\_wrap.py, .venv\Lib\site-packages\pip\_vendor\rich\__init__.py, .venv\Lib\site-packages\pip\_vendor\rich\__main__.py, .venv\Lib\site-packages\pip\_vendor\chardet\cli\chardetect.py
+- **Зависимости:** PyQt6==6.11.0, pyqtgraph==0.14.0, numpy==2.5.2
+- **Точки входа:** compact_code.py, generate_structure.py, main.py, .venv\Lib\site-packages\numpy\_configtool.py, .venv\Lib\site-packages\pip\__main__.py, .venv\Lib\site-packages\numpy\f2py\crackfortran.py, .venv\Lib\site-packages\numpy\f2py\diagnose.py, .venv\Lib\site-packages\numpy\typing\tests\data\pass\lib_user_array.py, .venv\Lib\site-packages\numpy\_core\tests\test_cpu_features.py, .venv\Lib\site-packages\pip\_vendor\cachecontrol\_cmd.py, .venv\Lib\site-packages\pip\_vendor\distro\distro.py, .venv\Lib\site-packages\pip\_vendor\distro\__main__.py, .venv\Lib\site-packages\pip\_vendor\idna\cli.py, .venv\Lib\site-packages\pip\_vendor\idna\__main__.py, .venv\Lib\site-packages\pip\_vendor\packaging\_musllinux.py, .venv\Lib\site-packages\pip\_vendor\platformdirs\__main__.py, .venv\Lib\site-packages\pip\_vendor\requests\certs.py, .venv\Lib\site-packages\pip\_vendor\requests\help.py, .venv\Lib\site-packages\pip\_vendor\rich\abc.py, .venv\Lib\site-packages\pip\_vendor\rich\align.py, .venv\Lib\site-packages\pip\_vendor\rich\box.py, .venv\Lib\site-packages\pip\_vendor\rich\cells.py, .venv\Lib\site-packages\pip\_vendor\rich\color.py, .venv\Lib\site-packages\pip\_vendor\rich\columns.py, .venv\Lib\site-packages\pip\_vendor\rich\console.py, .venv\Lib\site-packages\pip\_vendor\rich\control.py, .venv\Lib\site-packages\pip\_vendor\rich\default_styles.py, .venv\Lib\site-packages\pip\_vendor\rich\diagnose.py, .venv\Lib\site-packages\pip\_vendor\rich\emoji.py, .venv\Lib\site-packages\pip\_vendor\rich\highlighter.py, .venv\Lib\site-packages\pip\_vendor\rich\json.py, .venv\Lib\site-packages\pip\_vendor\rich\layout.py, .venv\Lib\site-packages\pip\_vendor\rich\live.py, .venv\Lib\site-packages\pip\_vendor\rich\logging.py, .venv\Lib\site-packages\pip\_vendor\rich\markup.py, .venv\Lib\site-packages\pip\_vendor\rich\padding.py, .venv\Lib\site-packages\pip\_vendor\rich\pager.py, .venv\Lib\site-packages\pip\_vendor\rich\palette.py, .venv\Lib\site-packages\pip\_vendor\rich\panel.py, .venv\Lib\site-packages\pip\_vendor\rich\pretty.py, .venv\Lib\site-packages\pip\_vendor\rich\progress.py, .venv\Lib\site-packages\pip\_vendor\rich\progress_bar.py, .venv\Lib\site-packages\pip\_vendor\rich\prompt.py, .venv\Lib\site-packages\pip\_vendor\rich\repr.py, .venv\Lib\site-packages\pip\_vendor\rich\rule.py, .venv\Lib\site-packages\pip\_vendor\rich\scope.py, .venv\Lib\site-packages\pip\_vendor\rich\segment.py, .venv\Lib\site-packages\pip\_vendor\rich\spinner.py, .venv\Lib\site-packages\pip\_vendor\rich\status.py, .venv\Lib\site-packages\pip\_vendor\rich\styled.py, .venv\Lib\site-packages\pip\_vendor\rich\syntax.py, .venv\Lib\site-packages\pip\_vendor\rich\table.py, .venv\Lib\site-packages\pip\_vendor\rich\text.py, .venv\Lib\site-packages\pip\_vendor\rich\theme.py, .venv\Lib\site-packages\pip\_vendor\rich\traceback.py, .venv\Lib\site-packages\pip\_vendor\rich\tree.py, .venv\Lib\site-packages\pip\_vendor\rich\_log_render.py, .venv\Lib\site-packages\pip\_vendor\rich\_ratio.py, .venv\Lib\site-packages\pip\_vendor\rich\_win32_console.py, .venv\Lib\site-packages\pip\_vendor\rich\_windows.py, .venv\Lib\site-packages\pip\_vendor\rich\_wrap.py, .venv\Lib\site-packages\pip\_vendor\rich\__init__.py, .venv\Lib\site-packages\pip\_vendor\rich\__main__.py, .venv\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process\_in_process.py, .venv\Lib\site-packages\PyQt6\uic\compile_ui.py, .venv\Lib\site-packages\pyqtgraph\examples\GLGradientLegendItem.py, .venv\Lib\site-packages\pyqtgraph\examples\GLGraphItem.py, .venv\Lib\site-packages\pyqtgraph\examples\InteractiveParameter.py, .venv\Lib\site-packages\pyqtgraph\examples\jupyter_console_example.py, .venv\Lib\site-packages\pyqtgraph\examples\MultiDataPlot.py, .venv\Lib\site-packages\pyqtgraph\examples\RunExampleApp.py, .venv\Lib\site-packages\pyqtgraph\examples\ScatterPlotSpeedTest.py, .venv\Lib\site-packages\pyqtgraph\examples\test_examples.py, .venv\Lib\site-packages\pyqtgraph\util\get_resolution.py
 
 ## Статистика проекта
-- Папок: 5
+- Папок: 6
 - Python-файлов: 21
 - Всего файлов: 21
 - Классов: 47
@@ -21,6 +21,7 @@ signalSimulator/
     __init__.py
     detector.py
     metrics.py
+  configs/
   core/
     __init__.py
     clock.py
@@ -216,8 +217,7 @@ Returns:
   - `from core.event_log import EventLog, EventRecord, EventType`
 
 ### Файл: `clock.py`
-> signalSimulator/core/clock.py
-
+> core/clock.py
 Модуль управления глобальным логическим временем симуляции.
 Обеспечивает единый источник времени для всех компонентов системы.
 #### Импорты
@@ -230,15 +230,12 @@ Returns:
 ##### `class GlobalClock(QObject)`
 > Глобальные часы симуляции с поддержкой ускорения времени.
 
-Реализует паттерн Singleton для обеспечения единого источника времени
-во всем приложении. Генерирует периодические сигналы обновления времени.
+Генерирует периодические сигналы обновления времени.
 
 Attributes:
     time_updated (pyqtSignal): Сигнал, испускаемый при каждом обновлении времени.
         Передает текущее логическое время в миллисекундах.
 Методы:
-- `def __new__(cls, *args, **kwargs) -> 'GlobalClock'`
-  - Реализация паттерна Singleton.
 - `def __init__(self, parent: Optional[QObject]) -> None`
   - Инициализация глобальных часов.
 
@@ -1228,7 +1225,6 @@ Returns:
 
 ### Файл: `main_window.py`
 > ui/main_window.py
-
 Главное окно приложения — центральная панель управления симуляцией.
 Содержит панель управления временем, список графиков, меню и кнопки
 для открытия вспомогательных окон.
@@ -1255,10 +1251,11 @@ Signals:
     journal_toggled: Журнал открыт (True) или закрыт (False).
     hidden_markers_toggled: Режим скрытых меток включён (True) или выключен (False).
 Методы:
-- `def __init__(self, parent: Optional[QWidget]) -> None`
+- `def __init__(self, clock: GlobalClock, parent: Optional[QWidget]) -> None`
   - Инициализация главного окна.
 
 Args:
+    clock: Глобальные часы симуляции.
     parent: Родительский виджет.
 - `def _init_menu(self) -> None`
   - Создание строки меню.
@@ -1477,7 +1474,6 @@ Returns:
 
 ### Файл: `main.py`
 > main.py
-
 Точка входа в приложение signalSimulator.
 Инициализирует все компоненты системы (часы, журнал, движок, планировщик, окна)
 и координирует их взаимодействие через паттерн Coordinator.

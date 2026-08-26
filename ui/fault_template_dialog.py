@@ -6,7 +6,6 @@ ui/fault_template_dialog.py
 """
 
 import logging
-from typing import Optional
 
 from PyQt6.QtWidgets import (
     QDialog,
@@ -18,7 +17,6 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QMessageBox,
-    QPushButton,
     QRadioButton,
     QSpinBox,
     QVBoxLayout,
@@ -27,7 +25,6 @@ from PyQt6.QtWidgets import (
 
 from simulation.faults import FaultFactory
 from simulation.scheduler import FaultTemplate
-
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +46,8 @@ class FaultTemplateDialog(QDialog):
 
     def __init__(
         self,
-        template: Optional[FaultTemplate] = None,
-        parent: Optional[QWidget] = None
+        template: FaultTemplate | None = None,
+        parent: QWidget | None = None
     ) -> None:
         """
         Инициализация диалога шаблона.
@@ -64,7 +61,7 @@ class FaultTemplateDialog(QDialog):
         self.setMinimumWidth(500)
 
         self._template = template
-        self._result_template: Optional[FaultTemplate] = None
+        self._result_template: FaultTemplate | None = None
 
         try:
             self._init_ui()
@@ -288,6 +285,6 @@ class FaultTemplateDialog(QDialog):
             logger.error(f"Ошибка при подтверждении диалога: {e}")
             QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить шаблон:\n{e}")
 
-    def get_template(self) -> Optional[FaultTemplate]:
+    def get_template(self) -> FaultTemplate | None:
         """Получить созданный/обновлённый шаблон."""
         return self._result_template

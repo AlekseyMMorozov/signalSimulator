@@ -15,15 +15,13 @@ from core.clock import GlobalClock
 from core.config import ConfigManager
 from core.event_log import EventLog
 from simulation.scheduler import FaultScheduler
-from simulation.simulator import SimulationEngine
 from simulation.signals import SignalFactory
-
+from simulation.simulator import SimulationEngine
 from ui.fault_window import FaultWindow
 from ui.log_window import LogWindow
 from ui.main_window import MainWindow
 from ui.plot_creation_dialog import PlotCreationDialog
 from ui.plot_window import PlotWindow
-
 
 # Настройка базового логирования
 logging.basicConfig(

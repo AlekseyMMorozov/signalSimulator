@@ -8,11 +8,9 @@ simulation/faults.py
 """
 
 import logging
-import math
 import random
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -33,12 +31,12 @@ class Fault(ABC):
 
     def __init__(
         self,
-        duration_ms: Optional[int] = None,
-        period_ms: Optional[int] = None
+        duration_ms: int | None = None,
+        period_ms: int | None = None
     ) -> None:
         self.duration_ms = duration_ms
         self.period_ms = period_ms
-        self.activation_time_ms: Optional[int] = None
+        self.activation_time_ms: int | None = None
 
     def activate(self, time_ms: int) -> None:
         """Активировать неисправность в заданный момент времени."""
@@ -128,7 +126,7 @@ class Fault(ABC):
         """
 
     @abstractmethod
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         """
         Получить параметры неисправности для сериализации.
 
@@ -147,8 +145,8 @@ class DropoutFault(Fault):
 
     def __init__(
         self,
-        duration_ms: Optional[int] = None,
-        period_ms: Optional[int] = None,
+        duration_ms: int | None = None,
+        period_ms: int | None = None,
         dropout_value: float = 0.0
     ) -> None:
         super().__init__(duration_ms, period_ms)
@@ -157,7 +155,7 @@ class DropoutFault(Fault):
     def _apply_effect(self, time_ms: int, base_value: float) -> float:
         return self.dropout_value
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "dropout",
             "duration_ms": self.duration_ms,
@@ -179,8 +177,8 @@ class SpikeFault(Fault):
     def __init__(
         self,
         magnitude_percent: float = 100.0,
-        duration_ms: Optional[int] = 1000,
-        period_ms: Optional[int] = None
+        duration_ms: int | None = 1000,
+        period_ms: int | None = None
     ) -> None:
         super().__init__(duration_ms, period_ms)
         self.magnitude_percent = float(magnitude_percent)
@@ -188,7 +186,7 @@ class SpikeFault(Fault):
     def _apply_effect(self, time_ms: int, base_value: float) -> float:
         return base_value + base_value * (self.magnitude_percent / 100.0)
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "spike",
             "magnitude_percent": self.magnitude_percent,
@@ -210,8 +208,8 @@ class NoiseFault(Fault):
         self,
         mean: float = 0.0,
         sigma: float = 1.0,
-        duration_ms: Optional[int] = None,
-        period_ms: Optional[int] = None
+        duration_ms: int | None = None,
+        period_ms: int | None = None
     ) -> None:
         super().__init__(duration_ms, period_ms)
         self.mean = float(mean)
@@ -224,7 +222,7 @@ class NoiseFault(Fault):
             logger.error(f"Ошибка генерации шума: {e}")
             return base_value
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "noise",
             "mean": self.mean,
@@ -248,11 +246,11 @@ class DegradationFault(Fault):
     def __init__(
         self,
         rate_percent_per_sec: float = 0.0,
-        duration_ms: Optional[int] = None
+        duration_ms: int | None = None
     ) -> None:
         super().__init__(duration_ms, period_ms=None)
         self.rate_percent_per_sec = float(rate_percent_per_sec)
-        self._base_at_activation: Optional[float] = None
+        self._base_at_activation: float | None = None
 
     def activate(self, time_ms: int) -> None:
         """Активация с сбросом зафиксированного базового значения."""
@@ -277,7 +275,7 @@ class DegradationFault(Fault):
             logger.error(f"Ошибка вычисления деградации: {e}")
             return base_value
 
-    def get_params(self) -> Dict[str, Any]:
+    def get_params(self) -> dict[str, Any]:
         return {
             "type": "degradation",
             "rate_percent_per_sec": self.rate_percent_per_sec,
@@ -293,8 +291,8 @@ class FaultChain:
     например: базовый сигнал + шум + деградация.
     """
 
-    def __init__(self, faults: Optional[List[Fault]] = None) -> None:
-        self._faults: List[Fault] = faults or []
+    def __init__(self, faults: list[Fault] | None = None) -> None:
+        self._faults: list[Fault] = faults or []
 
     def add_fault(self, fault: Fault) -> None:
         """Добавить неисправность в цепочку."""
@@ -318,7 +316,7 @@ class FaultChain:
         self._faults.clear()
         logger.debug("Цепочка неисправностей очищена.")
 
-    def get_faults(self) -> List[Fault]:
+    def get_faults(self) -> list[Fault]:
         """Получить список неисправностей в цепочке."""
         return list(self._faults)
 
@@ -353,7 +351,7 @@ class FaultChain:
 class FaultFactory:
     """Фабрика для создания неисправностей по строковому типу."""
 
-    _registry: Dict[str, type] = {
+    _registry: dict[str, type] = {
         "dropout": DropoutFault,
         "spike": SpikeFault,
         "noise": NoiseFault,
@@ -370,7 +368,7 @@ class FaultFactory:
         logger.info(f"Зарегистрирован новый тип неисправности: {name}")
 
     @classmethod
-    def create(cls, fault_type: str, params: Optional[Dict[str, Any]] = None) -> Optional[Fault]:
+    def create(cls, fault_type: str, params: dict[str, Any] | None = None) -> Fault | None:
         """
         Создать неисправность по типу и параметрам.
 
@@ -402,6 +400,6 @@ class FaultFactory:
             return None
 
     @classmethod
-    def available_types(cls) -> List[str]:
+    def available_types(cls) -> list[str]:
         """Вернуть список доступных типов неисправностей."""
         return list(cls._registry.keys())

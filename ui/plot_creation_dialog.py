@@ -8,9 +8,8 @@ ui/plot_creation_dialog.py
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -28,7 +27,6 @@ from PyQt6.QtWidgets import (
 )
 
 from simulation.signals import SignalFactory
-
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +65,7 @@ class PlotCreationDialog(QDialog):
     После подтверждения результат доступен через метод get_plot_params().
     """
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         """
         Инициализация диалога создания графика.
 
@@ -78,7 +76,7 @@ class PlotCreationDialog(QDialog):
         self.setWindowTitle("Создание графика")
         self.setMinimumWidth(500)
 
-        self._plot_params: Optional[Dict[str, Any]] = None
+        self._plot_params: dict[str, Any] | None = None
 
         try:
             self._init_ui()
@@ -409,7 +407,7 @@ class PlotCreationDialog(QDialog):
             logger.error(f"Ошибка валидации: {e}")
             return False
 
-    def get_plot_params(self) -> Optional[Dict[str, Any]]:
+    def get_plot_params(self) -> dict[str, Any] | None:
         """
         Получить параметры графика после подтверждения диалога.
 

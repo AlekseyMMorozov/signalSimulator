@@ -8,16 +8,14 @@ analytics/metrics.py
 """
 
 import logging
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set
+from dataclasses import dataclass
 
 from core.event_log import EventRecord, EventType
-
 
 logger = logging.getLogger(__name__)
 
 # Типы неисправностей, для которых выход за порог считается индикатором пропуска
-DEFAULT_TREND_FAULT_TYPES: Set[str] = {"degradation"}
+DEFAULT_TREND_FAULT_TYPES: set[str] = {"degradation"}
 
 
 @dataclass
@@ -26,10 +24,10 @@ class FaultAnalysisRecord:
     plot_id: str
     fault_type: str
     injection_time_ms: int
-    operator_detection_ms: Optional[int] = None
-    detector_detection_ms: Optional[int] = None
-    operator_delay_ms: Optional[int] = None
-    detector_delay_ms: Optional[int] = None
+    operator_detection_ms: int | None = None
+    detector_detection_ms: int | None = None
+    operator_delay_ms: int | None = None
+    detector_delay_ms: int | None = None
     is_missed: bool = False
 
 
@@ -49,7 +47,7 @@ class MetricsSummary:
     detector_false_positives: int = 0
     detector_faster_percent: float = 0.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Сериализация метрик в словарь."""
         return {
             "total_faults": self.total_faults,
@@ -85,7 +83,7 @@ class MetricsCalculator:
       следующей неисправности на том же графике.
     """
 
-    def __init__(self, trend_fault_types: Optional[Set[str]] = None) -> None:
+    def __init__(self, trend_fault_types: set[str] | None = None) -> None:
         """
         Инициализация калькулятора метрик.
 
@@ -97,7 +95,7 @@ class MetricsCalculator:
         self._trend_fault_types = trend_fault_types if trend_fault_types is not None else DEFAULT_TREND_FAULT_TYPES.copy()
         logger.info(f"MetricsCalculator инициализирован. Трендовые типы: {self._trend_fault_types}.")
 
-    def calculate(self, events: List[EventRecord]) -> MetricsSummary:
+    def calculate(self, events: list[EventRecord]) -> MetricsSummary:
         """
         Вычислить метрики по списку событий журнала.
 
@@ -116,7 +114,7 @@ class MetricsCalculator:
 
             all_plot_ids = set(faults_by_plot.keys()) | set(operator_by_plot.keys()) | set(detector_by_plot.keys())
 
-            analysis_records: List[FaultAnalysisRecord] = []
+            analysis_records: list[FaultAnalysisRecord] = []
             operator_fp = 0
             detector_fp = 0
 
@@ -140,9 +138,9 @@ class MetricsCalculator:
             logger.error(f"Ошибка вычисления метрик: {e}")
             return MetricsSummary()
 
-    def _extract_events(self, events: List[EventRecord], event_type: EventType) -> Dict[str, List[EventRecord]]:
+    def _extract_events(self, events: list[EventRecord], event_type: EventType) -> dict[str, list[EventRecord]]:
         """Группировка событий по идентификатору графика."""
-        result: Dict[str, List[EventRecord]] = {}
+        result: dict[str, list[EventRecord]] = {}
         try:
             for event in events:
                 if event.event_type == event_type and event.plot_id is not None:
@@ -154,19 +152,19 @@ class MetricsCalculator:
     def _analyze_plot(
         self,
         plot_id: str,
-        faults: List[EventRecord],
-        operator_detections: List[EventRecord],
-        detector_detections: List[EventRecord],
-        limit_exceeded: List[EventRecord]
+        faults: list[EventRecord],
+        operator_detections: list[EventRecord],
+        detector_detections: list[EventRecord],
+        limit_exceeded: list[EventRecord]
     ) -> tuple:
         """
         Анализ неисправностей для одного графика.
 
         Возвращает кортеж (список записей анализа, ложные оператора, ложные детектора).
         """
-        records: List[FaultAnalysisRecord] = []
-        used_operator: Set[int] = set()
-        used_detector: Set[int] = set()
+        records: list[FaultAnalysisRecord] = []
+        used_operator: set[int] = set()
+        used_detector: set[int] = set()
 
         try:
             for i, fault_event in enumerate(faults):
@@ -217,10 +215,10 @@ class MetricsCalculator:
 
     def _find_first_detection(
         self,
-        detections: List[EventRecord],
+        detections: list[EventRecord],
         start_ms: int,
         end_ms: float
-    ) -> Optional[EventRecord]:
+    ) -> EventRecord | None:
         """Поиск первого обнаружения в временном окне [start_ms, end_ms)."""
         try:
             for det in detections:
@@ -230,7 +228,7 @@ class MetricsCalculator:
             logger.error(f"Ошибка поиска обнаружения: {e}")
         return None
 
-    def _has_preceding_fault(self, faults: List[EventRecord], time_ms: int) -> bool:
+    def _has_preceding_fault(self, faults: list[EventRecord], time_ms: int) -> bool:
         """Проверка, была ли неисправность до указанного времени."""
         try:
             return any(f.time_ms <= time_ms for f in faults)
@@ -243,7 +241,7 @@ class MetricsCalculator:
         fault_type: str,
         record: FaultAnalysisRecord,
         next_injection_time: float,
-        limit_exceeded: List[EventRecord]
+        limit_exceeded: list[EventRecord]
     ) -> bool:
         """
         Определение, является ли неисправность пропущенной.
@@ -271,7 +269,7 @@ class MetricsCalculator:
 
     def _aggregate(
         self,
-        records: List[FaultAnalysisRecord],
+        records: list[FaultAnalysisRecord],
         operator_fp: int,
         detector_fp: int
     ) -> MetricsSummary:
@@ -279,9 +277,9 @@ class MetricsCalculator:
         summary = MetricsSummary()
         try:
             summary.total_faults = len(records)
-            operator_delays: List[int] = []
-            detector_delays: List[int] = []
-            comparison_ratios: List[float] = []
+            operator_delays: list[int] = []
+            detector_delays: list[int] = []
+            comparison_ratios: list[float] = []
 
             for rec in records:
                 op_detected = rec.operator_delay_ms is not None

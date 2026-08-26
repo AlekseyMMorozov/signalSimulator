@@ -5,9 +5,8 @@ core/clock.py
 """
 
 import logging
-from typing import Optional
-from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
+from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ class GlobalClock(QObject):
     # Интервал тика в миллисекундах реального времени
     TICK_INTERVAL_MS = 1000
 
-    def __init__(self, parent: Optional[QObject] = None) -> None:
+    def __init__(self, parent: QObject | None = None) -> None:
         """
         Инициализация глобальных часов.
 

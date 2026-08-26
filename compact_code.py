@@ -1,9 +1,8 @@
-from pathlib import Path
-from datetime import datetime
-from typing import List, Dict, Set
 import ast
-import re
 import json
+import re
+from datetime import datetime
+from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).parent.resolve()
 IGNORE_DIRS = {'.venv', '.idea', 'logs', '__pycache__', 'files'}
@@ -15,9 +14,9 @@ INCLUDE_EXTENSIONS = {'.py'}
 
 class CodeAnalyzer(ast.NodeVisitor):
     def __init__(self):
-        self.imports: List[str] = []
-        self.classes: List[str] = []
-        self.functions: List[str] = []
+        self.imports: list[str] = []
+        self.classes: list[str] = []
+        self.functions: list[str] = []
         self._in_class = False
 
     def visit_Import(self, node: ast.Import) -> None:
@@ -55,7 +54,7 @@ class CodeAnalyzer(ast.NodeVisitor):
         return sig
 
 
-def analyze_code(content: str) -> Dict[str, List[str]]:
+def analyze_code(content: str) -> dict[str, list[str]]:
     try:
         tree = ast.parse(content)
         analyzer = CodeAnalyzer()
@@ -81,7 +80,7 @@ def save_json(path: Path, data: any) -> None:
         json.dump(list(data) if isinstance(data, set) else data, f, ensure_ascii=False, indent=2)
 
 
-def collect_files(root: Path, ignore_list: Set[str], user_choices: Dict[str, str]) -> List[Path]:
+def collect_files(root: Path, ignore_list: set[str], user_choices: dict[str, str]) -> list[Path]:
     all_files = sorted([
         p for p in root.rglob('*')
         if p.suffix in INCLUDE_EXTENSIONS and p.is_file() and not any(d in IGNORE_DIRS for d in p.parts)
@@ -140,7 +139,7 @@ def compress_code(code: str) -> str:
     return '\n'.join(cleaned)
 
 
-def generate_compact_report(files: List[Path]) -> str:
+def generate_compact_report(files: list[Path]) -> str:
     lines = []
     for f in files:
         rel = f.relative_to(PROJECT_ROOT)
