@@ -5,13 +5,14 @@ main.py
 и координирует их взаимодействие через паттерн Coordinator.
 """
 
+import json
 import logging
 import sys
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QMessageBox
 
-from analytics.detector import AnomalyDetector
+from analytics.detector import AnomalyDetector, DetectorConfig
 from core.clock import GlobalClock
 from core.config import ConfigManager
 from core.event_log import EventLog
@@ -78,6 +79,10 @@ class Coordinator:
             self.main_window.journal_toggled.connect(self._on_toggle_journal)
             self.main_window.hidden_markers_toggled.connect(self._on_toggle_hidden_markers)
 
+            # Сигналы сохранения и загрузки конфигурации (будут использоваться на следующем шаге)
+            self.main_window.save_config_requested.connect(self._on_save_config_requested)
+            self.main_window.load_config_requested.connect(self._on_load_config_requested)
+
             # Движок симуляции
             self.engine.plot_data_updated.connect(self._on_plot_data_updated)
 
@@ -113,10 +118,14 @@ class Coordinator:
                     # Обновляем главное окно
                     self.main_window.add_plot_to_list(plot_id, params["name"])
 
-                    # Создаем детектор для графика
+                    # Создаем конфигурацию и детектор для графика
+                    detector_config_dict = params.get("detector_config", {})
+                    detector_config = DetectorConfig.from_dict(detector_config_dict)
+
                     self.detectors[plot_id] = AnomalyDetector(
                         min_allowed=params["min_allowed"],
-                        max_allowed=params["max_allowed"]
+                        max_allowed=params["max_allowed"],
+                        config=detector_config
                     )
 
                     # Создаем и настраиваем окно графика
@@ -175,7 +184,8 @@ class Coordinator:
                 "max_allowed": plot_state.max_allowed,
                 "observation_interval_ms": plot_state.observation_interval_ms,
                 "signal_type": signal_type,
-                "signal_params": plot_state.signal.get_params()
+                "signal_params": plot_state.signal.get_params(),
+                "detector_config": self.detectors[plot_id].get_config().to_dict() if plot_id in self.detectors else {}
             }
 
             dialog = PlotCreationDialog(self.main_window, initial_params=initial_params)
@@ -191,10 +201,11 @@ class Coordinator:
                     plot_state.observation_interval_ms = params["observation_interval_ms"]
                     plot_state.signal = SignalFactory.create(params["signal_type"], params["signal_params"])
 
-                    # 2. Обновляем детектор аномалий
+                    # 2. Обновляем конфигурацию детектора аномалий
                     if plot_id in self.detectors:
-                        self.detectors[plot_id].min_allowed = params["min_allowed"]
-                        self.detectors[plot_id].max_allowed = params["max_allowed"]
+                        detector_config_dict = params.get("detector_config", {})
+                        new_detector_config = DetectorConfig.from_dict(detector_config_dict)
+                        self.detectors[plot_id].set_config(new_detector_config)
 
                     # 3. Обновляем список в главном окне
                     self.main_window.remove_plot_from_list(plot_id)
@@ -296,15 +307,15 @@ class Coordinator:
                     if detections:
                         # Логируем детальную информацию о каждом срабатывании детектора
                         for detection in detections:
-                            logger.info(f"Детектор ({detection.detection_type.name}) на графике '{plot_id}': {detection.description}")
+                            logger.info(f"Детектор ({detection['type']}) на графике '{plot_id}': {detection['description']}")
 
                         if not detected_in_batch:
                             # Передаём детальное описание первого обнаружения в Журнал событий
-                            first_description = detections[0].description
+                            first_description = detections[0]['description']
                             self.engine.record_detector_detection(plot_id, first_description)
                             if plot_id in self.plot_windows:
                                 # Добавляем визуальную метку по времени первого обнаружения в пакете
-                                self.plot_windows[plot_id].add_detector_marker(detections[0].time_ms)
+                                self.plot_windows[plot_id].add_detector_marker(detections[0]['time_ms'])
                             detected_in_batch = True  # Избегаем множественных маркеров за один пакет
         except Exception as e:
             logger.error(f"Ошибка обработки данных графика '{plot_id}': {e}")
@@ -336,6 +347,126 @@ class Coordinator:
             logger.debug(f"Окно графика '{plot_id}' скрыто и доступно для повторного открытия.")
         except Exception as e:
             logger.error(f"Ошибка при обработке скрытия окна '{plot_id}': {e}")
+
+    def _collect_current_config(self) -> dict:
+        """
+        Собрать текущую конфигурацию всех графиков и их детекторов для сохранения.
+
+        Returns:
+            dict: Словарь с данными конфигурации.
+        """
+        config = {"plots": []}
+        for plot_id in self.engine.get_all_plot_ids():
+            plot_state = self.engine.get_plot(plot_id)
+            if plot_state:
+                signal_class_name = type(plot_state.signal).__name__
+                signal_type = signal_class_name.replace("Signal", "").lower()
+
+                detector_cfg = {}
+                if plot_id in self.detectors:
+                    detector_cfg = self.detectors[plot_id].get_config().to_dict()
+
+                plot_data = {
+                    "plot_id": plot_id,
+                    "name": plot_state.name,
+                    "unit": plot_state.unit,
+                    "max_unit_value": plot_state.max_unit_value,
+                    "min_allowed": plot_state.min_allowed,
+                    "max_allowed": plot_state.max_allowed,
+                    "observation_interval_ms": plot_state.observation_interval_ms,
+                    "signal_type": signal_type,
+                    "signal_params": plot_state.signal.get_params(),
+                    "detector_config": detector_cfg
+                }
+                config["plots"].append(plot_data)
+        return config
+
+    def _on_save_config_requested(self, filepath: str) -> None:
+        """
+        Обработка запроса на сохранение конфигурации в указанный файл.
+
+        Args:
+            filepath: Путь к файлу для сохранения.
+        """
+        try:
+            config_data = self._collect_current_config()
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(config_data, f, indent=4, ensure_ascii=False)
+            logger.info(f"Конфигурация успешно сохранена в {filepath}")
+            QMessageBox.information(
+                self.main_window, "Успех", f"Конфигурация сохранена:\n{filepath}"
+            )
+        except Exception as e:
+            logger.error(f"Ошибка сохранения конфигурации: {e}")
+            QMessageBox.critical(self.main_window, "Ошибка", f"Не удалось сохранить конфигурацию:\n{e}")
+
+    def _on_load_config_requested(self, filepath: str) -> None:
+        """
+        Обработка запроса на загрузку конфигурации из файла и применение её к симуляции.
+
+        Args:
+            filepath: Путь к файлу конфигурации.
+        """
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                config_data = json.load(f)
+
+            # Очищаем текущие графики перед загрузкой новых
+            for plot_id in list(self.engine.get_all_plot_ids()):
+                self._on_remove_plot(plot_id)
+
+            plots = config_data.get("plots", [])
+            for plot_data in plots:
+                plot_id = plot_data.get("plot_id", f"plot_{len(self.engine.get_all_plot_ids()) + 1}")
+
+                # Гарантируем уникальность plot_id при загрузке во избежание коллизий
+                while plot_id in self.engine.get_all_plot_ids():
+                    plot_id = f"{plot_id}_copy"
+
+                signal = SignalFactory.create(plot_data["signal_type"], plot_data.get("signal_params", {}))
+
+                self.engine.add_plot(
+                    plot_id=plot_id,
+                    name=plot_data["name"],
+                    unit=plot_data["unit"],
+                    max_unit_value=plot_data["max_unit_value"],
+                    signal=signal,
+                    min_allowed=plot_data["min_allowed"],
+                    max_allowed=plot_data["max_allowed"],
+                    observation_interval_ms=plot_data["observation_interval_ms"]
+                )
+
+                self.main_window.add_plot_to_list(plot_id, plot_data["name"])
+
+                detector_cfg_dict = plot_data.get("detector_config", {})
+                detector_cfg = DetectorConfig.from_dict(detector_cfg_dict)
+                self.detectors[plot_id] = AnomalyDetector(
+                    min_allowed=plot_data["min_allowed"],
+                    max_allowed=plot_data["max_allowed"],
+                    config=detector_cfg
+                )
+
+                plot_window = PlotWindow(
+                    plot_id=plot_id,
+                    name=plot_data["name"],
+                    unit=plot_data["unit"],
+                    min_allowed=plot_data["min_allowed"],
+                    max_allowed=plot_data["max_allowed"],
+                    observation_interval_ms=plot_data["observation_interval_ms"]
+                )
+                plot_window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
+                plot_window.detection_requested.connect(self._on_operator_detection)
+                plot_window.window_closed.connect(self._on_plot_window_closed)
+                plot_window.set_hidden_markers_visible(self._hidden_markers_visible)
+                self.plot_windows[plot_id] = plot_window
+
+            logger.info(f"Загружено и применено {len(plots)} графиков из конфигурации.")
+            QMessageBox.information(
+                self.main_window, "Успех", f"Конфигурация успешно загружена:\n{filepath}"
+            )
+        except Exception as e:
+            logger.error(f"Ошибка загрузки конфигурации: {e}")
+            QMessageBox.critical(self.main_window, "Ошибка", f"Не удалось загрузить конфигурацию:\n{e}")
 
 
 def main() -> None:

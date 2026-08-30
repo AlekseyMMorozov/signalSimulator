@@ -14,6 +14,7 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
+    QCheckBox,
     QHBoxLayout,
     QLabel,
     QMainWindow,
@@ -150,7 +151,7 @@ class PlotWindow(QMainWindow):
 
         layout.addWidget(self._plot_widget, stretch=1)
 
-        # --- Нижняя панель: текущее значение и кнопка обнаружения ---
+        # --- Нижняя панель: текущее значение и кнопки управления ---
         bottom_layout = QHBoxLayout()
         self._value_label = QLabel(f"Текущее значение: — {self._unit}")
         bottom_layout.addWidget(self._value_label)
@@ -159,6 +160,12 @@ class PlotWindow(QMainWindow):
         self._btn_detect = QPushButton("🚨 Обнаружил проблему")
         self._btn_detect.clicked.connect(self._on_detect_clicked)
         bottom_layout.addWidget(self._btn_detect)
+
+        # Чекбокс "Поверх других окон"
+        self._chk_always_on_top = QCheckBox("Поверх других окон")
+        self._chk_always_on_top.setToolTip("Удерживать окно графика поверх всех остальных окон приложения")
+        self._chk_always_on_top.stateChanged.connect(self._on_always_on_top_changed)
+        bottom_layout.addWidget(self._chk_always_on_top)
 
         layout.addLayout(bottom_layout)
         logger.debug("Интерфейс окна графика создан.")
@@ -348,6 +355,22 @@ class PlotWindow(QMainWindow):
     # ------------------------------------------------------------------
     # Внутренние методы
     # ------------------------------------------------------------------
+
+    def _on_always_on_top_changed(self, state: int) -> None:
+        """
+        Обработка изменения состояния чекбокса 'Поверх других окон'.
+
+        Args:
+            state: Состояние чекбокса (Qt.CheckState.Checked или Qt.CheckState.Unchecked).
+        """
+        try:
+            is_on_top = bool(state)
+            self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, is_on_top)
+            # Явный вызов show() необходим в PyQt6 для немедленного применения флага окна
+            self.show()
+            logger.debug(f"Режим 'Поверх других окон' для графика '{self.plot_id}': {'включён' if is_on_top else 'выключен'}.")
+        except Exception as e:
+            logger.error(f"Ошибка переключения режима 'Поверх других окон': {e}")
 
     def _decimate(self, times: list[int], values: list[float]) -> tuple[list[int], list[float]]:
         """

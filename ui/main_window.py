@@ -23,7 +23,6 @@ from PyQt6.QtWidgets import (
 )
 
 from core.clock import GlobalClock
-from core.config import ConfigError, ConfigManager
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +35,9 @@ class MainWindow(QMainWindow):
     Главное окно приложения.
 
     Обеспечивает управление временем симуляции, списком графиков,
-    открытие/закрытие журнала событий, сохранение/загрузку конфигураций
-    и запрос на изменение настроек существующих графиков.
+    открытие/закрытие журнала событий и запрос на изменение настроек
+    существующих графиков. Логика сохранения/загрузки конфигурации
+    делегирована координатору через сигналы.
 
     Signals:
         plot_open_requested: Запрос на открытие окна графика (plot_id).
@@ -47,6 +47,8 @@ class MainWindow(QMainWindow):
         reset_requested: Запрос на полный сброс симуляции (для очистки графиков).
         journal_toggled: Журнал открыт (True) или закрыт (False).
         hidden_markers_toggled: Режим скрытых меток включён (True) или выключён (False).
+        save_config_requested: Запрос на сохранение конфигурации по указанному пути.
+        load_config_requested: Запрос на загрузку конфигурации по указанному пути.
     """
 
     plot_open_requested = pyqtSignal(str)
@@ -56,6 +58,8 @@ class MainWindow(QMainWindow):
     reset_requested = pyqtSignal()
     journal_toggled = pyqtSignal(bool)
     hidden_markers_toggled = pyqtSignal(bool)
+    save_config_requested = pyqtSignal(str)
+    load_config_requested = pyqtSignal(str)
 
     def __init__(self, clock: GlobalClock, parent: QWidget | None = None) -> None:
         """
@@ -67,10 +71,12 @@ class MainWindow(QMainWindow):
         """
         super().__init__(parent)
         self.setWindowTitle("signalSimulator")
-        self.setMinimumSize(800, 600)
+
+        # Компактный размер по умолчанию, занимающий не более четверти экрана
+        self.resize(600, 450)
+        self.setMinimumSize(500, 350)
 
         self._clock = clock
-        self._config_manager = ConfigManager()
         self._journal_visible = False
         self._hidden_markers_visible = False
 
@@ -386,56 +392,33 @@ class MainWindow(QMainWindow):
             logger.error(f"Ошибка переключения журнала: {e}")
 
     def _on_save_config(self) -> None:
-        """Сохранение текущей конфигурации в файл."""
+        """Запрос на сохранение текущей конфигурации в файл."""
         try:
             filepath, _ = QFileDialog.getSaveFileName(
                 self, "Сохранить конфигурацию", "",
                 "Конфигурация (*.json)"
             )
             if filepath:
-                config_data = self._collect_current_config()
-                self._config_manager.save_config(config_data)
-                logger.info(f"Конфигурация сохранена: {filepath}")
+                # Делегируем сохранение координатору
+                self.save_config_requested.emit(filepath)
             else:
                 logger.debug("Сохранение конфигурации отменено пользователем.")
-        except ConfigError as e:
-            logger.error(f"Ошибка сохранения конфигурации: {e}")
-            QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить конфигурацию:\n{e}")
         except Exception as e:
-            logger.error(f"Непредвиденная ошибка при сохранении: {e}")
+            logger.error(f"Непредвиденная ошибка при запросе сохранения: {e}")
             QMessageBox.critical(self, "Ошибка", f"Непредвиденная ошибка:\n{e}")
 
     def _on_load_config(self) -> None:
-        """Загрузка конфигурации из файла."""
+        """Запрос на загрузку конфигурации из файла."""
         try:
             filepath, _ = QFileDialog.getOpenFileName(
                 self, "Загрузить конфигурацию", "",
                 "Конфигурация (*.json)"
             )
             if filepath:
-                config_data = self._config_manager.load_config(filepath)
-                self._apply_loaded_config(config_data)
-                logger.info(f"Конфигурация загружена: {filepath}")
+                # Делегируем загрузку координатору
+                self.load_config_requested.emit(filepath)
             else:
                 logger.debug("Загрузка конфигурации отменена пользователем.")
-        except ConfigError as e:
-            logger.error(f"Ошибка загрузки конфигурации: {e}")
-            QMessageBox.critical(self, "Ошибка", f"Не удалось загрузить конфигурацию:\n{e}")
         except Exception as e:
-            logger.error(f"Непредвиденная ошибка при загрузке: {e}")
+            logger.error(f"Непредвиденная ошибка при запросе загрузки: {e}")
             QMessageBox.critical(self, "Ошибка", f"Непредвиденная ошибка:\n{e}")
-
-    def _collect_current_config(self) -> dict:
-        """Собрать текущую конфигурацию для сохранения."""
-        config = self._config_manager.get_default_config()
-        # TODO: Собрать данные графиков из движка симуляции
-        return config
-
-    def _apply_loaded_config(self, config_data: dict) -> None:
-        """Применить загруженную конфигурацию."""
-        try:
-            plots = config_data.get("plots", [])
-            logger.info(f"Загружено графиков из конфигурации: {len(plots)}")
-            # TODO: Создать графики через движок симуляции
-        except Exception as e:
-            logger.error(f"Ошибка применения загруженной конфигурации: {e}")

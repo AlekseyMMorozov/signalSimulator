@@ -3,7 +3,8 @@ ui/plot_creation_dialog.py
 
 Модальный диалог создания и редактирования графика телеметрии.
 Позволяет настроить все параметры графика: название, единицу измерения,
-тип сигнала с его параметрами, допустимые пределы и интервал наблюдения.
+тип сигнала с его параметрами, допустимые пределы, интервал наблюдения
+и настройки детектора аномалий.
 Вызывается из главного окна по сигналу plot_add_requested или plot_settings_requested.
 """
 
@@ -22,9 +23,13 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QSpinBox,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
+
+from analytics.detector import DetectorConfig
+from ui.detector_settings_tab import DetectorSettingsTab
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +121,8 @@ class PlotCreationDialog(QDialog):
     - Основные параметры (название, единица, макс. значение)
     - Интервал наблюдения (через пресеты или ручной ввод в секундах)
     - Допустимые пределы (min_allowed, max_allowed)
-    - Тип сигнала и его параметры (динамически меняются, период вводится с выбором единицы)
+    - Тип сигнала и его параметры (динамически меняются)
+    - Настройки детектора аномалий (размер окна, сигмы, пороги)
 
     Если передан initial_params, диалог переходит в режим редактирования и предзаполняет поля.
     После подтверждения результат доступен через метод get_plot_params().
@@ -132,7 +138,7 @@ class PlotCreationDialog(QDialog):
         """
         super().__init__(parent)
         self.setWindowTitle("Редактирование графика" if initial_params else "Создание графика")
-        self.setMinimumWidth(550)
+        self.setMinimumWidth(600)
 
         self._plot_params: dict[str, Any] | None = None
 
@@ -151,6 +157,16 @@ class PlotCreationDialog(QDialog):
     def _init_ui(self) -> None:
         """Создание интерфейса диалога."""
         main_layout = QVBoxLayout(self)
+
+        # === Вкладки ===
+        self._tab_widget = QTabWidget()
+        main_layout.addWidget(self._tab_widget)
+
+        # --- Вкладка 1: Параметры сигнала ---
+        signal_tab = QWidget()
+        signal_tab_layout = QVBoxLayout(signal_tab)
+        signal_tab_layout.setContentsMargins(4, 4, 4, 4)
+        signal_tab_layout.setSpacing(8)
 
         # === Группа основных параметров ===
         basic_group = QGroupBox("Основные параметры")
@@ -177,7 +193,7 @@ class PlotCreationDialog(QDialog):
         basic_layout.addRow("Макс. значение единицы:", self._max_unit_spin)
 
         basic_group.setLayout(basic_layout)
-        main_layout.addWidget(basic_group)
+        signal_tab_layout.addWidget(basic_group)
 
         # === Группа интервала наблюдения ===
         interval_group = QGroupBox("Интервал наблюдения")
@@ -219,7 +235,7 @@ class PlotCreationDialog(QDialog):
         interval_layout.addLayout(manual_layout)
 
         interval_group.setLayout(interval_layout)
-        main_layout.addWidget(interval_group)
+        signal_tab_layout.addWidget(interval_group)
 
         # === Группа допустимых пределов ===
         limits_group = QGroupBox("Допустимые пределы")
@@ -246,7 +262,7 @@ class PlotCreationDialog(QDialog):
         limits_layout.addRow("Максимум:", self._max_allowed_spin)
 
         limits_group.setLayout(limits_layout)
-        main_layout.addWidget(limits_group)
+        signal_tab_layout.addWidget(limits_group)
 
         # === Группа параметров сигнала ===
         signal_group = QGroupBox("Параметры сигнала")
@@ -270,7 +286,14 @@ class PlotCreationDialog(QDialog):
         signal_layout.addWidget(self._signal_params_widget)
 
         signal_group.setLayout(signal_layout)
-        main_layout.addWidget(signal_group)
+        signal_tab_layout.addWidget(signal_group)
+
+        signal_tab_layout.addStretch(1)
+        self._tab_widget.addTab(signal_tab, "📊 Сигнал")
+
+        # --- Вкладка 2: Настройки детектора ---
+        self._detector_settings_tab = DetectorSettingsTab()
+        self._tab_widget.addTab(self._detector_settings_tab, "🔍 Детектор")
 
         # === Кнопки ОК / Отмена ===
         button_box = QDialogButtonBox(
@@ -316,6 +339,15 @@ class PlotCreationDialog(QDialog):
                             widget.set_period_ms(int(val))
                         else:
                             widget.setValue(val)
+
+            # Предзаполнение настроек детектора
+            detector_config_dict = params.get("detector_config")
+            if detector_config_dict:
+                try:
+                    config = DetectorConfig.from_dict(detector_config_dict)
+                    self._detector_settings_tab.set_config(config)
+                except Exception as e:
+                    logger.error(f"Ошибка загрузки конфигурации детектора: {e}")
 
             logger.debug("Поля диалога предзаполнены параметрами.")
         except Exception as e:
@@ -498,6 +530,7 @@ class PlotCreationDialog(QDialog):
                 "max_allowed": max_allowed,
                 "signal_type": signal_type,
                 "signal_params": signal_params,
+                "detector_config": self._detector_settings_tab.get_config().to_dict(),
             }
 
             logger.info(f"Параметры графика подтверждены: {name}.")

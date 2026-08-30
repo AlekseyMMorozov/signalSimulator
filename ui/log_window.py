@@ -71,7 +71,11 @@ class LogWindow(QMainWindow):
         """
         super().__init__(parent)
         self.setWindowTitle("Журнал событий")
-        self.setMinimumSize(600, 400)
+
+        # Компактный размер по умолчанию (не более четверти экрана)
+        self.resize(500, 400)
+        # Минимальный размер позволяет пользователю сделать окно ещё меньше при необходимости
+        self.setMinimumSize(300, 200)
 
         self._event_log = event_log
         self._records: list[EventRecord] = []
@@ -118,14 +122,14 @@ class LogWindow(QMainWindow):
         filter_layout.addWidget(QLabel("От (мс):"))
         self._start_edit = QLineEdit()
         self._start_edit.setPlaceholderText("0")
-        self._start_edit.setMaximumWidth(100)
+        self._start_edit.setMaximumWidth(80)
         filter_layout.addWidget(self._start_edit)
 
         # Фильтр по времени: до
         filter_layout.addWidget(QLabel("До (мс):"))
         self._end_edit = QLineEdit()
         self._end_edit.setPlaceholderText("∞")
-        self._end_edit.setMaximumWidth(100)
+        self._end_edit.setMaximumWidth(80)
         filter_layout.addWidget(self._end_edit)
 
         layout.addLayout(filter_layout)
@@ -133,7 +137,7 @@ class LogWindow(QMainWindow):
         # --- Область текстового лога ---
         self._log_view = QPlainTextEdit()
         self._log_view.setReadOnly(True)
-        self._log_view.setStyleSheet("font-family: Consolas, monospace; font-size: 12px;")
+        self._log_view.setStyleSheet("font-family: Consolas, monospace; font-size: 11px;")
         layout.addWidget(self._log_view, stretch=1)
 
         # --- Нижняя панель: автопрокрутка и счётчик ---
@@ -319,4 +323,3 @@ class LogWindow(QMainWindow):
         except Exception as e:
             logger.error(f"Ошибка при закрытии окна журнала: {e}")
         super().closeEvent(event)
-
