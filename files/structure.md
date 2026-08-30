@@ -5,13 +5,13 @@
 - **Версия:** не указана
 - **Описание:** нет
 - **Зависимости:** PyQt6==6.11.0, pyqtgraph==0.14.0, numpy==2.5.2
-- **Точки входа:** compact_code.py, generate_structure.py, main.py, .venv\Lib\site-packages\numpy\_configtool.py, .venv\Lib\site-packages\pip\__main__.py, .venv\Lib\site-packages\numpy\f2py\crackfortran.py, .venv\Lib\site-packages\numpy\f2py\diagnose.py, .venv\Lib\site-packages\numpy\typing\tests\data\pass\lib_user_array.py, .venv\Lib\site-packages\numpy\_core\tests\test_cpu_features.py, .venv\Lib\site-packages\pip\_vendor\cachecontrol\_cmd.py, .venv\Lib\site-packages\pip\_vendor\distro\distro.py, .venv\Lib\site-packages\pip\_vendor\distro\__main__.py, .venv\Lib\site-packages\pip\_vendor\idna\cli.py, .venv\Lib\site-packages\pip\_vendor\idna\__main__.py, .venv\Lib\site-packages\pip\_vendor\packaging\_musllinux.py, .venv\Lib\site-packages\pip\_vendor\platformdirs\__main__.py, .venv\Lib\site-packages\pip\_vendor\requests\certs.py, .venv\Lib\site-packages\pip\_vendor\requests\help.py, .venv\Lib\site-packages\pip\_vendor\rich\abc.py, .venv\Lib\site-packages\pip\_vendor\rich\align.py, .venv\Lib\site-packages\pip\_vendor\rich\box.py, .venv\Lib\site-packages\pip\_vendor\rich\cells.py, .venv\Lib\site-packages\pip\_vendor\rich\color.py, .venv\Lib\site-packages\pip\_vendor\rich\columns.py, .venv\Lib\site-packages\pip\_vendor\rich\console.py, .venv\Lib\site-packages\pip\_vendor\rich\control.py, .venv\Lib\site-packages\pip\_vendor\rich\default_styles.py, .venv\Lib\site-packages\pip\_vendor\rich\diagnose.py, .venv\Lib\site-packages\pip\_vendor\rich\emoji.py, .venv\Lib\site-packages\pip\_vendor\rich\highlighter.py, .venv\Lib\site-packages\pip\_vendor\rich\json.py, .venv\Lib\site-packages\pip\_vendor\rich\layout.py, .venv\Lib\site-packages\pip\_vendor\rich\live.py, .venv\Lib\site-packages\pip\_vendor\rich\logging.py, .venv\Lib\site-packages\pip\_vendor\rich\markup.py, .venv\Lib\site-packages\pip\_vendor\rich\padding.py, .venv\Lib\site-packages\pip\_vendor\rich\pager.py, .venv\Lib\site-packages\pip\_vendor\rich\palette.py, .venv\Lib\site-packages\pip\_vendor\rich\panel.py, .venv\Lib\site-packages\pip\_vendor\rich\pretty.py, .venv\Lib\site-packages\pip\_vendor\rich\progress.py, .venv\Lib\site-packages\pip\_vendor\rich\progress_bar.py, .venv\Lib\site-packages\pip\_vendor\rich\prompt.py, .venv\Lib\site-packages\pip\_vendor\rich\repr.py, .venv\Lib\site-packages\pip\_vendor\rich\rule.py, .venv\Lib\site-packages\pip\_vendor\rich\scope.py, .venv\Lib\site-packages\pip\_vendor\rich\segment.py, .venv\Lib\site-packages\pip\_vendor\rich\spinner.py, .venv\Lib\site-packages\pip\_vendor\rich\status.py, .venv\Lib\site-packages\pip\_vendor\rich\styled.py, .venv\Lib\site-packages\pip\_vendor\rich\syntax.py, .venv\Lib\site-packages\pip\_vendor\rich\table.py, .venv\Lib\site-packages\pip\_vendor\rich\text.py, .venv\Lib\site-packages\pip\_vendor\rich\theme.py, .venv\Lib\site-packages\pip\_vendor\rich\traceback.py, .venv\Lib\site-packages\pip\_vendor\rich\tree.py, .venv\Lib\site-packages\pip\_vendor\rich\_log_render.py, .venv\Lib\site-packages\pip\_vendor\rich\_ratio.py, .venv\Lib\site-packages\pip\_vendor\rich\_win32_console.py, .venv\Lib\site-packages\pip\_vendor\rich\_windows.py, .venv\Lib\site-packages\pip\_vendor\rich\_wrap.py, .venv\Lib\site-packages\pip\_vendor\rich\__init__.py, .venv\Lib\site-packages\pip\_vendor\rich\__main__.py, .venv\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process\_in_process.py, .venv\Lib\site-packages\PyQt6\uic\compile_ui.py, .venv\Lib\site-packages\pyqtgraph\examples\GLGradientLegendItem.py, .venv\Lib\site-packages\pyqtgraph\examples\GLGraphItem.py, .venv\Lib\site-packages\pyqtgraph\examples\InteractiveParameter.py, .venv\Lib\site-packages\pyqtgraph\examples\jupyter_console_example.py, .venv\Lib\site-packages\pyqtgraph\examples\MultiDataPlot.py, .venv\Lib\site-packages\pyqtgraph\examples\RunExampleApp.py, .venv\Lib\site-packages\pyqtgraph\examples\ScatterPlotSpeedTest.py, .venv\Lib\site-packages\pyqtgraph\examples\test_examples.py, .venv\Lib\site-packages\pyqtgraph\util\get_resolution.py
+- **Точки входа:** compact_code.py, generate_structure.py, main.py, .venv\Lib\site-packages\flake8\__main__.py, .venv\Lib\site-packages\numpy\_configtool.py, .venv\Lib\site-packages\pip\__main__.py, .venv\Lib\site-packages\ruff\__main__.py, .venv\Lib\site-packages\numpy\f2py\crackfortran.py, .venv\Lib\site-packages\numpy\f2py\diagnose.py, .venv\Lib\site-packages\numpy\typing\tests\data\pass\lib_user_array.py, .venv\Lib\site-packages\numpy\_core\tests\test_cpu_features.py, .venv\Lib\site-packages\pip\_vendor\cachecontrol\_cmd.py, .venv\Lib\site-packages\pip\_vendor\distro\distro.py, .venv\Lib\site-packages\pip\_vendor\distro\__main__.py, .venv\Lib\site-packages\pip\_vendor\idna\cli.py, .venv\Lib\site-packages\pip\_vendor\idna\__main__.py, .venv\Lib\site-packages\pip\_vendor\packaging\_musllinux.py, .venv\Lib\site-packages\pip\_vendor\platformdirs\__main__.py, .venv\Lib\site-packages\pip\_vendor\requests\certs.py, .venv\Lib\site-packages\pip\_vendor\requests\help.py, .venv\Lib\site-packages\pip\_vendor\rich\abc.py, .venv\Lib\site-packages\pip\_vendor\rich\align.py, .venv\Lib\site-packages\pip\_vendor\rich\box.py, .venv\Lib\site-packages\pip\_vendor\rich\cells.py, .venv\Lib\site-packages\pip\_vendor\rich\color.py, .venv\Lib\site-packages\pip\_vendor\rich\columns.py, .venv\Lib\site-packages\pip\_vendor\rich\console.py, .venv\Lib\site-packages\pip\_vendor\rich\control.py, .venv\Lib\site-packages\pip\_vendor\rich\default_styles.py, .venv\Lib\site-packages\pip\_vendor\rich\diagnose.py, .venv\Lib\site-packages\pip\_vendor\rich\emoji.py, .venv\Lib\site-packages\pip\_vendor\rich\highlighter.py, .venv\Lib\site-packages\pip\_vendor\rich\json.py, .venv\Lib\site-packages\pip\_vendor\rich\layout.py, .venv\Lib\site-packages\pip\_vendor\rich\live.py, .venv\Lib\site-packages\pip\_vendor\rich\logging.py, .venv\Lib\site-packages\pip\_vendor\rich\markup.py, .venv\Lib\site-packages\pip\_vendor\rich\padding.py, .venv\Lib\site-packages\pip\_vendor\rich\pager.py, .venv\Lib\site-packages\pip\_vendor\rich\palette.py, .venv\Lib\site-packages\pip\_vendor\rich\panel.py, .venv\Lib\site-packages\pip\_vendor\rich\pretty.py, .venv\Lib\site-packages\pip\_vendor\rich\progress.py, .venv\Lib\site-packages\pip\_vendor\rich\progress_bar.py, .venv\Lib\site-packages\pip\_vendor\rich\prompt.py, .venv\Lib\site-packages\pip\_vendor\rich\repr.py, .venv\Lib\site-packages\pip\_vendor\rich\rule.py, .venv\Lib\site-packages\pip\_vendor\rich\scope.py, .venv\Lib\site-packages\pip\_vendor\rich\segment.py, .venv\Lib\site-packages\pip\_vendor\rich\spinner.py, .venv\Lib\site-packages\pip\_vendor\rich\status.py, .venv\Lib\site-packages\pip\_vendor\rich\styled.py, .venv\Lib\site-packages\pip\_vendor\rich\syntax.py, .venv\Lib\site-packages\pip\_vendor\rich\table.py, .venv\Lib\site-packages\pip\_vendor\rich\text.py, .venv\Lib\site-packages\pip\_vendor\rich\theme.py, .venv\Lib\site-packages\pip\_vendor\rich\traceback.py, .venv\Lib\site-packages\pip\_vendor\rich\tree.py, .venv\Lib\site-packages\pip\_vendor\rich\_log_render.py, .venv\Lib\site-packages\pip\_vendor\rich\_ratio.py, .venv\Lib\site-packages\pip\_vendor\rich\_win32_console.py, .venv\Lib\site-packages\pip\_vendor\rich\_windows.py, .venv\Lib\site-packages\pip\_vendor\rich\_wrap.py, .venv\Lib\site-packages\pip\_vendor\rich\__init__.py, .venv\Lib\site-packages\pip\_vendor\rich\__main__.py, .venv\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process\_in_process.py, .venv\Lib\site-packages\PyQt6\uic\compile_ui.py, .venv\Lib\site-packages\pyqtgraph\examples\GLGradientLegendItem.py, .venv\Lib\site-packages\pyqtgraph\examples\GLGraphItem.py, .venv\Lib\site-packages\pyqtgraph\examples\InteractiveParameter.py, .venv\Lib\site-packages\pyqtgraph\examples\jupyter_console_example.py, .venv\Lib\site-packages\pyqtgraph\examples\MultiDataPlot.py, .venv\Lib\site-packages\pyqtgraph\examples\RunExampleApp.py, .venv\Lib\site-packages\pyqtgraph\examples\ScatterPlotSpeedTest.py, .venv\Lib\site-packages\pyqtgraph\examples\test_examples.py, .venv\Lib\site-packages\pyqtgraph\util\get_resolution.py
 
 ## Статистика проекта
 - Папок: 6
 - Python-файлов: 21
 - Всего файлов: 21
-- Классов: 47
+- Классов: 48
 - Функций: 2
 
 ## Дерево проекта
@@ -53,7 +53,7 @@ signalSimulator/
 Содержит модули детектирования и подсчёта метрик.
 #### Импорты
 - **Сторонние библиотеки:**
-  - `from analytics.detector import AnomalyDetector, DetectorConfig, DetectionResult, DetectionType`
+  - `from analytics.detector import AnomalyDetector, DetectionResult, DetectionType, DetectorConfig`
   - `from analytics.metrics import FaultAnalysisRecord, MetricsCalculator, MetricsSummary`
 
 ### Файл: `detector.py`
@@ -63,12 +63,14 @@ signalSimulator/
 Реализует три уровня анализа: пороговый контроль, статистическая проверка
 (отклонение от скользящего среднего) и обнаружение тренда (линейная регрессия).
 Все параметры настраиваются через DetectorConfig для управления из интерфейса.
+Реализует логику "срабатывания по фронту", отсечение шумовых микронаклонов
+и прогноз времени пересечения допустимых границ.
 #### Импорты
 - **Стандартная библиотека:**
   - `from collections import deque`
   - `from dataclasses import dataclass, field`
   - `from enum import Enum, auto`
-  - `from typing import Any, Dict, List, Optional`
+  - `from typing import Any`
   - `import logging`
 - **Сторонние библиотеки:**
   - `import numpy as np`
@@ -89,9 +91,9 @@ signalSimulator/
 Все параметры могут быть изменены из интерфейса настроек.
 Сериализуется в словарь для сохранения в конфигурации.
 Методы:
-- `def to_dict(self) -> Dict[str, Any]`
+- `def to_dict(self) -> dict[str, Any]`
   - Сериализация конфигурации в словарь.
-- `@classmethod def from_dict(cls, data: Dict[str, Any]) -> 'DetectorConfig'`
+- `@classmethod def from_dict(cls, data: dict[str, Any]) -> 'DetectorConfig'`
   - Создание конфигурации из словаря (мягкая валидация).
 ##### `class AnomalyDetector`
 > Лёгкая статистическая модель для обнаружения аномалий и трендов.
@@ -100,8 +102,10 @@ signalSimulator/
 вызывается на каждой новой точке и возвращает список обнаружений.
 Параметры настраиваются через `DetectorConfig` и могут быть изменены
 в любой момент через `set_config` (для интерфейса настроек).
+Реализует логику "срабатывания по фронту", игнорирование микронаклонов
+и расчет прогнозируемого времени выхода за допустимые пределы.
 Методы:
-- `def __init__(self, min_allowed: float, max_allowed: float, config: Optional[DetectorConfig]) -> None`
+- `def __init__(self, min_allowed: float, max_allowed: float, config: DetectorConfig | None) -> None`
   - Инициализация детектора.
 
 Args:
@@ -112,7 +116,7 @@ Args:
   - Обновить конфигурацию детектора (вызывается из интерфейса настроек).
 - `def get_config(self) -> DetectorConfig`
   - Получить текущую конфигурацию детектора.
-- `def process(self, time_ms: int, value: float) -> List[DetectionResult]`
+- `def process(self, time_ms: int, value: float) -> list[DetectionResult]`
   - Обработать новую точку данных.
 
 Добавляет точку в скользящее окно и выполняет все три уровня анализа.
@@ -124,15 +128,18 @@ Args:
 Returns:
     Список обнаружений (может быть пустым).
 - `def reset(self) -> None`
-  - Сброс скользящего окна.
+  - Сброс скользящего окна и состояния детектора.
 - `def _trim_window(self) -> None`
   - Обрезать скользящее окно до размера из конфигурации.
-- `def _check_threshold(self, time_ms: int, value: float) -> List[DetectionResult]`
+- `def _check_threshold(self, time_ms: int, value: float) -> list[DetectionResult]`
   - Пороговый контроль: выход за допустимые пределы.
-- `def _check_statistical(self, time_ms: int, value: float) -> List[DetectionResult]`
+Реализует логику срабатывания по фронту (только при переходе границы).
+- `def _check_statistical(self, time_ms: int, value: float) -> list[DetectionResult]`
   - Статистическая проверка: отклонение от скользящего среднего.
-- `def _check_trend(self, time_ms: int) -> List[DetectionResult]`
+- `def _check_trend(self, time_ms: int) -> list[DetectionResult]`
   - Обнаружение тренда: линейная регрессия по скользящему окну.
+Реализует отсечение шумовых микронаклонов, расчет времени до пересечения
+границы и логику срабатывания по фронту / ухудшению тренда.
 
 ### Файл: `metrics.py`
 > analytics/metrics.py
@@ -143,8 +150,7 @@ Returns:
 срабатываний и пропусков.
 #### Импорты
 - **Стандартная библиотека:**
-  - `from dataclasses import dataclass, field`
-  - `from typing import Dict, List, Optional, Set`
+  - `from dataclasses import dataclass`
   - `import logging`
 - **Сторонние библиотеки:**
   - `from core.event_log import EventRecord, EventType`
@@ -154,7 +160,7 @@ Returns:
 ##### `@dataclass class MetricsSummary`
 > Агрегированные метрики сравнения оператора и детектора.
 Методы:
-- `def to_dict(self) -> Dict[str, float]`
+- `def to_dict(self) -> dict[str, float]`
   - Сериализация метрик в словарь.
 ##### `class MetricsCalculator`
 > Калькулятор метрик сравнения оператора и детектора.
@@ -172,14 +178,14 @@ Returns:
 - Для остальных неисправностей: пропуск, если не обнаружена до внедрения
   следующей неисправности на том же графике.
 Методы:
-- `def __init__(self, trend_fault_types: Optional[Set[str]]) -> None`
+- `def __init__(self, trend_fault_types: set[str] | None) -> None`
   - Инициализация калькулятора метрик.
 
 Args:
     trend_fault_types: Множество типов неисправностей, для которых
         выход за порог считается индикатором пропуска.
         По умолчанию — {"degradation"}.
-- `def calculate(self, events: List[EventRecord]) -> MetricsSummary`
+- `def calculate(self, events: list[EventRecord]) -> MetricsSummary`
   - Вычислить метрики по списку событий журнала.
 
 Args:
@@ -187,22 +193,22 @@ Args:
 
 Returns:
     MetricsSummary: Агрегированные метрики.
-- `def _extract_events(self, events: List[EventRecord], event_type: EventType) -> Dict[str, List[EventRecord]]`
+- `def _extract_events(self, events: list[EventRecord], event_type: EventType) -> dict[str, list[EventRecord]]`
   - Группировка событий по идентификатору графика.
-- `def _analyze_plot(self, plot_id: str, faults: List[EventRecord], operator_detections: List[EventRecord], detector_detections: List[EventRecord], limit_exceeded: List[EventRecord]) -> tuple`
+- `def _analyze_plot(self, plot_id: str, faults: list[EventRecord], operator_detections: list[EventRecord], detector_detections: list[EventRecord], limit_exceeded: list[EventRecord]) -> tuple`
   - Анализ неисправностей для одного графика.
 
 Возвращает кортеж (список записей анализа, ложные оператора, ложные детектора).
-- `def _find_first_detection(self, detections: List[EventRecord], start_ms: int, end_ms: float) -> Optional[EventRecord]`
+- `def _find_first_detection(self, detections: list[EventRecord], start_ms: int, end_ms: float) -> EventRecord | None`
   - Поиск первого обнаружения в временном окне [start_ms, end_ms).
-- `def _has_preceding_fault(self, faults: List[EventRecord], time_ms: int) -> bool`
+- `def _has_preceding_fault(self, faults: list[EventRecord], time_ms: int) -> bool`
   - Проверка, была ли неисправность до указанного времени.
-- `def _is_missed(self, fault_type: str, record: FaultAnalysisRecord, next_injection_time: float, limit_exceeded: List[EventRecord]) -> bool`
+- `def _is_missed(self, fault_type: str, record: FaultAnalysisRecord, next_injection_time: float, limit_exceeded: list[EventRecord]) -> bool`
   - Определение, является ли неисправность пропущенной.
 
 Для трендовых неисправностей: пропуск, если не обнаружена до выхода за порог.
 Для остальных: пропуск, если не обнаружена до следующей неисправности.
-- `def _aggregate(self, records: List[FaultAnalysisRecord], operator_fp: int, detector_fp: int) -> MetricsSummary`
+- `def _aggregate(self, records: list[FaultAnalysisRecord], operator_fp: int, detector_fp: int) -> MetricsSummary`
   - Агрегация результатов анализа в итоговые метрики.
 
 ### Файл: `__init__.py`
@@ -213,7 +219,7 @@ Returns:
 #### Импорты
 - **Сторонние библиотеки:**
   - `from core.clock import GlobalClock`
-  - `from core.config import ConfigManager, ConfigError`
+  - `from core.config import ConfigError, ConfigManager`
   - `from core.event_log import EventLog, EventRecord, EventType`
 
 ### Файл: `clock.py`
@@ -222,7 +228,6 @@ Returns:
 Обеспечивает единый источник времени для всех компонентов системы.
 #### Импорты
 - **Стандартная библиотека:**
-  - `from typing import Optional`
   - `import logging`
 - **Сторонние библиотеки:**
   - `from PyQt6.QtCore import QObject, QTimer, pyqtSignal`
@@ -236,7 +241,7 @@ Attributes:
     time_updated (pyqtSignal): Сигнал, испускаемый при каждом обновлении времени.
         Передает текущее логическое время в миллисекундах.
 Методы:
-- `def __init__(self, parent: Optional[QObject]) -> None`
+- `def __init__(self, parent: QObject | None) -> None`
   - Инициализация глобальных часов.
 
 Args:
@@ -379,7 +384,7 @@ Returns:
 - **Стандартная библиотека:**
   - `from dataclasses import dataclass, field`
   - `from enum import Enum, auto`
-  - `from typing import Any, Dict, List, Optional`
+  - `from typing import Any`
   - `import logging`
 - **Сторонние библиотеки:**
   - `from PyQt6.QtCore import QObject, pyqtSignal`
@@ -402,12 +407,12 @@ Returns:
 для автоматического обновления. Аналитика читает записи через
 методы фильтрации.
 Методы:
-- `def __init__(self, parent: Optional[QObject]) -> None`
+- `def __init__(self, parent: QObject | None) -> None`
   - Инициализация журнала событий.
 
 Args:
     parent: Родительский QObject для управления временем жизни.
-- `def add(self, time_ms: int, event_type: EventType, description: str, plot_id: Optional[str], metadata: Optional[Dict[str, Any]]) -> EventRecord`
+- `def add(self, time_ms: int, event_type: EventType, description: str, plot_id: str | None, metadata: dict[str, Any] | None) -> EventRecord`
   - Добавить запись события в журнал.
 
 Создаёт запись, сохраняет её и испускает сигнал `event_added`.
@@ -421,7 +426,7 @@ Args:
 
 Returns:
     EventRecord: Созданная запись.
-- `def get_records(self, event_type: Optional[EventType], plot_id: Optional[str], start_ms: Optional[int], end_ms: Optional[int]) -> List[EventRecord]`
+- `def get_records(self, event_type: EventType | None, plot_id: str | None, start_ms: int | None, end_ms: int | None) -> list[EventRecord]`
   - Получить записи журнала с фильтрацией.
 
 Все параметры опциональны. При отсутствии параметра фильтр
@@ -435,7 +440,7 @@ Args:
 
 Returns:
     Список подходящих записей.
-- `def get_all(self) -> List[EventRecord]`
+- `def get_all(self) -> list[EventRecord]`
   - Получить все записи журнала.
 
 Returns:
@@ -454,9 +459,9 @@ Returns:
 Содержит генераторы сигналов, типы неисправностей и планировщик случайного внедрения.
 #### Импорты
 - **Сторонние библиотеки:**
-  - `from simulation.faults import Fault, DropoutFault, SpikeFault, NoiseFault, DegradationFault, FaultChain, FaultFactory`
-  - `from simulation.scheduler import FaultInjectionEvent, FaultTemplate, RandomFaultRule, FaultScheduler`
-  - `from simulation.signals import SignalGenerator, CompositeSignal, SawtoothSignal, TriangleSignal, SineSignal, StepSignal, LinearSignal, SquareSignal, ExponentialSignal, NoiseSignal, ConstantSignal, SignalFactory`
+  - `from simulation.faults import DegradationFault, DropoutFault, Fault, FaultChain, FaultFactory, NoiseFault, SpikeFault`
+  - `from simulation.scheduler import FaultInjectionEvent, FaultScheduler, FaultTemplate, RandomFaultRule`
+  - `from simulation.signals import CompositeSignal, ConstantSignal, ExponentialSignal, LinearSignal, NoiseSignal, SawtoothSignal, SignalFactory, SignalGenerator, SineSignal, SquareSignal, StepSignal, TriangleSignal`
 
 ### Файл: `faults.py`
 > simulation/faults.py
@@ -468,9 +473,8 @@ Returns:
 #### Импорты
 - **Стандартная библиотека:**
   - `from abc import ABC, abstractmethod`
-  - `from typing import Any, Dict, List, Optional`
+  - `from typing import Any`
   - `import logging`
-  - `import math`
   - `import random`
 #### Классы
 ##### `class Fault(ABC)`
@@ -485,7 +489,7 @@ Attributes:
     period_ms: Период повторения в мс. `None` или `0` — однократная неисправность.
     activation_time_ms: Время активации (для скрытых меток на графике).
 Методы:
-- `def __init__(self, duration_ms: Optional[int], period_ms: Optional[int]) -> None`
+- `def __init__(self, duration_ms: int | None, period_ms: int | None) -> None`
 - `def activate(self, time_ms: int) -> None`
   - Активировать неисправность в заданный момент времени.
 - `def deactivate(self) -> None`
@@ -526,7 +530,7 @@ Args:
 
 Returns:
     float: Модифицированное значение.
-- `@abstractmethod def get_params(self) -> Dict[str, Any]`
+- `@abstractmethod def get_params(self) -> dict[str, Any]`
   - Получить параметры неисправности для сериализации.
 
 Returns:
@@ -537,9 +541,9 @@ Returns:
 Во время активности сигнал заменяется на заданное значение
 (по умолчанию 0.0). Может быть однократным или периодическим.
 Методы:
-- `def __init__(self, duration_ms: Optional[int], period_ms: Optional[int], dropout_value: float) -> None`
+- `def __init__(self, duration_ms: int | None, period_ms: int | None, dropout_value: float) -> None`
 - `def _apply_effect(self, time_ms: int, base_value: float) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class SpikeFault(Fault)`
 > Скачок (импульс).
 
@@ -548,9 +552,9 @@ Returns:
 Для имитации короткого замыкания задайте большой процент
 и `duration_ms=None` (бесконечная длительность).
 Методы:
-- `def __init__(self, magnitude_percent: float, duration_ms: Optional[int], period_ms: Optional[int]) -> None`
+- `def __init__(self, magnitude_percent: float, duration_ms: int | None, period_ms: int | None) -> None`
 - `def _apply_effect(self, time_ms: int, base_value: float) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class NoiseFault(Fault)`
 > Шум (гауссовский).
 
@@ -558,9 +562,9 @@ Returns:
 Сила шума задаётся параметром `sigma`. Неисправность активна всё время
 после активации (по умолчанию длительность бесконечная).
 Методы:
-- `def __init__(self, mean: float, sigma: float, duration_ms: Optional[int], period_ms: Optional[int]) -> None`
+- `def __init__(self, mean: float, sigma: float, duration_ms: int | None, period_ms: int | None) -> None`
 - `def _apply_effect(self, time_ms: int, base_value: float) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class DegradationFault(Fault)`
 > Деградация (линейный тренд).
 
@@ -570,25 +574,25 @@ Returns:
 
 Пример: `rate_percent_per_sec=-0.001` означает уменьшение на 0.001% в секунду.
 Методы:
-- `def __init__(self, rate_percent_per_sec: float, duration_ms: Optional[int]) -> None`
+- `def __init__(self, rate_percent_per_sec: float, duration_ms: int | None) -> None`
 - `def activate(self, time_ms: int) -> None`
   - Активация с сбросом зафиксированного базового значения.
 - `def _apply_effect(self, time_ms: int, base_value: float) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class FaultChain`
 > Цепочка неисправностей для последовательного применения к сигналу.
 
 Позволяет комбинировать несколько неисправностей на одном графике,
 например: базовый сигнал + шум + деградация.
 Методы:
-- `def __init__(self, faults: Optional[List[Fault]]) -> None`
+- `def __init__(self, faults: list[Fault] | None) -> None`
 - `def add_fault(self, fault: Fault) -> None`
   - Добавить неисправность в цепочку.
 - `def remove_fault(self, fault: Fault) -> None`
   - Удалить неисправность из цепочки.
 - `def clear(self) -> None`
   - Очистить цепочку.
-- `def get_faults(self) -> List[Fault]`
+- `def get_faults(self) -> list[Fault]`
   - Получить список неисправностей в цепочке.
 - `def apply_all(self, time_ms: int, base_value: float) -> float`
   - Применить все активные неисправности последовательно.
@@ -606,7 +610,7 @@ Returns:
 Методы:
 - `@classmethod def register(cls, name: str, fault_class: type) -> None`
   - Зарегистрировать новый тип неисправности.
-- `@classmethod def create(cls, fault_type: str, params: Optional[Dict[str, Any]]) -> Optional[Fault]`
+- `@classmethod def create(cls, fault_type: str, params: dict[str, Any] | None) -> Fault | None`
   - Создать неисправность по типу и параметрам.
 
 Args:
@@ -615,7 +619,7 @@ Args:
 
 Returns:
     Fault: Экземпляр неисправности. При ошибке — `None`.
-- `@classmethod def available_types(cls) -> List[str]`
+- `@classmethod def available_types(cls) -> list[str]`
   - Вернуть список доступных типов неисправностей.
 
 ### Файл: `scheduler.py`
@@ -628,7 +632,7 @@ Returns:
 #### Импорты
 - **Стандартная библиотека:**
   - `from dataclasses import dataclass, field`
-  - `from typing import Any, Dict, List, Optional`
+  - `from typing import Any`
   - `import logging`
   - `import random`
 #### Классы
@@ -649,7 +653,7 @@ Returns:
     - "all": все графики из списка
     - "random_subset": случайное подмножество размера subset_count
 Методы:
-- `def select_target_plot_ids(self, available_plot_ids: List[str]) -> List[str]`
+- `def select_target_plot_ids(self, available_plot_ids: list[str]) -> list[str]`
   - Определить целевые графики согласно режиму внедрения.
 
 Если `target_plot_ids` пуст, используются все доступные графики
@@ -682,19 +686,19 @@ Returns:
   - Добавить шаблон неисправности в реестр.
 - `def remove_template(self, template_id: str) -> None`
   - Удалить шаблон неисправности из реестра.
-- `def get_template(self, template_id: str) -> Optional[FaultTemplate]`
+- `def get_template(self, template_id: str) -> FaultTemplate | None`
   - Получить шаблон по ID.
-- `def list_templates(self) -> List[FaultTemplate]`
+- `def list_templates(self) -> list[FaultTemplate]`
   - Получить список всех шаблонов.
 - `def add_rule(self, rule: RandomFaultRule) -> None`
   - Добавить правило случайного внедрения.
 - `def remove_rule(self, rule_id: str) -> None`
   - Удалить правило случайного внедрения.
-- `def get_rule(self, rule_id: str) -> Optional[RandomFaultRule]`
+- `def get_rule(self, rule_id: str) -> RandomFaultRule | None`
   - Получить правило по ID.
-- `def list_rules(self) -> List[RandomFaultRule]`
+- `def list_rules(self) -> list[RandomFaultRule]`
   - Получить список всех правил.
-- `def tick(self, current_time_ms: int, available_plot_ids: List[str]) -> List[FaultInjectionEvent]`
+- `def tick(self, current_time_ms: int, available_plot_ids: list[str]) -> list[FaultInjectionEvent]`
   - Обработка одного тика времени.
 
 Для каждого активного правила проверяет, наступило ли время проверки.
@@ -708,7 +712,7 @@ Args:
 
 Returns:
     Список событий внедрения неисправностей.
-- `def _inject_from_rule(self, rule: RandomFaultRule, time_ms: int, available_plot_ids: List[str]) -> List[FaultInjectionEvent]`
+- `def _inject_from_rule(self, rule: RandomFaultRule, time_ms: int, available_plot_ids: list[str]) -> list[FaultInjectionEvent]`
   - Внутренний метод генерации событий при срабатывании правила.
 
 Выбирает случайный шаблон из списка правила, определяет целевые
@@ -734,7 +738,7 @@ Returns:
 #### Импорты
 - **Стандартная библиотека:**
   - `from abc import ABC, abstractmethod`
-  - `from typing import Any, Dict, List, Optional`
+  - `from typing import Any`
   - `import logging`
   - `import math`
   - `import random`
@@ -753,7 +757,7 @@ Args:
 
 Returns:
     float: Значение сигнала.
-- `@abstractmethod def get_params(self) -> Dict[str, Any]`
+- `@abstractmethod def get_params(self) -> dict[str, Any]`
   - Получить параметры сигнала в виде словаря (для сериализации).
 
 Returns:
@@ -765,7 +769,7 @@ Returns:
 и другими компонентами. Используется для построения
 сложных сигналов, включая неисправности.
 Методы:
-- `def __init__(self, signals: Optional[List[SignalGenerator]]) -> None`
+- `def __init__(self, signals: list[SignalGenerator] | None) -> None`
   - Args:
     signals: Список вложенных сигналов для суммирования.
 - `def add_signal(self, signal: SignalGenerator) -> None`
@@ -774,7 +778,7 @@ Returns:
   - Удалить сигнал из композиции.
 - `def get_value(self, time_ms: int) -> float`
   - Сумма значений всех вложенных сигналов.
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
   - Параметры всех вложенных сигналов.
 ##### `class SawtoothSignal(SignalGenerator)`
 > Пилообразный сигнал: линейный рост от min_val до max_val за период,
@@ -782,27 +786,27 @@ Returns:
 Методы:
 - `def __init__(self, min_val: float, max_val: float, period_ms: int, offset: float) -> None`
 - `def get_value(self, time_ms: int) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class TriangleSignal(SignalGenerator)`
 > Треугольный сигнал (симметричная пила): линейный рост от min_val до max_val,
 затем линейное падение обратно к min_val.
 Методы:
 - `def __init__(self, min_val: float, max_val: float, period_ms: int, offset: float) -> None`
 - `def get_value(self, time_ms: int) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class SineSignal(SignalGenerator)`
 > Синусоидальный сигнал.
 Методы:
 - `def __init__(self, amplitude: float, period_ms: int, phase: float, offset: float) -> None`
 - `def get_value(self, time_ms: int) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class StepSignal(SignalGenerator)`
 > Ступенчатый сигнал: первая половина периода — min_val,
 вторая половина — max_val.
 Методы:
 - `def __init__(self, min_val: float, max_val: float, period_ms: int, offset: float) -> None`
 - `def get_value(self, time_ms: int) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class LinearSignal(SignalGenerator)`
 > Линейный сигнал (тренд).
 
@@ -812,7 +816,7 @@ Returns:
 Методы:
 - `def __init__(self, start_val: float, rate_per_sec: float, offset: float) -> None`
 - `def get_value(self, time_ms: int) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class SquareSignal(SignalGenerator)`
 > Прямоугольный сигнал (меандр) с настраиваемым коэффициентом заполнения.
 
@@ -820,7 +824,7 @@ duty_cycle — доля периода, в течение которой сиг�
 Методы:
 - `def __init__(self, min_val: float, max_val: float, period_ms: int, duty_cycle: float, offset: float) -> None`
 - `def get_value(self, time_ms: int) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class ExponentialSignal(SignalGenerator)`
 > Экспоненциальный сигнал.
 
@@ -829,7 +833,7 @@ duty_cycle — доля периода, в течение которой сиг�
 Методы:
 - `def __init__(self, amplitude: float, rate_per_sec: float, offset: float) -> None`
 - `def get_value(self, time_ms: int) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class NoiseSignal(SignalGenerator)`
 > Случайный шум (гауссовский).
 
@@ -838,13 +842,13 @@ duty_cycle — доля периода, в течение которой сиг�
 Методы:
 - `def __init__(self, mean: float, sigma: float) -> None`
 - `def get_value(self, time_ms: int) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class ConstantSignal(SignalGenerator)`
 > Постоянное значение.
 Методы:
 - `def __init__(self, value: float) -> None`
 - `def get_value(self, time_ms: int) -> float`
-- `def get_params(self) -> Dict[str, Any]`
+- `def get_params(self) -> dict[str, Any]`
 ##### `class SignalFactory`
 > Фабрика для создания генераторов сигналов по типу.
 
@@ -852,7 +856,7 @@ duty_cycle — доля периода, в течение которой сиг�
 Методы:
 - `@classmethod def register(cls, name: str, signal_class: type) -> None`
   - Зарегистрировать новый тип сигнала.
-- `@classmethod def create(cls, signal_type: str, params: Optional[Dict[str, Any]]) -> SignalGenerator`
+- `@classmethod def create(cls, signal_type: str, params: dict[str, Any] | None) -> SignalGenerator`
   - Создать генератор сигнала по типу и параметрам.
 
 Args:
@@ -861,7 +865,7 @@ Args:
 
 Returns:
     SignalGenerator: Экземпляр сигнала. При ошибке — ConstantSignal(0).
-- `@classmethod def available_types(cls) -> List[str]`
+- `@classmethod def available_types(cls) -> list[str]`
   - Вернуть список доступных типов сигналов.
 
 ### Файл: `simulator.py`
@@ -873,7 +877,7 @@ Returns:
 1 симуляционная секунда и обрабатывает события внедрения неисправностей.
 #### Импорты
 - **Стандартная библиотека:**
-  - `from typing import Any, Dict, List, Optional, Tuple`
+  - `from typing import Any`
   - `import logging`
 - **Сторонние библиотеки:**
   - `from PyQt6.QtCore import QObject, pyqtSignal`
@@ -900,7 +904,7 @@ Returns:
   - Получить все времена как единый массив.
 - `def get_all_values(self) -> np.ndarray`
   - Получить все значения как единый массив.
-- `def get_last(self, n: int) -> Tuple[np.ndarray, np.ndarray]`
+- `def get_last(self, n: int) -> tuple[np.ndarray, np.ndarray]`
   - Получить последние `n` точек (для отображения).
 - `def get_count(self) -> int`
   - Получить общее количество точек.
@@ -917,7 +921,7 @@ Returns:
 данные графиков с шагом 1 симуляционная секунда, обрабатывает события
 планировщика неисправностей и ведёт журнал событий.
 Методы:
-- `def __init__(self, clock: GlobalClock, event_log: EventLog, scheduler: Optional[FaultScheduler], parent: Optional[QObject]) -> None`
+- `def __init__(self, clock: GlobalClock, event_log: EventLog, scheduler: FaultScheduler | None, parent: QObject | None) -> None`
   - Инициализация движка симуляции.
 
 Args:
@@ -929,15 +933,15 @@ Args:
   - Добавить график в симуляцию.
 - `def remove_plot(self, plot_id: str) -> None`
   - Удалить график из симуляции.
-- `def get_plot(self, plot_id: str) -> Optional[PlotState]`
+- `def get_plot(self, plot_id: str) -> PlotState | None`
   - Получить состояние графика по ID.
-- `def get_all_plot_ids(self) -> List[str]`
+- `def get_all_plot_ids(self) -> list[str]`
   - Получить список всех идентификаторов графиков.
 - `def _on_time_updated(self, time_ms: int) -> None`
   - Обработка тика часов: генерация данных и обработка событий.
 - `def _generate_points(self, plot: PlotState, current_time_ms: int) -> None`
   - Генерация точек для графика до текущего времени с шагом 1 секунда.
-- `def inject_fault(self, plot_id: str, fault_type: str, fault_params: Dict[str, Any]) -> Optional[Fault]`
+- `def inject_fault(self, plot_id: str, fault_type: str, fault_params: dict[str, Any]) -> Fault | None`
   - Ручное внедрение неисправности на график.
 
 Создаёт неисправность через фабрику, добавляет в цепочку,
@@ -950,7 +954,7 @@ Args:
 
 Returns:
     Созданная неисправность или `None` при ошибке.
-- `def process_injection_events(self, events: List[FaultInjectionEvent]) -> None`
+- `def process_injection_events(self, events: list[FaultInjectionEvent]) -> None`
   - Обработка событий внедрения от планировщика.
 
 Для каждого события создаёт неисправность, добавляет в цепочку
@@ -960,8 +964,12 @@ Args:
     events: Список событий внедрения.
 - `def record_operator_detection(self, plot_id: str) -> None`
   - Фиксация обнаружения неисправности оператором.
-- `def record_detector_detection(self, plot_id: str) -> None`
+- `def record_detector_detection(self, plot_id: str, description: str) -> None`
   - Фиксация обнаружения неисправности детектором.
+
+Args:
+    plot_id: Идентификатор графика.
+    description: Детальное описание причины обнаружения (для журнала событий).
 - `def reset(self) -> None`
   - Сброс состояния движка (очистка историй и меток).
 
@@ -988,7 +996,6 @@ Args:
 задать период проверки, вероятность срабатывания и режим внедрения.
 #### Импорты
 - **Стандартная библиотека:**
-  - `from typing import List, Optional`
   - `import logging`
 - **Сторонние библиотеки:**
   - `from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QRadioButton, QSpinBox, QVBoxLayout, QWidget`
@@ -1004,7 +1011,7 @@ Args:
 - Вероятность срабатывания (X в долях 0.0–1.0)
 - Режим внедрения: один / все / случайное подмножество
 Методы:
-- `def __init__(self, available_templates: List[FaultTemplate], parent: Optional[QWidget]) -> None`
+- `def __init__(self, available_templates: list[FaultTemplate], parent: QWidget | None) -> None`
   - Инициализация диалога правила.
 
 Args:
@@ -1014,7 +1021,7 @@ Args:
   - Создание интерфейса диалога.
 - `def _on_accept(self) -> None`
   - Обработчик нажатия кнопки ОК.
-- `def get_rule(self) -> Optional[RandomFaultRule]`
+- `def get_rule(self) -> RandomFaultRule | None`
   - Получить созданное правило.
 
 ### Файл: `fault_template_dialog.py`
@@ -1024,10 +1031,9 @@ Args:
 и характер действия (постоянная, разовая, периодическая).
 #### Импорты
 - **Стандартная библиотека:**
-  - `from typing import Optional`
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QPushButton, QRadioButton, QSpinBox, QVBoxLayout, QWidget`
+  - `from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QRadioButton, QSpinBox, QVBoxLayout, QWidget`
   - `from simulation.faults import FaultFactory`
   - `from simulation.scheduler import FaultTemplate`
 #### Классы
@@ -1041,7 +1047,7 @@ Args:
 - Характер: постоянная / разовая / периодическая
 - Для разовой и периодической: длительность и период
 Методы:
-- `def __init__(self, template: Optional[FaultTemplate], parent: Optional[QWidget]) -> None`
+- `def __init__(self, template: FaultTemplate | None, parent: QWidget | None) -> None`
   - Инициализация диалога шаблона.
 
 Args:
@@ -1059,7 +1065,7 @@ Args:
   - Загрузить параметры существующего шаблона в форму.
 - `def _on_accept(self) -> None`
   - Обработчик нажатия кнопки ОК.
-- `def get_template(self) -> Optional[FaultTemplate]`
+- `def get_template(self) -> FaultTemplate | None`
   - Получить созданный/обновлённый шаблон.
 
 ### Файл: `fault_window.py`
@@ -1070,7 +1076,6 @@ Args:
 Диалоги создания шаблонов и правил вынесены в отдельные модули.
 #### Импорты
 - **Стандартная библиотека:**
-  - `from typing import Optional`
   - `import logging`
 - **Сторонние библиотеки:**
   - `from PyQt6.QtCore import pyqtSignal`
@@ -1091,7 +1096,7 @@ Args:
 Signals:
     fault_injected: Неисправность внедрена вручную (plot_id, fault_type, fault_params).
 Методы:
-- `def __init__(self, scheduler: FaultScheduler, engine: SimulationEngine, parent: Optional[QWidget]) -> None`
+- `def __init__(self, scheduler: FaultScheduler, engine: SimulationEngine, parent: QWidget | None) -> None`
   - Инициализация окна управления неисправностями.
 
 Args:
@@ -1139,10 +1144,8 @@ Args:
 Окно открывается и закрывается из главного окна через координатор.
 #### Импорты
 - **Стандартная библиотека:**
-  - `from typing import List, Optional, Tuple`
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtCore import Qt`
   - `from PyQt6.QtWidgets import QCheckBox, QComboBox, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QPlainTextEdit, QVBoxLayout, QWidget`
   - `from core.event_log import EventLog, EventRecord, EventType`
 #### Классы
@@ -1156,7 +1159,7 @@ Args:
 
 Формат строки лога: `ЧЧ:ММ:СС.мс | ТИП_СОБЫТИЯ | график | Описание`
 Методы:
-- `def __init__(self, event_log: EventLog, parent: Optional[QWidget]) -> None`
+- `def __init__(self, event_log: EventLog, parent: QWidget | None) -> None`
   - Инициализация окна журнала.
 
 Args:
@@ -1173,12 +1176,12 @@ Args:
     record: Новая запись журнала.
 - `def _apply_filter(self) -> None`
   - Применить текущий фильтр и перерисовать лог.
-- `def _get_filter_params(self) -> Tuple[str, str, Optional[int], Optional[int]]`
+- `def _get_filter_params(self) -> tuple[str, str, int | None, int | None]`
   - Получить текущие параметры фильтра из элементов интерфейса.
 
 Returns:
     Кортеж (тип события или "Все типы", подстрока графика, время от, время до).
-- `def _parse_time_ms(self, text: str) -> Optional[int]`
+- `def _parse_time_ms(self, text: str) -> int | None`
   - Разобрать текст поля времени в миллисекунды.
 
 Пустая строка означает отсутствие ограничения.
@@ -1188,7 +1191,7 @@ Args:
 
 Returns:
     int или None, если пусто или некорректно.
-- `def _matches_filter(self, record: EventRecord, type_filter: str, plot_filter: str, start_ms: Optional[int], end_ms: Optional[int]) -> bool`
+- `def _matches_filter(self, record: EventRecord, type_filter: str, plot_filter: str, start_ms: int | None, end_ms: int | None) -> bool`
   - Проверить, подходит ли запись под текущий фильтр.
 
 Args:
@@ -1227,31 +1230,33 @@ Returns:
 > ui/main_window.py
 Главное окно приложения — центральная панель управления симуляцией.
 Содержит панель управления временем, список графиков, меню и кнопки
-для открытия вспомогательных окон.
+для открытия вспомогательных окон и изменения настроек графиков.
 #### Импорты
 - **Стандартная библиотека:**
-  - `from typing import Optional`
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtCore import pyqtSignal, Qt`
-  - `from PyQt6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QListWidget, QListWidgetItem, QMenuBar, QMenu, QMessageBox, QFileDialog`
+  - `from PyQt6.QtCore import Qt, pyqtSignal`
+  - `from PyQt6.QtWidgets import QCheckBox, QFileDialog, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget`
   - `from core.clock import GlobalClock`
-  - `from core.config import ConfigManager, ConfigError`
+  - `from core.config import ConfigError, ConfigManager`
 #### Классы
 ##### `class MainWindow(QMainWindow)`
 > Главное окно приложения.
 
 Обеспечивает управление временем симуляции, списком графиков,
-открытие/закрытие журнала событий и сохранение/загрузку конфигураций.
+открытие/закрытие журнала событий, сохранение/загрузку конфигураций
+и запрос на изменение настроек существующих графиков.
 
 Signals:
     plot_open_requested: Запрос на открытие окна графика (plot_id).
     plot_add_requested: Запрос на создание нового графика.
     plot_remove_requested: Запрос на удаление графика (plot_id).
+    plot_settings_requested: Запрос на изменение настроек графика (plot_id).
+    reset_requested: Запрос на полный сброс симуляции (для очистки графиков).
     journal_toggled: Журнал открыт (True) или закрыт (False).
-    hidden_markers_toggled: Режим скрытых меток включён (True) или выключен (False).
+    hidden_markers_toggled: Режим скрытых меток включён (True) или выключён (False).
 Методы:
-- `def __init__(self, clock: GlobalClock, parent: Optional[QWidget]) -> None`
+- `def __init__(self, clock: GlobalClock, parent: QWidget | None) -> None`
   - Инициализация главного окна.
 
 Args:
@@ -1278,7 +1283,7 @@ Args:
 
 Args:
     plot_id: Идентификатор графика.
-- `def get_selected_plot_id(self) -> Optional[str]`
+- `def get_selected_plot_id(self) -> str | None`
   - Получить идентификатор выбранного графика.
 - `def _on_start(self) -> None`
   - Запуск симуляции.
@@ -1296,9 +1301,11 @@ Args:
   - Запрос на создание нового графика.
 - `def _on_open_plot(self) -> None`
   - Запрос на открытие окна выбранного графика.
+- `def _on_plot_settings(self) -> None`
+  - Запрос на изменение настроек выбранного графика.
 - `def _on_remove_plot(self) -> None`
   - Запрос на удаление выбранного графика.
-- `def _on_plot_selection_changed(self, current: Optional[QListWidgetItem], previous) -> None`
+- `def _on_plot_selection_changed(self, current: QListWidgetItem | None, previous) -> None`
   - Обработка изменения выбора в списке графиков.
 - `def _on_toggle_journal(self) -> None`
   - Переключение видимости журнала событий.
@@ -1314,81 +1321,70 @@ Args:
 ### Файл: `plot_creation_dialog.py`
 > ui/plot_creation_dialog.py
 
-Модальный диалог создания нового графика телеметрии.
+Модальный диалог создания и редактирования графика телеметрии.
 Позволяет настроить все параметры графика: название, единицу измерения,
 тип сигнала с его параметрами, допустимые пределы и интервал наблюдения.
-Вызывается из главного окна по сигналу plot_add_requested.
+Вызывается из главного окна по сигналу plot_add_requested или plot_settings_requested.
 #### Импорты
 - **Стандартная библиотека:**
-  - `from typing import Any, Dict, Optional`
+  - `from typing import Any`
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtCore import Qt`
   - `from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QSpinBox, QVBoxLayout, QWidget`
-  - `from simulation.signals import SignalFactory`
 #### Классы
+##### `class PeriodWidget(QWidget)`
+> Виджет для удобного ввода периода с выбором единицы измерения.
+Автоматически конвертирует выбранное значение и единицу в миллисекунды и обратно.
+Методы:
+- `def __init__(self, default_ms: int, parent: QWidget | None) -> None`
+- `def get_period_ms(self) -> int`
+  - Возвращает период, пересчитанный в миллисекунды.
+- `def set_period_ms(self, ms: int) -> None`
+  - Устанавливает период, автоматически выбирая удобную единицу измерения.
+
+Args:
+    ms: Значение периода в миллисекундах.
 ##### `class PlotCreationDialog(QDialog)`
-> Модальный диалог создания нового графика телеметрии.
+> Модальный диалог создания и редактирования графика телеметрии.
 
 Позволяет настроить:
 - Основные параметры (название, единица, макс. значение)
 - Интервал наблюдения (через пресеты или ручной ввод в секундах)
 - Допустимые пределы (min_allowed, max_allowed)
-- Тип сигнала и его параметры (динамически меняются)
+- Тип сигнала и его параметры (динамически меняются, период вводится с выбором единицы)
 
+Если передан initial_params, диалог переходит в режим редактирования и предзаполняет поля.
 После подтверждения результат доступен через метод get_plot_params().
 Методы:
-- `def __init__(self, parent: Optional[QWidget]) -> None`
-  - Инициализация диалога создания графика.
+- `def __init__(self, parent: QWidget | None, initial_params: dict[str, Any] | None) -> None`
+  - Инициализация диалога создания/редактирования графика.
 
 Args:
     parent: Родительский виджет.
+    initial_params: Словарь существующих параметров для предзаполнения (режим редактирования).
 - `def _init_ui(self) -> None`
   - Создание интерфейса диалога.
+- `def _populate_fields(self, params: dict[str, Any]) -> None`
+  - Предзаполняет поля диалога переданными параметрами (для режима редактирования).
+
+Args:
+    params: Словарь параметров графика.
 - `def _on_preset_changed(self, index: int) -> None`
   - Обработчик изменения пресета интервала.
-
 При выборе пресета подставляет значение в поле ручного ввода.
-
-Args:
-    index: Индекс выбранного пресета.
 - `def _update_signal_params_fields(self) -> None`
   - Обновление полей параметров сигнала при смене типа.
-
 Удаляет старые поля и создаёт новые в соответствии с выбранным типом сигнала.
-- `def _add_signal_param(self, param_name: str, label: str, default_value: float, is_int: bool) -> None`
+- `def _add_signal_param(self, param_name: str, label: str, default_value: float, is_int: bool, tooltip: str) -> None`
   - Добавить поле параметра сигнала в форму.
-
-Args:
-    param_name: Имя параметра (используется как ключ в словаре).
-    label: Отображаемая метка.
-    default_value: Значение по умолчанию.
-    is_int: Если True, используется QSpinBox (целое), иначе QDoubleSpinBox.
+Для периода используется специализированный виджет с выбором единицы измерения.
 - `def _on_accept(self) -> None`
   - Обработчик нажатия кнопки ОК.
-
 Выполняет валидацию и при успехе сохраняет параметры и закрывает диалог.
 - `def _validate(self) -> bool`
   - Валидация введённых данных.
-
-Returns:
-    bool: True, если данные корректны, False иначе.
-- `def get_plot_params(self) -> Optional[Dict[str, Any]]`
+- `def get_plot_params(self) -> dict[str, Any] | None`
   - Получить параметры графика после подтверждения диалога.
-
-Returns:
-    dict: Словарь параметров графика, или None если диалог был отменён.
-          Структура:
-          {
-              "name": str,
-              "unit": str,
-              "max_unit_value": float,
-              "observation_interval_ms": int,
-              "min_allowed": float,
-              "max_allowed": float,
-              "signal_type": str,
-              "signal_params": dict
-          }
 
 ### Файл: `plot_window.py`
 > ui/plot_window.py
@@ -1400,10 +1396,9 @@ Returns:
 метод `update_data`, а подписку выполняет координатор (главное окно).
 #### Импорты
 - **Стандартная библиотека:**
-  - `from typing import List, Optional, Tuple`
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtCore import pyqtSignal`
+  - `from PyQt6.QtCore import Qt, pyqtSignal`
   - `from PyQt6.QtWidgets import QHBoxLayout, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget`
   - `import numpy as np`
   - `import pyqtgraph as pg`
@@ -1419,7 +1414,7 @@ Signals:
     detection_requested: Оператор нажал кнопку обнаружения (передаёт `plot_id`).
     window_closed: Окно закрыто (передаёт `plot_id`).
 Методы:
-- `def __init__(self, plot_id: str, name: str, unit: str, min_allowed: float, max_allowed: float, observation_interval_ms: int, parent: Optional[QWidget]) -> None`
+- `def __init__(self, plot_id: str, name: str, unit: str, min_allowed: float, max_allowed: float, observation_interval_ms: int, parent: QWidget | None) -> None`
   - Инициализация окна графика.
 
 Args:
@@ -1432,7 +1427,19 @@ Args:
     parent: Родительский виджет.
 - `def _init_ui(self) -> None`
   - Создание интерфейса окна.
-- `def update_data(self, times: List[int], values: List[float]) -> None`
+- `def clear_data(self) -> None`
+  - Очистить накопленные данные графика и все метки (кроме линий пределов).
+Вызывается при сбросе симуляции или изменении настроек графика.
+- `def update_settings(self, name: str, unit: str, min_allowed: float, max_allowed: float, observation_interval_ms: int) -> None`
+  - Обновить настройки графика (название, единицы, пределы, интервал) без пересоздания окна.
+
+Args:
+    name: Новое название графика.
+    unit: Новая единица измерения.
+    min_allowed: Новое минимально допустимое значение.
+    max_allowed: Новое максимально допустимое значение.
+    observation_interval_ms: Новый интервал наблюдения (длительность по оси X).
+- `def update_data(self, times: list[int], values: list[float]) -> None`
   - Обновить данные графика (публичный метод для координатора).
 
 Новые точки добавляются к накопленной истории, после чего
@@ -1455,7 +1462,7 @@ Args:
   - Добавить метку обнаружения детектором (вертикальная линия).
 - `def set_hidden_markers_visible(self, visible: bool) -> None`
   - Переключить видимость скрытых меток неисправностей.
-- `def _decimate(self, times: List[int], values: List[float]) -> Tuple[List[int], List[float]]`
+- `def _decimate(self, times: list[int], values: list[float]) -> tuple[list[int], list[float]]`
   - Децимация данных для отрисовки.
 
 Если точек не больше `MAX_DISPLAY_POINTS` — возвращает как есть.
@@ -1482,7 +1489,8 @@ Returns:
   - `import logging`
   - `import sys`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtWidgets import QApplication`
+  - `from PyQt6.QtCore import Qt`
+  - `from PyQt6.QtWidgets import QApplication, QMessageBox`
   - `from analytics.detector import AnomalyDetector`
   - `from core.clock import GlobalClock`
   - `from core.config import ConfigManager`
@@ -1511,8 +1519,12 @@ Returns:
   - Обработка запроса на создание нового графика.
 - `def _on_open_plot(self, plot_id: str) -> None`
   - Показать существующее окно графика.
+- `def _on_plot_settings(self, plot_id: str) -> None`
+  - Обработка запроса на изменение настроек существующего графика.
+- `def _on_reset(self) -> None`
+  - Обработка запроса на сброс симуляции: очистка данных графиков и детекторов.
 - `def _on_remove_plot(self, plot_id: str) -> None`
-  - Удаление графика из симуляции и закрытие его окна.
+  - Удаление графика из симуляции и корректное уничтожение его окна.
 - `def _on_toggle_journal(self, visible: bool) -> None`
   - Показать или скрыть окно журнала событий.
 - `def _on_toggle_hidden_markers(self, visible: bool) -> None`
@@ -1525,7 +1537,7 @@ Returns:
 - `def _on_operator_detection(self, plot_id: str) -> None`
   - Фиксация обнаружения оператором и добавление метки.
 - `def _on_plot_window_closed(self, plot_id: str) -> None`
-  - Обработка закрытия окна графика пользователем (удаление из словаря).
+  - Обработка закрытия окна графика пользователем (окно скрывается, но остается в памяти).
 #### Функции
 - `def main() -> None`
   - Точка входа в приложение.
@@ -1549,7 +1561,6 @@ Returns:
 - `__init__.py` → `ui.plot_window`
 - `clock.py` → `PyQt6.QtCore`
 - `clock.py` → `logging`
-- `clock.py` → `typing`
 - `config.py` → `datetime`
 - `config.py` → `json`
 - `config.py` → `logging`
@@ -1569,31 +1580,26 @@ Returns:
 - `fault_rule_dialog.py` → `PyQt6.QtWidgets`
 - `fault_rule_dialog.py` → `logging`
 - `fault_rule_dialog.py` → `simulation.scheduler`
-- `fault_rule_dialog.py` → `typing`
 - `fault_template_dialog.py` → `PyQt6.QtWidgets`
 - `fault_template_dialog.py` → `logging`
 - `fault_template_dialog.py` → `simulation.faults`
 - `fault_template_dialog.py` → `simulation.scheduler`
-- `fault_template_dialog.py` → `typing`
 - `fault_window.py` → `PyQt6.QtCore`
 - `fault_window.py` → `PyQt6.QtWidgets`
 - `fault_window.py` → `PyQt6.QtWidgets`
 - `fault_window.py` → `logging`
 - `fault_window.py` → `simulation.scheduler`
 - `fault_window.py` → `simulation.simulator`
-- `fault_window.py` → `typing`
 - `fault_window.py` → `ui.fault_rule_dialog`
 - `fault_window.py` → `ui.fault_template_dialog`
 - `faults.py` → `abc`
 - `faults.py` → `logging`
-- `faults.py` → `math`
 - `faults.py` → `random`
 - `faults.py` → `typing`
-- `log_window.py` → `PyQt6.QtCore`
 - `log_window.py` → `PyQt6.QtWidgets`
 - `log_window.py` → `core.event_log`
 - `log_window.py` → `logging`
-- `log_window.py` → `typing`
+- `main.py` → `PyQt6.QtCore`
 - `main.py` → `PyQt6.QtWidgets`
 - `main.py` → `analytics.detector`
 - `main.py` → `core.clock`
@@ -1614,22 +1620,17 @@ Returns:
 - `main_window.py` → `core.clock`
 - `main_window.py` → `core.config`
 - `main_window.py` → `logging`
-- `main_window.py` → `typing`
 - `metrics.py` → `core.event_log`
 - `metrics.py` → `dataclasses`
 - `metrics.py` → `logging`
-- `metrics.py` → `typing`
-- `plot_creation_dialog.py` → `PyQt6.QtCore`
 - `plot_creation_dialog.py` → `PyQt6.QtWidgets`
 - `plot_creation_dialog.py` → `logging`
-- `plot_creation_dialog.py` → `simulation.signals`
 - `plot_creation_dialog.py` → `typing`
 - `plot_window.py` → `PyQt6.QtCore`
 - `plot_window.py` → `PyQt6.QtWidgets`
 - `plot_window.py` → `logging`
 - `plot_window.py` → `numpy`
 - `plot_window.py` → `pyqtgraph`
-- `plot_window.py` → `typing`
 - `scheduler.py` → `dataclasses`
 - `scheduler.py` → `logging`
 - `scheduler.py` → `random`

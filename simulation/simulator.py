@@ -370,8 +370,14 @@ class SimulationEngine(QObject):
         except Exception as e:
             logger.error(f"Ошибка фиксации обнаружения оператора на '{plot_id}': {e}")
 
-    def record_detector_detection(self, plot_id: str) -> None:
-        """Фиксация обнаружения неисправности детектором."""
+    def record_detector_detection(self, plot_id: str, description: str = "Детектор обнаружил аномалию") -> None:
+        """
+        Фиксация обнаружения неисправности детектором.
+
+        Args:
+            plot_id: Идентификатор графика.
+            description: Детальное описание причины обнаружения (для журнала событий).
+        """
         try:
             plot = self._plots.get(plot_id)
             if plot is None:
@@ -379,13 +385,18 @@ class SimulationEngine(QObject):
                 return
             current_time = self._clock.get_current_time_ms()
             plot.detector_markers.append(current_time)
+
+            # Записываем детальное описание напрямую в Журнал событий
             self._event_log.add(
                 time_ms=current_time,
                 event_type=EventType.DETECTOR_DETECTION,
-                description="Детектор обнаружил неисправность",
+                description=description,
                 plot_id=plot_id,
             )
-            logger.info(f"Детектор обнаружил неисправность на графике '{plot_id}' в {current_time} мс.")
+
+            # Убран logger.info для устранения спама в консоли.
+            # Детальная информация теперь пишется в Журнал событий и логируется в main.py
+            logger.debug(f"Детектор сработал на графике '{plot_id}': {description}")
         except Exception as e:
             logger.error(f"Ошибка фиксации обнаружения детектора на '{plot_id}': {e}")
 
@@ -404,3 +415,4 @@ class SimulationEngine(QObject):
             logger.info("Состояние движка симуляции сброшено.")
         except Exception as e:
             logger.error(f"Ошибка сброса состояния движка: {e}")
+

@@ -92,8 +92,10 @@ class PlotWindow(QMainWindow):
         self._times: list[int] = []
         self._values: list[float] = []
 
-        # Скрытые метки неисправностей: (вертикальная линия, подпись)
+        # Ссылки на элементы графика для управления видимостью и очисткой
         self._fault_marker_items: list[tuple[pg.InfiniteLine, pg.TextItem]] = []
+        self._operator_markers: list[pg.InfiniteLine] = []
+        self._detector_markers: list[pg.InfiniteLine] = []
         self._hidden_markers_visible = False
 
         try:
@@ -123,10 +125,11 @@ class PlotWindow(QMainWindow):
         self._plot_widget.setLabel("bottom", "Время", units="мс")
         self._plot_widget.setLabel("left", self._name, units=self._unit)
 
-        # Кривая сигнала
+        # Кривая сигнала (утолщена до 2px и поднята по Z-оси, чтобы быть поверх меток)
         self._curve = self._plot_widget.plot(
-            [], [], pen=pg.mkPen(color=COLOR_SIGNAL, width=1)
+            [], [], pen=pg.mkPen(color=COLOR_SIGNAL, width=2)
         )
+        self._curve.setZValue(10)
 
         # Горизонтальные линии пределов (сохраняем ссылки для последующего обновления)
         self._min_limit_line = pg.InfiniteLine(
@@ -163,6 +166,37 @@ class PlotWindow(QMainWindow):
     # ------------------------------------------------------------------
     # Публичные методы (вызываются координатором)
     # ------------------------------------------------------------------
+
+    def clear_data(self) -> None:
+        """
+        Очистить накопленные данные графика и все метки (кроме линий пределов).
+        Вызывается при сбросе симуляции или изменении настроек графика.
+        """
+        try:
+            # Очистка данных
+            self._times.clear()
+            self._values.clear()
+            self._curve.setData([], [])
+
+            # Удаление меток неисправностей
+            for line, label in self._fault_marker_items:
+                self._plot_widget.removeItem(line)
+                self._plot_widget.removeItem(label)
+            self._fault_marker_items.clear()
+
+            # Удаление меток оператора
+            for line in self._operator_markers:
+                self._plot_widget.removeItem(line)
+            self._operator_markers.clear()
+
+            # Удаление меток детектора
+            for line in self._detector_markers:
+                self._plot_widget.removeItem(line)
+            self._detector_markers.clear()
+
+            logger.info(f"Данные и метки графика '{self.plot_id}' очищены.")
+        except Exception as e:
+            logger.error(f"Ошибка очистки данных графика '{self.plot_id}': {e}")
 
     def update_settings(
         self,
@@ -281,6 +315,7 @@ class PlotWindow(QMainWindow):
                 pen=pg.mkPen(color=COLOR_OPERATOR_MARKER, width=2)
             )
             self._plot_widget.addItem(line)
+            self._operator_markers.append(line)
             logger.debug(f"Добавлена метка оператора в {time_ms} мс.")
         except Exception as e:
             logger.error(f"Ошибка добавления метки оператора: {e}")
@@ -293,6 +328,7 @@ class PlotWindow(QMainWindow):
                 pen=pg.mkPen(color=COLOR_DETECTOR_MARKER, width=2, style=Qt.PenStyle.DashLine)
             )
             self._plot_widget.addItem(line)
+            self._detector_markers.append(line)
             logger.debug(f"Добавлена метка детектора в {time_ms} мс.")
         except Exception as e:
             logger.error(f"Ошибка добавления метки детектора: {e}")

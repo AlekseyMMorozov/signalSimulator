@@ -9,6 +9,7 @@ import logging
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
+    QCheckBox,
     QFileDialog,
     QHBoxLayout,
     QLabel,
@@ -43,6 +44,7 @@ class MainWindow(QMainWindow):
         plot_add_requested: Запрос на создание нового графика.
         plot_remove_requested: Запрос на удаление графика (plot_id).
         plot_settings_requested: Запрос на изменение настроек графика (plot_id).
+        reset_requested: Запрос на полный сброс симуляции (для очистки графиков).
         journal_toggled: Журнал открыт (True) или закрыт (False).
         hidden_markers_toggled: Режим скрытых меток включён (True) или выключён (False).
     """
@@ -51,6 +53,7 @@ class MainWindow(QMainWindow):
     plot_add_requested = pyqtSignal()
     plot_remove_requested = pyqtSignal(str)
     plot_settings_requested = pyqtSignal(str)
+    reset_requested = pyqtSignal()
     journal_toggled = pyqtSignal(bool)
     hidden_markers_toggled = pyqtSignal(bool)
 
@@ -156,11 +159,11 @@ class MainWindow(QMainWindow):
 
         layout.addSpacing(20)
 
-        # Кнопка скрытых меток
-        self._btn_hidden_markers = QPushButton("Скрытые метки")
-        self._btn_hidden_markers.setCheckable(True)
-        self._btn_hidden_markers.setChecked(False)
-        layout.addWidget(self._btn_hidden_markers)
+        # Чекбокс скрытых меток (замена кнопки)
+        self._chk_hidden_markers = QCheckBox("Показывать скрытые метки")
+        self._chk_hidden_markers.setChecked(self._hidden_markers_visible)
+        self._chk_hidden_markers.setToolTip("Включите для отображения скрытых меток неисправностей на графиках.")
+        layout.addWidget(self._chk_hidden_markers)
 
         return panel
 
@@ -202,8 +205,8 @@ class MainWindow(QMainWindow):
         self._btn_stop.clicked.connect(self._on_stop)
         self._btn_reset.clicked.connect(self._on_reset)
 
-        # Скрытые метки
-        self._btn_hidden_markers.clicked.connect(self._on_toggle_hidden_markers)
+        # Скрытые метки (используем stateChanged для чекбокса)
+        self._chk_hidden_markers.stateChanged.connect(self._on_toggle_hidden_markers)
 
         # Управление графиками
         self._btn_add_plot.clicked.connect(self._on_add_plot)
@@ -290,6 +293,10 @@ class MainWindow(QMainWindow):
             self._btn_start.setEnabled(True)
             self._btn_stop.setEnabled(False)
             self._time_label.setText(self._clock.get_formatted_time())
+
+            # Уведомляем координатора о необходимости очистки данных графиков
+            self.reset_requested.emit()
+
             logger.info("Симуляция сброшена.")
         except Exception as e:
             logger.error(f"Ошибка сброса симуляции: {e}")
@@ -318,7 +325,7 @@ class MainWindow(QMainWindow):
     def _on_toggle_hidden_markers(self) -> None:
         """Переключение режима скрытых меток."""
         try:
-            self._hidden_markers_visible = self._btn_hidden_markers.isChecked()
+            self._hidden_markers_visible = self._chk_hidden_markers.isChecked()
             self.hidden_markers_toggled.emit(self._hidden_markers_visible)
             state = "включён" if self._hidden_markers_visible else "выключен"
             logger.info(f"Режим скрытых меток {state}.")
@@ -410,7 +417,7 @@ class MainWindow(QMainWindow):
                 self._apply_loaded_config(config_data)
                 logger.info(f"Конфигурация загружена: {filepath}")
             else:
-                logger.debug("Загрузка конфигурации отменено пользователем.")
+                logger.debug("Загрузка конфигурации отменена пользователем.")
         except ConfigError as e:
             logger.error(f"Ошибка загрузки конфигурации: {e}")
             QMessageBox.critical(self, "Ошибка", f"Не удалось загрузить конфигурацию:\n{e}")

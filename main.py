@@ -74,6 +74,7 @@ class Coordinator:
             self.main_window.plot_open_requested.connect(self._on_open_plot)
             self.main_window.plot_remove_requested.connect(self._on_remove_plot)
             self.main_window.plot_settings_requested.connect(self._on_plot_settings)
+            self.main_window.reset_requested.connect(self._on_reset)
             self.main_window.journal_toggled.connect(self._on_toggle_journal)
             self.main_window.hidden_markers_toggled.connect(self._on_toggle_hidden_markers)
 
@@ -208,6 +209,8 @@ class Coordinator:
                             max_allowed=params["max_allowed"],
                             observation_interval_ms=params["observation_interval_ms"]
                         )
+                        # Очищаем старые данные и метки графика после смены настроек
+                        self.plot_windows[plot_id].clear_data()
 
                     logger.info(f"Настройки графика '{plot_id}' успешно обновлены.")
                     QMessageBox.information(
@@ -218,6 +221,22 @@ class Coordinator:
         except Exception as e:
             logger.error(f"Ошибка при обработке запроса настроек графика '{plot_id}': {e}")
             QMessageBox.critical(self.main_window, "Ошибка", f"Не удалось обновить настройки:\n{e}")
+
+    def _on_reset(self) -> None:
+        """Обработка запроса на сброс симуляции: очистка данных графиков и детекторов."""
+        try:
+            # Сброс движка симуляции (очищает историю и метки на уровне движка)
+            self.engine.reset()
+
+            # Сброс и очистка всех окон графиков и их детекторов
+            for plot_id, pw in self.plot_windows.items():
+                pw.clear_data()
+                if plot_id in self.detectors:
+                    self.detectors[plot_id].reset()
+
+            logger.info("Симуляция и все графики сброшены.")
+        except Exception as e:
+            logger.error(f"Ошибка при сбросе симуляции: {e}")
 
     def _on_remove_plot(self, plot_id: str) -> None:
         """Удаление графика из симуляции и корректное уничтожение его окна."""
@@ -274,11 +293,19 @@ class Coordinator:
 
                 for t, v in zip(times, values):
                     detections = detector.process(t, v)
-                    if detections and not detected_in_batch:
-                        self.engine.record_detector_detection(plot_id)
-                        if plot_id in self.plot_windows:
-                            self.plot_windows[plot_id].add_detector_marker(t)
-                        detected_in_batch = True  # Избегаем множественных маркеров за один пакет
+                    if detections:
+                        # Логируем детальную информацию о каждом срабатывании детектора
+                        for detection in detections:
+                            logger.info(f"Детектор ({detection.detection_type.name}) на графике '{plot_id}': {detection.description}")
+
+                        if not detected_in_batch:
+                            # Передаём детальное описание первого обнаружения в Журнал событий
+                            first_description = detections[0].description
+                            self.engine.record_detector_detection(plot_id, first_description)
+                            if plot_id in self.plot_windows:
+                                # Добавляем визуальную метку по времени первого обнаружения в пакете
+                                self.plot_windows[plot_id].add_detector_marker(detections[0].time_ms)
+                            detected_in_batch = True  # Избегаем множественных маркеров за один пакет
         except Exception as e:
             logger.error(f"Ошибка обработки данных графика '{plot_id}': {e}")
 
