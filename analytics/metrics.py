@@ -134,7 +134,7 @@ class MetricsCalculator:
             summary = self._aggregate(analysis_records, operator_fp, detector_fp)
             logger.info(f"Метрики вычислены: всего неисправностей {summary.total_faults}.")
             return summary
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка вычисления метрик: {e}")
             return MetricsSummary()
 
@@ -145,7 +145,7 @@ class MetricsCalculator:
             for event in events:
                 if event.event_type == event_type and event.plot_id is not None:
                     result.setdefault(event.plot_id, []).append(event)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка группировки событий: {e}")
         return result
 
@@ -208,7 +208,7 @@ class MetricsCalculator:
                 1 for det in detector_detections
                 if det.time_ms not in used_detector and not self._has_preceding_fault(faults, det.time_ms)
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка анализа графика '{plot_id}': {e}")
 
         return records, operator_fp, detector_fp
@@ -224,7 +224,7 @@ class MetricsCalculator:
             for det in detections:
                 if start_ms <= det.time_ms < end_ms:
                     return det
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка поиска обнаружения: {e}")
         return None
 
@@ -232,7 +232,7 @@ class MetricsCalculator:
         """Проверка, была ли неисправность до указанного времени."""
         try:
             return any(f.time_ms <= time_ms for f in faults)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка проверки предшествующей неисправности: {e}")
             return False
 
@@ -263,7 +263,7 @@ class MetricsCalculator:
             else:
                 # Нетрендовая неисправность: пропуск, если есть следующая неисправность
                 return next_injection_time != float("inf")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка определения пропуска: {e}")
             return False
 
@@ -314,6 +314,6 @@ class MetricsCalculator:
 
             summary.operator_false_positives = operator_fp
             summary.detector_false_positives = detector_fp
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка агрегации метрик: {e}")
         return summary

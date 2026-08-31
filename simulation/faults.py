@@ -10,7 +10,7 @@ simulation/faults.py
 import logging
 import random
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,7 @@ class Fault(ABC):
             if self.duration_ms is None:
                 return True
             return elapsed < self.duration_ms
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка проверки активности {self.__class__.__name__}: {e}")
             return False
 
@@ -106,7 +106,7 @@ class Fault(ABC):
             if not self.is_active(time_ms):
                 return base_value
             return self._apply_effect(time_ms, base_value)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка применения {self.__class__.__name__}: {e}")
             return base_value
 
@@ -218,7 +218,7 @@ class NoiseFault(Fault):
     def _apply_effect(self, time_ms: int, base_value: float) -> float:
         try:
             return base_value + random.gauss(self.mean, self.sigma)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка генерации шума: {e}")
             return base_value
 
@@ -271,7 +271,7 @@ class DegradationFault(Fault):
                 * elapsed_sec
             )
             return base_value + degradation
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка вычисления деградации: {e}")
             return base_value
 
@@ -335,7 +335,7 @@ class FaultChain:
         for fault in self._faults:
             try:
                 result = fault.apply(time_ms, result)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(
                     f"Ошибка применения {fault.__class__.__name__} в цепочке: {e}"
                 )
@@ -351,7 +351,7 @@ class FaultChain:
 class FaultFactory:
     """Фабрика для создания неисправностей по строковому типу."""
 
-    _registry: dict[str, type] = {
+    _registry: ClassVar[dict[str, type]] = {
         "dropout": DropoutFault,
         "spike": SpikeFault,
         "noise": NoiseFault,
@@ -395,7 +395,7 @@ class FaultFactory:
                 f"Ошибка: {e}."
             )
             return None
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Непредвиденная ошибка создания неисправности '{fault_type}': {e}")
             return None
 

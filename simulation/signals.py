@@ -9,7 +9,7 @@ import logging
 import math
 import random
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, ClassVar
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ class CompositeSignal(SignalGenerator):
         """Сумма значений всех вложенных сигналов."""
         try:
             return sum(s.get_value(time_ms) for s in self._signals)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка при вычислении композитного сигнала: {e}")
             return 0.0
 
@@ -112,7 +112,7 @@ class SawtoothSignal(SignalGenerator):
         try:
             phase = (time_ms % self.period_ms) / self.period_ms
             return self.offset + self.min_val + (self.max_val - self.min_val) * phase
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка вычисления sawtooth: {e}")
             return self.offset + self.min_val
 
@@ -152,7 +152,7 @@ class TriangleSignal(SignalGenerator):
             else:
                 value = self.max_val - (self.max_val - self.min_val) * (2 * (phase - 0.5))
             return self.offset + value
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка вычисления triangle: {e}")
             return self.offset + self.min_val
 
@@ -185,7 +185,7 @@ class SineSignal(SignalGenerator):
         try:
             omega = 2 * math.pi / self.period_ms
             return self.offset + self.amplitude * math.sin(omega * time_ms + self.phase)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка вычисления sine: {e}")
             return self.offset
 
@@ -222,7 +222,7 @@ class StepSignal(SignalGenerator):
             phase = (time_ms % self.period_ms) / self.period_ms
             value = self.max_val if phase >= 0.5 else self.min_val
             return self.offset + value
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка вычисления step: {e}")
             return self.offset + self.min_val
 
@@ -259,7 +259,7 @@ class LinearSignal(SignalGenerator):
         try:
             time_sec = time_ms / 1000.0
             return self.offset + self.start_val + self.rate_per_sec * time_sec
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка вычисления linear: {e}")
             return self.offset + self.start_val
 
@@ -298,7 +298,7 @@ class SquareSignal(SignalGenerator):
             phase = (time_ms % self.period_ms) / self.period_ms
             value = self.max_val if phase < self.duty_cycle else self.min_val
             return self.offset + value
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка вычисления square: {e}")
             return self.offset + self.min_val
 
@@ -345,7 +345,7 @@ class ExponentialSignal(SignalGenerator):
         except OverflowError:
             logger.error("Переполнение при вычислении экспоненты.")
             return self.offset
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка вычисления exponential: {e}")
             return self.offset
 
@@ -373,7 +373,7 @@ class NoiseSignal(SignalGenerator):
     def get_value(self, time_ms: int) -> float:
         try:
             return random.gauss(self.mean, self.sigma)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка генерации шума: {e}")
             return self.mean
 
@@ -405,7 +405,7 @@ class SignalFactory:
     Поддерживает все зарегистрированные типы сигналов.
     """
 
-    _registry: dict[str, type] = {
+    _registry: ClassVar[dict[str, type]] = {
         "sawtooth": SawtoothSignal,
         "triangle": TriangleSignal,
         "sine": SineSignal,
@@ -456,7 +456,7 @@ class SignalFactory:
                 f"Ошибка: {e}. Возвращён ConstantSignal(0)."
             )
             return ConstantSignal(0.0)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Непредвиденная ошибка создания сигнала '{signal_type}': {e}")
             return ConstantSignal(0.0)
 

@@ -9,9 +9,9 @@
 
 ## Статистика проекта
 - Папок: 6
-- Python-файлов: 21
-- Всего файлов: 21
-- Классов: 48
+- Python-файлов: 22
+- Всего файлов: 22
+- Классов: 49
 - Функций: 2
 
 ## Дерево проекта
@@ -35,6 +35,7 @@ signalSimulator/
     simulator.py
   ui/
     __init__.py
+    detector_settings_tab.py
     fault_rule_dialog.py
     fault_template_dialog.py
     fault_window.py
@@ -59,16 +60,14 @@ signalSimulator/
 ### Файл: `detector.py`
 > analytics/detector.py
 
-Лёгкая статистическая модель обнаружения аномалий и трендов в реальном времени.
-Реализует три уровня анализа: пороговый контроль, статистическая проверка
-(отклонение от скользящего среднего) и обнаружение тренда (линейная регрессия).
-Все параметры настраиваются через DetectorConfig для управления из интерфейса.
-Реализует логику "срабатывания по фронту", отсечение шумовых микронаклонов
-и прогноз времени пересечения допустимых границ.
+Продвинутая статистическая модель обнаружения аномалий и трендов в реальном времени.
+Реализует робастную оценку шума (MAD), двойное экспоненциальное сглаживание (модель Хольта)
+для прогноза и тренда, анализ остатков для точечных аномалий и учет пропадания данных.
+Все параметры настраиваются через DetectorConfig.
 #### Импорты
 - **Стандартная библиотека:**
   - `from collections import deque`
-  - `from dataclasses import dataclass, field`
+  - `from dataclasses import dataclass`
   - `from enum import Enum, auto`
   - `from typing import Any`
   - `import logging`
@@ -79,67 +78,29 @@ signalSimulator/
 > Типы обнаружений.
 ##### `@dataclass class DetectionResult`
 > Результат обнаружения.
-
 Содержит время, тип обнаружения, описание, текущее значение
 и произвольные метаданные (например, направление тренда).
 Методы:
 - `def __str__(self) -> str`
-  - Строковое представление результата.
+- `def __getitem__(self, key: str) -> Any`
+  - Поддержка доступа как к словарю для обратной совместимости.
 ##### `@dataclass class DetectorConfig`
-> Конфигурация детектора.
-
-Все параметры могут быть изменены из интерфейса настроек.
-Сериализуется в словарь для сохранения в конфигурации.
+> Конфигурация детектора, сериализуемая в словарь.
 Методы:
 - `def to_dict(self) -> dict[str, Any]`
-  - Сериализация конфигурации в словарь.
 - `@classmethod def from_dict(cls, data: dict[str, Any]) -> 'DetectorConfig'`
-  - Создание конфигурации из словаря (мягкая валидация).
 ##### `class AnomalyDetector`
-> Лёгкая статистическая модель для обнаружения аномалий и трендов.
-
-Создаётся отдельно для каждого графика. Метод `process(time_ms, value)`
-вызывается на каждой новой точке и возвращает список обнаружений.
-Параметры настраиваются через `DetectorConfig` и могут быть изменены
-в любой момент через `set_config` (для интерфейса настроек).
-Реализует логику "срабатывания по фронту", игнорирование микронаклонов
-и расчет прогнозируемого времени выхода за допустимые пределы.
+> Легкая модель обнаружения аномалий (O(1) по памяти на точку).
+Использует модель Хольта для прогноза, MAD для оценки шума и анализ остатков.
 Методы:
 - `def __init__(self, min_allowed: float, max_allowed: float, config: DetectorConfig | None) -> None`
-  - Инициализация детектора.
-
-Args:
-    min_allowed: Минимально допустимое значение сигнала.
-    max_allowed: Максимально допустимое значение сигнала.
-    config: Конфигурация детектора. По умолчанию — стандартная.
 - `def set_config(self, config: DetectorConfig) -> None`
-  - Обновить конфигурацию детектора (вызывается из интерфейса настроек).
-- `def get_config(self) -> DetectorConfig`
-  - Получить текущую конфигурацию детектора.
 - `def process(self, time_ms: int, value: float) -> list[DetectionResult]`
-  - Обработать новую точку данных.
-
-Добавляет точку в скользящее окно и выполняет все три уровня анализа.
-
-Args:
-    time_ms: Логическое время точки в миллисекундах.
-    value: Значение сигнала.
-
-Returns:
-    Список обнаружений (может быть пустым).
+  - Обработать новую точку. Возвращает список обнаружений.
 - `def reset(self) -> None`
-  - Сброс скользящего окна и состояния детектора.
-- `def _trim_window(self) -> None`
-  - Обрезать скользящее окно до размера из конфигурации.
-- `def _check_threshold(self, time_ms: int, value: float) -> list[DetectionResult]`
-  - Пороговый контроль: выход за допустимые пределы.
-Реализует логику срабатывания по фронту (только при переходе границы).
-- `def _check_statistical(self, time_ms: int, value: float) -> list[DetectionResult]`
-  - Статистическая проверка: отклонение от скользящего среднего.
+- `def _update_sigma_noise(self) -> None`
+- `def _holt_step(self, value: float, dt_sec: float) -> tuple[float, float, float]`
 - `def _check_trend(self, time_ms: int) -> list[DetectionResult]`
-  - Обнаружение тренда: линейная регрессия по скользящему окну.
-Реализует отсечение шумовых микронаклонов, расчет времени до пересечения
-границы и логику срабатывания по фронту / ухудшению тренда.
 
 ### Файл: `metrics.py`
 > analytics/metrics.py
@@ -228,6 +189,7 @@ Returns:
 Обеспечивает единый источник времени для всех компонентов системы.
 #### Импорты
 - **Стандартная библиотека:**
+  - `from typing import ClassVar`
   - `import logging`
 - **Сторонние библиотеки:**
   - `from PyQt6.QtCore import QObject, QTimer, pyqtSignal`
@@ -290,7 +252,7 @@ Returns:
 графиков и неисправностей в формате JSON.
 #### Импорты
 - **Стандартная библиотека:**
-  - `from datetime import datetime`
+  - `from datetime import datetime, timezone`
   - `from pathlib import Path`
   - `from typing import Any`
   - `import json`
@@ -473,7 +435,7 @@ Returns:
 #### Импорты
 - **Стандартная библиотека:**
   - `from abc import ABC, abstractmethod`
-  - `from typing import Any`
+  - `from typing import Any, ClassVar`
   - `import logging`
   - `import random`
 #### Классы
@@ -738,7 +700,7 @@ Returns:
 #### Импорты
 - **Стандартная библиотека:**
   - `from abc import ABC, abstractmethod`
-  - `from typing import Any`
+  - `from typing import Any, ClassVar`
   - `import logging`
   - `import math`
   - `import random`
@@ -989,6 +951,45 @@ Args:
   - `from ui.plot_creation_dialog import PlotCreationDialog`
   - `from ui.plot_window import PlotWindow`
 
+### Файл: `detector_settings_tab.py`
+> ui/detector_settings_tab.py
+
+Вкладка настроек детектора аномалий для диалога создания/редактирования графика.
+Позволяет настроить параметры скользящего окна, пороги сигм, автокалибровку тренда
+и уровень толерантности к шуму без отключения самих проверок.
+#### Импорты
+- **Стандартная библиотека:**
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtWidgets import QDoubleSpinBox, QFormLayout, QGroupBox, QSpinBox, QVBoxLayout, QWidget`
+  - `from analytics.detector import DetectorConfig`
+#### Классы
+##### `class DetectorSettingsTab(QWidget)`
+> Виджет вкладки настроек детектора.
+
+Предоставляет элементы управления для конфигурации `DetectorConfig`,
+включая размер окна, множители сигмы, пороги тренда и толерантность к шуму.
+Все виды проверок (тренд, статистика, пороги) остаются активными,
+меняется только их чувствительность.
+Методы:
+- `def __init__(self, parent: QWidget | None) -> None`
+  - Инициализация вкладки настроек детектора.
+
+Args:
+    parent: Родительский виджет.
+- `def _init_ui(self) -> None`
+  - Создание интерфейса вкладки настроек детектора.
+- `def get_config(self) -> DetectorConfig`
+  - Считать текущие значения из интерфейса и вернуть объект DetectorConfig.
+
+Returns:
+    DetectorConfig: Текущая конфигурация детектора.
+- `def set_config(self, config: DetectorConfig) -> None`
+  - Заполнить интерфейс значениями из переданного объекта DetectorConfig.
+
+Args:
+    config: Конфигурация детектора для загрузки.
+
 ### Файл: `fault_rule_dialog.py`
 > ui/fault_rule_dialog.py
 Модальный диалог создания правила автоматического внедрения неисправностей.
@@ -1033,7 +1034,7 @@ Args:
 - **Стандартная библиотека:**
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QRadioButton, QSpinBox, QVBoxLayout, QWidget`
+  - `from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QRadioButton, QSpinBox, QVBoxLayout, QWidget`
   - `from simulation.faults import FaultFactory`
   - `from simulation.scheduler import FaultTemplate`
 #### Классы
@@ -1231,21 +1232,22 @@ Returns:
 Главное окно приложения — центральная панель управления симуляцией.
 Содержит панель управления временем, список графиков, меню и кнопки
 для открытия вспомогательных окон и изменения настроек графиков.
+Интерфейс разделен на логические горизонтальные блоки для улучшения читаемости.
 #### Импорты
 - **Стандартная библиотека:**
   - `import logging`
 - **Сторонние библиотеки:**
   - `from PyQt6.QtCore import Qt, pyqtSignal`
-  - `from PyQt6.QtWidgets import QCheckBox, QFileDialog, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget`
+  - `from PyQt6.QtWidgets import QCheckBox, QFileDialog, QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget`
   - `from core.clock import GlobalClock`
-  - `from core.config import ConfigError, ConfigManager`
 #### Классы
 ##### `class MainWindow(QMainWindow)`
 > Главное окно приложения.
 
 Обеспечивает управление временем симуляции, списком графиков,
-открытие/закрытие журнала событий, сохранение/загрузку конфигураций
-и запрос на изменение настроек существующих графиков.
+открытие/закрытие журнала событий и запрос на изменение настроек
+существующих графиков. Логика сохранения/загрузки конфигурации
+делегирована координатору через сигналы.
 
 Signals:
     plot_open_requested: Запрос на открытие окна графика (plot_id).
@@ -1255,6 +1257,8 @@ Signals:
     reset_requested: Запрос на полный сброс симуляции (для очистки графиков).
     journal_toggled: Журнал открыт (True) или закрыт (False).
     hidden_markers_toggled: Режим скрытых меток включён (True) или выключён (False).
+    save_config_requested: Запрос на сохранение конфигурации по указанному пути.
+    load_config_requested: Запрос на загрузку конфигурации по указанному пути.
 Методы:
 - `def __init__(self, clock: GlobalClock, parent: QWidget | None) -> None`
   - Инициализация главного окна.
@@ -1265,11 +1269,15 @@ Args:
 - `def _init_menu(self) -> None`
   - Создание строки меню.
 - `def _init_ui(self) -> None`
-  - Создание основного интерфейса.
+  - Создание основного интерфейса с разделением на логические блоки.
+- `def _create_separator(self) -> QFrame`
+  - Создание горизонтального разделителя для визуального структурирования.
 - `def _create_time_panel(self) -> QWidget`
   - Создание панели управления временем.
 - `def _create_plots_panel(self) -> QWidget`
   - Создание панели управления графиками.
+- `def _create_options_panel(self) -> QWidget`
+  - Создание панели дополнительных настроек (чекбоксы).
 - `def _connect_signals(self) -> None`
   - Подключение внутренних сигналов.
 - `def add_plot_to_list(self, plot_id: str, name: str) -> None`
@@ -1295,7 +1303,7 @@ Args:
   - Изменение множителя ускорения времени.
 - `def _on_time_updated(self, time_ms: int) -> None`
   - Обновление отображения времени.
-- `def _on_toggle_hidden_markers(self) -> None`
+- `def _on_toggle_hidden_markers(self, checked: bool) -> None`
   - Переключение режима скрытых меток.
 - `def _on_add_plot(self) -> None`
   - Запрос на создание нового графика.
@@ -1307,30 +1315,29 @@ Args:
   - Запрос на удаление выбранного графика.
 - `def _on_plot_selection_changed(self, current: QListWidgetItem | None, previous) -> None`
   - Обработка изменения выбора в списке графиков.
-- `def _on_toggle_journal(self) -> None`
-  - Переключение видимости журнала событий.
+- `def _on_toggle_journal(self, checked: bool) -> None`
+  - Переключение видимости журнала событий (синхронизирует меню и чекбокс).
 - `def _on_save_config(self) -> None`
-  - Сохранение текущей конфигурации в файл.
+  - Запрос на сохранение текущей конфигурации в файл.
 - `def _on_load_config(self) -> None`
-  - Загрузка конфигурации из файла.
-- `def _collect_current_config(self) -> dict`
-  - Собрать текущую конфигурацию для сохранения.
-- `def _apply_loaded_config(self, config_data: dict) -> None`
-  - Применить загруженную конфигурацию.
+  - Запрос на загрузку конфигурации из файла.
 
 ### Файл: `plot_creation_dialog.py`
 > ui/plot_creation_dialog.py
 
 Модальный диалог создания и редактирования графика телеметрии.
 Позволяет настроить все параметры графика: название, единицу измерения,
-тип сигнала с его параметрами, допустимые пределы и интервал наблюдения.
+тип сигнала с его параметрами, допустимые пределы, интервал наблюдения
+и настройки детектора аномалий.
 Вызывается из главного окна по сигналу plot_add_requested или plot_settings_requested.
 #### Импорты
 - **Стандартная библиотека:**
   - `from typing import Any`
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QSpinBox, QVBoxLayout, QWidget`
+  - `from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QSpinBox, QTabWidget, QVBoxLayout, QWidget`
+  - `from analytics.detector import DetectorConfig`
+  - `from ui.detector_settings_tab import DetectorSettingsTab`
 #### Классы
 ##### `class PeriodWidget(QWidget)`
 > Виджет для удобного ввода периода с выбором единицы измерения.
@@ -1351,7 +1358,8 @@ Args:
 - Основные параметры (название, единица, макс. значение)
 - Интервал наблюдения (через пресеты или ручной ввод в секундах)
 - Допустимые пределы (min_allowed, max_allowed)
-- Тип сигнала и его параметры (динамически меняются, период вводится с выбором единицы)
+- Тип сигнала и его параметры (динамически меняются)
+- Настройки детектора аномалий (размер окна, сигмы, пороги)
 
 Если передан initial_params, диалог переходит в режим редактирования и предзаполняет поля.
 После подтверждения результат доступен через метод get_plot_params().
@@ -1399,7 +1407,7 @@ Args:
   - `import logging`
 - **Сторонние библиотеки:**
   - `from PyQt6.QtCore import Qt, pyqtSignal`
-  - `from PyQt6.QtWidgets import QHBoxLayout, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget`
+  - `from PyQt6.QtWidgets import QCheckBox, QHBoxLayout, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget`
   - `import numpy as np`
   - `import pyqtgraph as pg`
 #### Классы
@@ -1462,6 +1470,11 @@ Args:
   - Добавить метку обнаружения детектором (вертикальная линия).
 - `def set_hidden_markers_visible(self, visible: bool) -> None`
   - Переключить видимость скрытых меток неисправностей.
+- `def _on_always_on_top_changed(self, state: int) -> None`
+  - Обработка изменения состояния чекбокса 'Поверх других окон'.
+
+Args:
+    state: Состояние чекбокса (Qt.CheckState.Checked или Qt.CheckState.Unchecked).
 - `def _decimate(self, times: list[int], values: list[float]) -> tuple[list[int], list[float]]`
   - Децимация данных для отрисовки.
 
@@ -1486,12 +1499,13 @@ Returns:
 и координирует их взаимодействие через паттерн Coordinator.
 #### Импорты
 - **Стандартная библиотека:**
+  - `import json`
   - `import logging`
   - `import sys`
 - **Сторонние библиотеки:**
   - `from PyQt6.QtCore import Qt`
   - `from PyQt6.QtWidgets import QApplication, QMessageBox`
-  - `from analytics.detector import AnomalyDetector`
+  - `from analytics.detector import AnomalyDetector, DetectorConfig`
   - `from core.clock import GlobalClock`
   - `from core.config import ConfigManager`
   - `from core.event_log import EventLog`
@@ -1538,6 +1552,21 @@ Returns:
   - Фиксация обнаружения оператором и добавление метки.
 - `def _on_plot_window_closed(self, plot_id: str) -> None`
   - Обработка закрытия окна графика пользователем (окно скрывается, но остается в памяти).
+- `def _collect_current_config(self) -> dict`
+  - Собрать текущую конфигурацию всех графиков и их детекторов для сохранения.
+
+Returns:
+    dict: Словарь с данными конфигурации.
+- `def _on_save_config_requested(self, filepath: str) -> None`
+  - Обработка запроса на сохранение конфигурации в указанный файл.
+
+Args:
+    filepath: Путь к файлу для сохранения.
+- `def _on_load_config_requested(self, filepath: str) -> None`
+  - Обработка запроса на загрузку конфигурации из файла и применение её к симуляции.
+
+Args:
+    filepath: Путь к файлу конфигурации.
 #### Функции
 - `def main() -> None`
   - Точка входа в приложение.
@@ -1561,6 +1590,7 @@ Returns:
 - `__init__.py` → `ui.plot_window`
 - `clock.py` → `PyQt6.QtCore`
 - `clock.py` → `logging`
+- `clock.py` → `typing`
 - `config.py` → `datetime`
 - `config.py` → `json`
 - `config.py` → `logging`
@@ -1572,6 +1602,9 @@ Returns:
 - `detector.py` → `logging`
 - `detector.py` → `numpy`
 - `detector.py` → `typing`
+- `detector_settings_tab.py` → `PyQt6.QtWidgets`
+- `detector_settings_tab.py` → `analytics.detector`
+- `detector_settings_tab.py` → `logging`
 - `event_log.py` → `PyQt6.QtCore`
 - `event_log.py` → `dataclasses`
 - `event_log.py` → `enum`
@@ -1605,6 +1638,7 @@ Returns:
 - `main.py` → `core.clock`
 - `main.py` → `core.config`
 - `main.py` → `core.event_log`
+- `main.py` → `json`
 - `main.py` → `logging`
 - `main.py` → `simulation.scheduler`
 - `main.py` → `simulation.signals`
@@ -1618,14 +1652,15 @@ Returns:
 - `main_window.py` → `PyQt6.QtCore`
 - `main_window.py` → `PyQt6.QtWidgets`
 - `main_window.py` → `core.clock`
-- `main_window.py` → `core.config`
 - `main_window.py` → `logging`
 - `metrics.py` → `core.event_log`
 - `metrics.py` → `dataclasses`
 - `metrics.py` → `logging`
 - `plot_creation_dialog.py` → `PyQt6.QtWidgets`
+- `plot_creation_dialog.py` → `analytics.detector`
 - `plot_creation_dialog.py` → `logging`
 - `plot_creation_dialog.py` → `typing`
+- `plot_creation_dialog.py` → `ui.detector_settings_tab`
 - `plot_window.py` → `PyQt6.QtCore`
 - `plot_window.py` → `PyQt6.QtWidgets`
 - `plot_window.py` → `logging`

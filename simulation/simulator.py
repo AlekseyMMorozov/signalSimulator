@@ -171,7 +171,7 @@ class SimulationEngine(QObject):
         try:
             self._clock.time_updated.connect(self._on_time_updated)
             logger.info("SimulationEngine инициализирован и подключён к часам.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка подключения к часам: {e}")
 
     def add_plot(
@@ -225,7 +225,7 @@ class SimulationEngine(QObject):
                 logger.info(f"Удалён график '{plot_id}'.")
             else:
                 logger.warning(f"Попытка удалить несуществующий график '{plot_id}'.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка удаления графика '{plot_id}': {e}")
 
     def get_plot(self, plot_id: str) -> PlotState | None:
@@ -248,7 +248,7 @@ class SimulationEngine(QObject):
                 events = self._scheduler.tick(time_ms, self.get_all_plot_ids())
                 if events:
                     self.process_injection_events(events)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обработки тика времени {time_ms}: {e}")
 
     def _generate_points(self, plot: PlotState, current_time_ms: int) -> None:
@@ -282,7 +282,7 @@ class SimulationEngine(QObject):
             # Испускаем сигнал с новыми данными (списком для эффективности)
             if new_times:
                 self.plot_data_updated.emit(plot.plot_id, (new_times, new_values))
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка генерации точек для графика '{plot.plot_id}': {e}")
 
     def inject_fault(self, plot_id: str, fault_type: str, fault_params: dict[str, Any]) -> Fault | None:
@@ -331,7 +331,7 @@ class SimulationEngine(QObject):
             )
             logger.info(f"Внедрена неисправность '{fault_type}' на график '{plot_id}' в {current_time} мс.")
             return fault
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка внедрения неисправности на график '{plot_id}': {e}")
             return None
 
@@ -348,7 +348,7 @@ class SimulationEngine(QObject):
         for event in events:
             try:
                 self.inject_fault(event.plot_id, event.fault_type, event.fault_params)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(f"Ошибка обработки события внедрения {event}: {e}")
 
     def record_operator_detection(self, plot_id: str) -> None:
@@ -367,7 +367,7 @@ class SimulationEngine(QObject):
                 plot_id=plot_id,
             )
             logger.info(f"Оператор обнаружил неисправность на графике '{plot_id}' в {current_time} мс.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка фиксации обнаружения оператора на '{plot_id}': {e}")
 
     def record_detector_detection(self, plot_id: str, description: str = "Детектор обнаружил аномалию") -> None:
@@ -397,7 +397,7 @@ class SimulationEngine(QObject):
             # Убран logger.info для устранения спама в консоли.
             # Детальная информация теперь пишется в Журнал событий и логируется в main.py
             logger.debug(f"Детектор сработал на графике '{plot_id}': {description}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка фиксации обнаружения детектора на '{plot_id}': {e}")
 
     def reset(self) -> None:
@@ -413,6 +413,5 @@ class SimulationEngine(QObject):
             if self._scheduler is not None:
                 self._scheduler.reset()
             logger.info("Состояние движка симуляции сброшено.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка сброса состояния движка: {e}")
-

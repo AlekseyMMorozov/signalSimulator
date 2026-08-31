@@ -3,14 +3,19 @@ ui/main_window.py
 Главное окно приложения — центральная панель управления симуляцией.
 Содержит панель управления временем, список графиков, меню и кнопки
 для открытия вспомогательных окон и изменения настроек графиков.
+Интерфейс оптимизирован для компактного размещения (до 1/4 экрана)
+без потери видимости элементов.
 """
 
 import logging
 
 from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import (
     QCheckBox,
+    QComboBox,
     QFileDialog,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QListWidget,
@@ -72,9 +77,14 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.setWindowTitle("signalSimulator")
 
-        # Компактный размер по умолчанию, занимающий не более четверти экрана
-        self.resize(600, 450)
-        self.setMinimumSize(500, 350)
+        # Компактный размер: не более 1/4 площади экрана (1/2 ширины * 1/2 высоты)
+        # но с гарантированным минимальным размером для вмещения всех элементов
+        screen = QGuiApplication.primaryScreen().availableGeometry()
+        target_width = max(600, screen.width() // 2)
+        target_height = max(450, screen.height() // 2)
+
+        self.resize(target_width, target_height)
+        self.setMinimumSize(600, 450)
 
         self._clock = clock
         self._journal_visible = False
@@ -84,7 +94,7 @@ class MainWindow(QMainWindow):
             self._init_menu()
             self._init_ui()
             self._connect_signals()
-            logger.info("Главное окно инициализировано.")
+            logger.info("Главное окно инициализировано (компактный режим).")
         except Exception as e:
             logger.error(f"Ошибка инициализации главного окна: {e}")
             raise
@@ -113,27 +123,46 @@ class MainWindow(QMainWindow):
         logger.debug("Меню главного окна создано.")
 
     def _init_ui(self) -> None:
-        """Создание основного интерфейса."""
+        """Создание основного интерфейса с разделением на логические блоки."""
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
+
         main_layout = QVBoxLayout(central_widget)
+        main_layout.setContentsMargins(8, 8, 8, 8)
+        main_layout.setSpacing(8)
 
-        # --- Панель управления временем ---
-        time_panel = self._create_time_panel()
-        main_layout.addWidget(time_panel)
+        # Блок 1: Панель управления временем
+        main_layout.addWidget(self._create_time_panel())
 
-        # --- Панель графиков ---
-        plots_panel = self._create_plots_panel()
-        main_layout.addWidget(plots_panel, stretch=1)
+        # Разделитель
+        main_layout.addWidget(self._create_separator())
+
+        # Блок 2: Панель графиков (занимает всё доступное пространство)
+        main_layout.addWidget(self._create_plots_panel(), stretch=1)
+
+        # Разделитель
+        main_layout.addWidget(self._create_separator())
+
+        # Блок 3: Панель дополнительных настроек
+        main_layout.addWidget(self._create_options_panel())
 
         logger.debug("Интерфейс главного окна создан.")
+
+    def _create_separator(self) -> QFrame:
+        """Создание горизонтального разделителя для визуального структурирования."""
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken)
+        return line
 
     def _create_time_panel(self) -> QWidget:
         """Создание панели управления временем."""
         panel = QWidget()
         layout = QHBoxLayout(panel)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(10)
 
-        # Кнопки управления симуляцией
+        # Группа кнопок управления симуляцией
         self._btn_start = QPushButton("▶ Старт")
         self._btn_stop = QPushButton("⏸ Стоп")
         self._btn_stop.setEnabled(False)
@@ -143,33 +172,29 @@ class MainWindow(QMainWindow):
         layout.addWidget(self._btn_stop)
         layout.addWidget(self._btn_reset)
 
-        layout.addSpacing(20)
-
-        # Кнопки множителей ускорения
+        layout.addSpacing(15)
         layout.addWidget(QLabel("Скорость:"))
-        self._speed_buttons: list[QPushButton] = []
+
+        # Выпадающий список множителей ускорения (вместо ряда кнопок)
+        self._speed_combo = QComboBox()
         for mult in ALLOWED_MULTIPLIERS:
-            btn = QPushButton(f"×{mult}")
-            btn.setCheckable(True)
-            btn.setChecked(mult == self._clock.get_speed_multiplier())
-            btn.clicked.connect(lambda checked, m=mult: self._on_speed_change(m))
-            self._speed_buttons.append(btn)
-            layout.addWidget(btn)
+            self._speed_combo.addItem(f"×{mult}", mult)
 
-        layout.addSpacing(20)
+        current_mult = self._clock.get_speed_multiplier()
+        index = self._speed_combo.findData(current_mult)
+        if index != -1:
+            self._speed_combo.setCurrentIndex(index)
 
-        # Отображение текущего времени
+        self._speed_combo.setFixedWidth(80)  # Компактная ширина
+        self._speed_combo.currentIndexChanged.connect(self._on_speed_change)
+        layout.addWidget(self._speed_combo)
+
+        layout.addStretch(1)
+
+        # Отображение текущего времени (немного уменьшен шрифт для экономии места)
         self._time_label = QLabel("00:00:00.000")
-        self._time_label.setStyleSheet("font-size: 16px; font-weight: bold;")
+        self._time_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #2c3e50;")
         layout.addWidget(self._time_label)
-
-        layout.addSpacing(20)
-
-        # Чекбокс скрытых меток (замена кнопки)
-        self._chk_hidden_markers = QCheckBox("Показывать скрытые метки")
-        self._chk_hidden_markers.setChecked(self._hidden_markers_visible)
-        self._chk_hidden_markers.setToolTip("Включите для отображения скрытых меток неисправностей на графиках.")
-        layout.addWidget(self._chk_hidden_markers)
 
         return panel
 
@@ -177,20 +202,26 @@ class MainWindow(QMainWindow):
         """Создание панели управления графиками."""
         panel = QWidget()
         layout = QVBoxLayout(panel)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(8)
 
-        layout.addWidget(QLabel("Графики телеметрии:"))
+        layout.addWidget(QLabel("<b>Графики телеметрии:</b>"))
 
         # Список графиков
         self._plots_list = QListWidget()
         self._plots_list.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
+        # Высота подбирается автоматически layout-ом, но ограничиваем разумным максимумом
+        self._plots_list.setMaximumHeight(250)
         layout.addWidget(self._plots_list, stretch=1)
 
-        # Кнопки управления графиками
+        # Кнопки управления графиками в одну строку
         buttons_layout = QHBoxLayout()
-        self._btn_add_plot = QPushButton("➕ Добавить график")
-        self._btn_open_plot = QPushButton("📈 Открыть график")
-        self._btn_settings_plot = QPushButton("⚙️ Настройки графика")
-        self._btn_remove_plot = QPushButton("🗑 Удалить график")
+        buttons_layout.setSpacing(8)
+
+        self._btn_add_plot = QPushButton("➕ Добавить")
+        self._btn_open_plot = QPushButton("📈 Открыть")
+        self._btn_settings_plot = QPushButton("⚙️ Настройки")
+        self._btn_remove_plot = QPushButton("🗑 Удалить")
 
         self._btn_open_plot.setEnabled(False)
         self._btn_settings_plot.setEnabled(False)
@@ -204,6 +235,29 @@ class MainWindow(QMainWindow):
 
         return panel
 
+    def _create_options_panel(self) -> QWidget:
+        """Создание панели дополнительных настроек (чекбоксы)."""
+        panel = QWidget()
+        layout = QHBoxLayout(panel)
+        layout.setContentsMargins(5, 0, 5, 5)
+        layout.setSpacing(15)
+
+        # Чекбокс скрытых меток
+        self._chk_hidden_markers = QCheckBox("Показывать скрытые метки неисправностей")
+        self._chk_hidden_markers.setChecked(self._hidden_markers_visible)
+        self._chk_hidden_markers.setToolTip("Включите для отображения скрытых меток неисправностей на графиках.")
+        layout.addWidget(self._chk_hidden_markers)
+
+        layout.addStretch(1)
+
+        # Чекбокс журнала событий (дублирует действие из меню для удобства)
+        self._chk_journal = QCheckBox("Показать журнал событий")
+        self._chk_journal.setChecked(self._journal_visible)
+        self._chk_journal.setToolTip("Открыть или скрыть окно журнала событий.")
+        layout.addWidget(self._chk_journal)
+
+        return panel
+
     def _connect_signals(self) -> None:
         """Подключение внутренних сигналов."""
         # Управление временем
@@ -211,8 +265,13 @@ class MainWindow(QMainWindow):
         self._btn_stop.clicked.connect(self._on_stop)
         self._btn_reset.clicked.connect(self._on_reset)
 
-        # Скрытые метки (используем stateChanged для чекбокса)
-        self._chk_hidden_markers.stateChanged.connect(self._on_toggle_hidden_markers)
+        # Скрытые метки
+        self._chk_hidden_markers.stateChanged.connect(
+            lambda state: self._on_toggle_hidden_markers(bool(state))
+        )
+
+        # Журнал событий (синхронизация чекбокса и действия меню)
+        self._chk_journal.toggled.connect(self._on_toggle_journal)
 
         # Управление графиками
         self._btn_add_plot.clicked.connect(self._on_add_plot)
@@ -241,7 +300,7 @@ class MainWindow(QMainWindow):
             item.setData(Qt.ItemDataRole.UserRole, plot_id)
             self._plots_list.addItem(item)
             logger.info(f"График '{name}' добавлен в список.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка добавления графика в список: {e}")
 
     def remove_plot_from_list(self, plot_id: str) -> None:
@@ -259,7 +318,7 @@ class MainWindow(QMainWindow):
                     logger.info(f"График '{plot_id}' удалён из списка.")
                     return
             logger.warning(f"График '{plot_id}' не найден в списке для удаления.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка удаления графика из списка: {e}")
 
     def get_selected_plot_id(self) -> str | None:
@@ -278,7 +337,7 @@ class MainWindow(QMainWindow):
             self._btn_start.setEnabled(False)
             self._btn_stop.setEnabled(True)
             logger.info("Симуляция запущена.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка запуска симуляции: {e}")
 
     def _on_stop(self) -> None:
@@ -288,7 +347,7 @@ class MainWindow(QMainWindow):
             self._btn_start.setEnabled(True)
             self._btn_stop.setEnabled(False)
             logger.info("Симуляция остановлена.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка остановки симуляции: {e}")
 
     def _on_reset(self) -> None:
@@ -304,38 +363,38 @@ class MainWindow(QMainWindow):
             self.reset_requested.emit()
 
             logger.info("Симуляция сброшена.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка сброса симуляции: {e}")
 
-    def _on_speed_change(self, multiplier: int) -> None:
-        """Изменение множителя ускорения времени."""
+    def _on_speed_change(self, index: int) -> None:
+        """Изменение множителя ускорения времени через выпадающий список."""
         try:
-            self._clock.set_speed_multiplier(multiplier)
-            for btn in self._speed_buttons:
-                btn.setChecked(btn.text() == f"×{multiplier}")
-            logger.info(f"Множитель ускорения изменён на ×{multiplier}.")
+            multiplier = self._speed_combo.itemData(index)
+            if multiplier is not None:
+                self._clock.set_speed_multiplier(multiplier)
+                logger.info(f"Множитель ускорения изменён на ×{multiplier}.")
         except ValueError as e:
             logger.warning(f"Недопустимый множитель ускорения: {e}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка изменения множителя: {e}")
 
     def _on_time_updated(self, time_ms: int) -> None:
         """Обновление отображения времени."""
         try:
             self._time_label.setText(self._clock.get_formatted_time())
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обновления времени: {e}")
 
     # --- Обработчики скрытых меток ---
 
-    def _on_toggle_hidden_markers(self) -> None:
+    def _on_toggle_hidden_markers(self, checked: bool) -> None:
         """Переключение режима скрытых меток."""
         try:
-            self._hidden_markers_visible = self._chk_hidden_markers.isChecked()
+            self._hidden_markers_visible = checked
             self.hidden_markers_toggled.emit(self._hidden_markers_visible)
             state = "включён" if self._hidden_markers_visible else "выключен"
             logger.info(f"Режим скрытых меток {state}.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка переключения скрытых меток: {e}")
 
     # --- Обработчики графиков ---
@@ -379,16 +438,18 @@ class MainWindow(QMainWindow):
         self._btn_settings_plot.setEnabled(has_selection)
         self._btn_remove_plot.setEnabled(has_selection)
 
-    # --- Обработчики меню ---
+    # --- Обработчики меню и опций ---
 
-    def _on_toggle_journal(self) -> None:
-        """Переключение видимости журнала событий."""
+    def _on_toggle_journal(self, checked: bool) -> None:
+        """Переключение видимости журнала событий (синхронизирует меню и чекбокс)."""
         try:
-            self._journal_visible = self._journal_action.isChecked()
+            self._journal_visible = checked
+            self._journal_action.setChecked(checked)
+            self._chk_journal.setChecked(checked)
             self.journal_toggled.emit(self._journal_visible)
             state = "открыт" if self._journal_visible else "закрыт"
             logger.info(f"Журнал событий {state}.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка переключения журнала: {e}")
 
     def _on_save_config(self) -> None:
@@ -403,7 +464,7 @@ class MainWindow(QMainWindow):
                 self.save_config_requested.emit(filepath)
             else:
                 logger.debug("Сохранение конфигурации отменено пользователем.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Непредвиденная ошибка при запросе сохранения: {e}")
             QMessageBox.critical(self, "Ошибка", f"Непредвиденная ошибка:\n{e}")
 
@@ -418,7 +479,7 @@ class MainWindow(QMainWindow):
                 # Делегируем загрузку координатору
                 self.load_config_requested.emit(filepath)
             else:
-                logger.debug("Загрузка конфигурации отменена пользователем.")
-        except Exception as e:
+                logger.debug("Загрузка конфигурации отменено пользователем.")
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Непредвиденная ошибка при запросе загрузки: {e}")
             QMessageBox.critical(self, "Ошибка", f"Непредвиденная ошибка:\n{e}")

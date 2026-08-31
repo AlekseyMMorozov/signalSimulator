@@ -81,7 +81,7 @@ class FaultTemplate:
             else:
                 # Режим "one" по умолчанию
                 return [random.choice(candidates)]
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка выбора целевых графиков для шаблона {self.template_id}: {e}")
             return []
 
@@ -127,7 +127,7 @@ class FaultScheduler:
         try:
             self._templates[template.template_id] = template
             logger.info(f"Добавлен шаблон неисправности: {template.template_id}.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка добавления шаблона: {e}")
 
     def remove_template(self, template_id: str) -> None:
@@ -154,7 +154,7 @@ class FaultScheduler:
                 f"Добавлено правило: {rule.rule_id} "
                 f"(интервал {rule.check_interval_ms} мс, вероятность {rule.probability})."
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка добавления правила: {e}")
 
     def remove_rule(self, rule_id: str) -> None:
@@ -206,7 +206,7 @@ class FaultScheduler:
                     if random.random() < rule.probability:
                         rule_events = self._inject_from_rule(rule, rule.last_check_time_ms, available_plot_ids)
                         events.extend(rule_events)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка в планировщике при обработке тика: {e}")
         return events
 
@@ -262,7 +262,7 @@ class FaultScheduler:
                 f"Правило {rule.rule_id} сработало в {time_ms} мс: "
                 f"шаблон {template_id}, целевые графики {target_ids}."
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка генерации событий для правила {rule.rule_id}: {e}")
         return events
 

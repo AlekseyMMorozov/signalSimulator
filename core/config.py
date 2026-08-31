@@ -7,7 +7,7 @@ signalSimulator/core/config.py
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -193,7 +193,7 @@ class ConfigManager:
         """
         return {
             "name": "Без названия",
-            "created_at": datetime.now().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
             "plots": [],
             "faults": []
         }
@@ -282,7 +282,7 @@ class ConfigManager:
         Returns:
             str: Имя файла в формате 'config_YYYYMMDD_HHMMSS.json'.
         """
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         filename = f"config_{timestamp}.json"
         logger.debug(f"Сгенерировано имя файла: {filename}")
         return filename

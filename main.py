@@ -90,7 +90,7 @@ class Coordinator:
             self.fault_window.fault_injected.connect(self._on_fault_injected)
 
             logger.debug("Сигналы координатора подключены.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка подключения сигналов: {e}")
 
     def _on_add_plot(self) -> None:
@@ -150,7 +150,7 @@ class Coordinator:
                     plot_window.show()
 
                     logger.info(f"График '{plot_id}' успешно создан и открыт.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка при создании графика: {e}")
 
     def _on_open_plot(self, plot_id: str) -> None:
@@ -161,7 +161,7 @@ class Coordinator:
                 self.plot_windows[plot_id].raise_()
                 self.plot_windows[plot_id].activateWindow()
                 logger.debug(f"Окно графика '{plot_id}' отображено.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка при открытии графика '{plot_id}': {e}")
 
     def _on_plot_settings(self, plot_id: str) -> None:
@@ -229,7 +229,7 @@ class Coordinator:
                         "Успех",
                         f"Настройки графика '{params['name']}' успешно обновлены."
                     )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка при обработке запроса настроек графика '{plot_id}': {e}")
             QMessageBox.critical(self.main_window, "Ошибка", f"Не удалось обновить настройки:\n{e}")
 
@@ -246,7 +246,7 @@ class Coordinator:
                     self.detectors[plot_id].reset()
 
             logger.info("Симуляция и все графики сброшены.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка при сбросе симуляции: {e}")
 
     def _on_remove_plot(self, plot_id: str) -> None:
@@ -263,7 +263,7 @@ class Coordinator:
                 del self.detectors[plot_id]
 
             logger.info(f"График '{plot_id}' полностью удален.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка при удалении графика '{plot_id}': {e}")
 
     def _on_toggle_journal(self, visible: bool) -> None:
@@ -273,7 +273,7 @@ class Coordinator:
                 self.log_window.show()
             else:
                 self.log_window.hide()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка переключения журнала: {e}")
 
     def _on_toggle_hidden_markers(self, visible: bool) -> None:
@@ -282,7 +282,7 @@ class Coordinator:
             self._hidden_markers_visible = visible
             for pw in self.plot_windows.values():
                 pw.set_hidden_markers_visible(visible)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка переключения скрытых меток: {e}")
 
     def _on_plot_data_updated(self, plot_id: str, data: tuple) -> None:
@@ -317,7 +317,7 @@ class Coordinator:
                                 # Добавляем визуальную метку по времени первого обнаружения в пакете
                                 self.plot_windows[plot_id].add_detector_marker(detections[0]['time_ms'])
                             detected_in_batch = True  # Избегаем множественных маркеров за один пакет
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обработки данных графика '{plot_id}': {e}")
 
     def _on_fault_injected(self, plot_id: str, fault_type: str, fault_params: dict) -> None:
@@ -326,7 +326,7 @@ class Coordinator:
             if plot_id in self.plot_windows:
                 current_time = self.clock.get_current_time_ms()
                 self.plot_windows[plot_id].add_fault_marker(current_time, fault_type)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка добавления метки неисправности: {e}")
 
     def _on_operator_detection(self, plot_id: str) -> None:
@@ -336,7 +336,7 @@ class Coordinator:
             if plot_id in self.plot_windows:
                 current_time = self.clock.get_current_time_ms()
                 self.plot_windows[plot_id].add_operator_marker(current_time)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка фиксации обнаружения оператором: {e}")
 
     def _on_plot_window_closed(self, plot_id: str) -> None:
@@ -345,7 +345,7 @@ class Coordinator:
             # Окно намеренно не удаляется из словаря self.plot_windows,
             # чтобы кнопка "Просмотр" на главном окне могла его снова отобразить.
             logger.debug(f"Окно графика '{plot_id}' скрыто и доступно для повторного открытия.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка при обработке скрытия окна '{plot_id}': {e}")
 
     def _collect_current_config(self) -> dict:
@@ -396,7 +396,7 @@ class Coordinator:
             QMessageBox.information(
                 self.main_window, "Успех", f"Конфигурация сохранена:\n{filepath}"
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка сохранения конфигурации: {e}")
             QMessageBox.critical(self.main_window, "Ошибка", f"Не удалось сохранить конфигурацию:\n{e}")
 
@@ -464,7 +464,7 @@ class Coordinator:
             QMessageBox.information(
                 self.main_window, "Успех", f"Конфигурация успешно загружена:\n{filepath}"
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка загрузки конфигурации: {e}")
             QMessageBox.critical(self.main_window, "Ошибка", f"Не удалось загрузить конфигурацию:\n{e}")
 
@@ -480,7 +480,7 @@ def main() -> None:
 
         logger.info("Приложение signalSimulator запущено.")
         sys.exit(app.exec())
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.critical(f"Критическая ошибка при запуске приложения: {e}")
         sys.exit(1)
 

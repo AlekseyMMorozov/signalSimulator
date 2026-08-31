@@ -8,6 +8,7 @@ ui/fault_template_dialog.py
 import logging
 
 from PyQt6.QtWidgets import (
+    QComboBox,
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
@@ -165,7 +166,7 @@ class FaultTemplateDialog(QDialog):
             elif self._radio_periodic.isChecked():
                 self._duration_spin.setEnabled(True)
                 self._period_spin.setEnabled(True)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обработки изменения характера: {e}")
 
     def _update_fault_params_fields(self) -> None:
@@ -195,7 +196,7 @@ class FaultTemplateDialog(QDialog):
                 self._add_param("rate_percent_per_sec", "Скорость (%/сек):", -0.001)
 
             logger.debug(f"Обновлены поля параметров для типа '{fault_type}'.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обновления полей параметров: {e}")
 
     def _add_param(self, param_name: str, label: str, default_value: float) -> None:
@@ -207,7 +208,7 @@ class FaultTemplateDialog(QDialog):
             spin.setValue(default_value)
             spin.setProperty("param_name", param_name)
             self._params_layout.addRow(label, spin)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка добавления поля параметра '{param_name}': {e}")
 
     def _load_template(self, template: FaultTemplate) -> None:
@@ -238,7 +239,7 @@ class FaultTemplateDialog(QDialog):
 
             self._on_character_changed()
             logger.debug(f"Загружен шаблон '{template.template_id}'.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка загрузки шаблона: {e}")
 
     def _on_accept(self) -> None:
@@ -281,7 +282,7 @@ class FaultTemplateDialog(QDialog):
 
             logger.info(f"Шаблон '{name}' создан/обновлён.")
             self.accept()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка при подтверждении диалога: {e}")
             QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить шаблон:\n{e}")
 

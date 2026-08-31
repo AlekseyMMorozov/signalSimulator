@@ -5,6 +5,7 @@ core/clock.py
 """
 
 import logging
+from typing import ClassVar
 
 from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
@@ -26,7 +27,7 @@ class GlobalClock(QObject):
     time_updated = pyqtSignal(int)
 
     # Допустимые множители ускорения
-    ALLOWED_MULTIPLIERS = [1, 10, 100, 1000, 10000]
+    ALLOWED_MULTIPLIERS: ClassVar[list[int]] = [1, 10, 100, 1000, 10000]
 
     # Интервал тика в миллисекундах реального времени
     TICK_INTERVAL_MS = 1000
@@ -167,7 +168,7 @@ class GlobalClock(QObject):
             seconds = total_seconds % 60
 
             return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}"
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка форматирования времени: {e}")
             return "00:00:00.000"
 
@@ -185,5 +186,5 @@ class GlobalClock(QObject):
                 f"Тик времени: {self.get_formatted_time()} "
                 f"(x{self._speed_multiplier})"
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка при обработке тика: {e}")

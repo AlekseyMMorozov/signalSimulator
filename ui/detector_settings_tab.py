@@ -54,7 +54,13 @@ class DetectorSettingsTab(QWidget):
         self._window_size_spin.setRange(10, 500)
         self._window_size_spin.setValue(50)
         self._window_size_spin.setToolTip(
-            "Размер скользящего окна (в точках) для статистического анализа и оценки тренда."
+            "<b>Размер скользящего окна (в точках).</b><br>"
+            "Определяет, сколько последних точек данных используется для оценки "
+            "статистики (уровня шума) и тренда.<br>"
+            "<i>Диапазон:</i> 10 – 500.<br>"
+            "<i>Рекомендация:</i> Меньшие значения (10-30) дают быструю реакцию, "
+            "но чувствительны к шуму. Большие значения (100-500) надежно сглаживают "
+            "шум, но увеличивают задержку обнаружения резких аномалий."
         )
         form_layout.addRow("Размер окна (точек):", self._window_size_spin)
 
@@ -64,8 +70,13 @@ class DetectorSettingsTab(QWidget):
         self._sigma_factor_spin.setSingleStep(0.1)
         self._sigma_factor_spin.setValue(3.0)
         self._sigma_factor_spin.setToolTip(
-            "Множитель стандартного отклонения (K) для порога аномалии. "
-            "Рекомендуется 3.0 для чистых сигналов, 4.0–5.0 для зашумленных."
+            "<b>Множитель стандартного отклонения (K).</b><br>"
+            "Коэффициент, на который умножается оцененный уровень шума для получения "
+            "порога срабатывания статистического детектора.<br>"
+            "<i>Диапазон:</i> 1.0 – 10.0.<br>"
+            "<i>Рекомендация:</i> Значение 3.0 соответствует классическому правилу "
+            "'трех сигм' (охватывает 99.7% нормальных флуктуаций). Увеличивайте до "
+            "4.0–5.0 для сильно зашумленных сигналов, чтобы снизить число ложных тревог."
         )
         form_layout.addRow("Множитель сигмы (K):", self._sigma_factor_spin)
 
@@ -74,8 +85,12 @@ class DetectorSettingsTab(QWidget):
         self._min_samples_spin.setRange(5, 100)
         self._min_samples_spin.setValue(20)
         self._min_samples_spin.setToolTip(
-            "Минимальное количество точек, необходимое для начала анализа трендов и статистики. "
-            "Защищает от ложных срабатываний на старте, когда данных мало."
+            "<b>Минимальное количество точек для старта анализа.</b><br>"
+            "Детектор не будет выдавать предупреждения об аномалиях или трендах, "
+            "пока не накопит указанное количество точек.<br>"
+            "<i>Диапазон:</i> 5 – 100.<br>"
+            "<i>Рекомендация:</i> Значение 20–30 оптимально защищает от ложных "
+            "срабатываний на 'холодном старте', когда статистика еще не стабилизировалась."
         )
         form_layout.addRow("Мин. точек для анализа:", self._min_samples_spin)
 
@@ -85,8 +100,13 @@ class DetectorSettingsTab(QWidget):
         self._trend_threshold_spin.setSingleStep(0.01)
         self._trend_threshold_spin.setValue(0.0)
         self._trend_threshold_spin.setToolTip(
-            "Фиксированный порог наклона тренда (ед/сек). "
-            "Если установлено 0.0, используется автоматическая калибровка на основе шума (trend_auto_sigma)."
+            "<b>Фиксированный порог наклона тренда (ед/сек).</b><br>"
+            "Минимальное абсолютное значение скорости изменения сигнала, при котором "
+            "фиксируется тренд.<br>"
+            "<i>Диапазон:</i> 0.0 – 10.0.<br>"
+            "<i>Рекомендация:</i> Установите конкретное значение, если известна "
+            "физическая скорость деградации. Если установлено 0.0, детектор переключается "
+            "в автоматический режим, вычисляя порог динамически на основе текущего шума."
         )
         form_layout.addRow("Порог тренда (0.0 = авто):", self._trend_threshold_spin)
 
@@ -96,20 +116,28 @@ class DetectorSettingsTab(QWidget):
         self._trend_auto_sigma_spin.setSingleStep(0.1)
         self._trend_auto_sigma_spin.setValue(3.0)
         self._trend_auto_sigma_spin.setToolTip(
-            "Множитель стандартной ошибки наклона для автоматического порога тренда. "
-            "Используется, если 'Порог тренда' равен 0.0."
+            "<b>Множитель стандартной ошибки наклона (для авто-режима).</b><br>"
+            "Используется только если 'Порог тренда' равен 0.0. Определяет, насколько "
+            "значимым должен быть вычисленный наклон относительно естественных "
+            "флуктуаций сигнала, чтобы быть признанным трендом.<br>"
+            "<i>Диапазон:</i> 1.0 – 10.0.<br>"
+            "<i>Рекомендация:</i> 3.0 является сбалансированным значением для большинства задач."
         )
         form_layout.addRow("Авто-сигма тренда:", self._trend_auto_sigma_spin)
 
-        # Толерантность к шуму (подготовка для будущей логики в detector.py)
+        # Толерантность к шуму
         self._noise_tolerance_spin = QDoubleSpinBox()
         self._noise_tolerance_spin.setRange(0.0, 1.0)
         self._noise_tolerance_spin.setSingleStep(0.1)
         self._noise_tolerance_spin.setValue(0.0)
         self._noise_tolerance_spin.setToolTip(
-            "Уровень толерантности к высокочастотному шуму (0.0 - 1.0). "
-            "Увеличение значения повышает устойчивость детектора к шумовым всплескам, "
-            "но может незначительно увеличить задержку обнаружения резких аномалий."
+            "<b>Уровень толерантности к высокочастотному шуму.</b><br>"
+            "Коэффициент, дополнительно расширяющий порог срабатывания детектора "
+            "в условиях нестабильного шума.<br>"
+            "<i>Диапазон:</i> 0.0 – 1.0.<br>"
+            "<i>Рекомендация:</i> 0.0 означает использование базового порога. "
+            "Значение 1.0 удваивает порог, делая детектор максимально устойчивым к "
+            "шумовым всплескам, ценой небольшого увеличения задержки реакции."
         )
         form_layout.addRow("Толерантность к шуму:", self._noise_tolerance_spin)
 
@@ -137,8 +165,9 @@ class DetectorSettingsTab(QWidget):
                 trend_threshold=threshold_val,
                 trend_auto_sigma=self._trend_auto_sigma_spin.value(),
                 min_samples=self._min_samples_spin.value(),
+                noise_tolerance=self._noise_tolerance_spin.value(),
             )
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка считывания конфигурации детектора: {e}")
             return DetectorConfig()
 
@@ -154,14 +183,13 @@ class DetectorSettingsTab(QWidget):
             self._sigma_factor_spin.setValue(config.sigma_factor)
             self._min_samples_spin.setValue(config.min_samples)
             self._trend_auto_sigma_spin.setValue(config.trend_auto_sigma)
+            self._noise_tolerance_spin.setValue(config.noise_tolerance)
 
             # Обработка None для trend_threshold (возвращаем к 0.0 для UI)
             threshold = config.trend_threshold if config.trend_threshold is not None else 0.0
             self._trend_threshold_spin.setValue(threshold)
 
-            # Примечание: поле noise_tolerance пока не сохранено в DetectorConfig,
-            # оно будет добавлено в analytics/detector.py на следующих итерациях.
-
             logger.debug("Настройки детектора загружены в интерфейс.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка загрузки конфигурации детектора в интерфейс: {e}")
+

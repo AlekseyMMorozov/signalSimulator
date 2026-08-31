@@ -2,19 +2,60 @@
 analytics/detector.py
 
 Продвинутая статистическая модель обнаружения аномалий и трендов в реальном времени.
-Реализует робастную оценку шума (MAD), двойное экспоненциальное сглаживание (модель Хольта)
-для прогноза и тренда, анализ остатков для точечных аномалий и учет пропадания данных.
+Реализует робастную оценку шума (MAD) с защитой от "холодного старта",
+двойное экспоненциальное сглаживание (модель Хольта) для прогноза и тренда,
+анализ остатков для точечных аномалий и учет пропадания данных.
 Все параметры настраиваются через DetectorConfig.
 """
 
 import logging
 from collections import deque
 from dataclasses import dataclass
+from enum import Enum, auto
 from typing import Any
 
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
+
+class DetectionType(Enum):
+    """Типы обнаружений."""
+    THRESHOLD = auto()
+    STATISTICAL = auto()
+    TREND = auto()
+
+
+@dataclass
+class DetectionResult:
+    """
+    Результат обнаружения.
+    Содержит время, тип обнаружения, описание, текущее значение
+    и произвольные метаданные (например, направление тренда).
+    """
+    time_ms: int
+    detection_type: DetectionType
+    description: str
+    value: float
+    metadata: dict[str, Any] | None = None
+
+    def __str__(self) -> str:
+        meta_str = f", {self.metadata}" if self.metadata else ""
+        return f"[{self.detection_type.name}] {self.time_ms} мс: {self.description} (значение: {self.value}){meta_str}"
+
+    def __getitem__(self, key: str) -> Any:
+        """Поддержка доступа как к словарю для обратной совместимости."""
+        if key == "type":
+            return self.detection_type.name
+        if key == "time_ms":
+            return self.time_ms
+        if key == "description":
+            return self.description
+        if key == "value":
+            return self.value
+        if key == "metadata":
+            return self.metadata
+        raise KeyError(key)
 
 
 @dataclass
@@ -92,12 +133,12 @@ class AnomalyDetector:
             self._times = deque(self._times, maxlen=self._config.window_size)
             self.reset()
             logger.info("Конфигурация детектора обновлена.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обновления конфигурации детектора: {e}")
 
-    def process(self, time_ms: int, value: float) -> list[dict[str, Any]]:
+    def process(self, time_ms: int, value: float) -> list[DetectionResult]:
         """Обработать новую точку. Возвращает список обнаружений."""
-        results = []
+        results: list[DetectionResult] = []
         try:
             self._values.append(value)
             self._times.append(time_ms)
@@ -123,26 +164,36 @@ class AnomalyDetector:
             k = self._config.sigma_factor * (1.0 + self._config.noise_tolerance)
 
             if abs(residual) > k * sigma_pred:
-                results.append({
-                    "type": "STATISTICAL",
-                    "description": f"Аномалия (остаток): |{value:.4f} - {forecast:.4f}| > {k:.1f} * {sigma_pred:.4f}",
-                    "value": value,
-                    "time_ms": time_ms
-                })
+                results.append(DetectionResult(
+                    time_ms=time_ms,
+                    detection_type=DetectionType.STATISTICAL,
+                    description=f"Аномалия (остаток): |{value:.4f} - {forecast:.4f}| > {k:.1f} * {sigma_pred:.4f}",
+                    value=value
+                ))
 
             trend_results = self._check_trend(time_ms)
             results.extend(trend_results)
 
             if value < self.min_allowed and self._threshold_state != "below_min":
-                results.append({"type": "THRESHOLD", "description": f"Ниже минимума: {value:.4f} < {self.min_allowed:.4f}", "value": value, "time_ms": time_ms})
+                results.append(DetectionResult(
+                    time_ms=time_ms,
+                    detection_type=DetectionType.THRESHOLD,
+                    description=f"Ниже минимума: {value:.4f} < {self.min_allowed:.4f}",
+                    value=value
+                ))
                 self._threshold_state = "below_min"
             elif value > self.max_allowed and self._threshold_state != "above_max":
-                results.append({"type": "THRESHOLD", "description": f"Выше максимума: {value:.4f} > {self.max_allowed:.4f}", "value": value, "time_ms": time_ms})
+                results.append(DetectionResult(
+                    time_ms=time_ms,
+                    detection_type=DetectionType.THRESHOLD,
+                    description=f"Выше максимума: {value:.4f} > {self.max_allowed:.4f}",
+                    value=value
+                ))
                 self._threshold_state = "above_max"
             elif self.min_allowed <= value <= self.max_allowed:
                 self._threshold_state = "normal"
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обработки точки в {time_ms} мс: {e}")
         return results
 
@@ -161,8 +212,14 @@ class AnomalyDetector:
             arr = np.array(self._values, dtype=np.float64)
             median = np.median(arr)
             mad = np.median(np.abs(arr - median))
-            self._sigma_noise = 1.4826 * mad if mad > 0 else 1e-6
-        except Exception:
+            estimated_sigma = 1.4826 * mad
+
+            # Защита от "холодного старта" и идеально стабильных сигналов:
+            # минимальный шум не должен быть меньше 0.5% от диапазона или 1e-3,
+            # чтобы избежать ложных срабатываний при нулевом MAD.
+            min_sigma = max(1e-3, (self.max_allowed - self.min_allowed) * 0.005)
+            self._sigma_noise = max(estimated_sigma, min_sigma)
+        except Exception:  # noqa: BLE001
             self._sigma_noise = 1.0
 
     def _holt_step(self, value: float, dt_sec: float) -> tuple[float, float, float]:
@@ -178,8 +235,8 @@ class AnomalyDetector:
 
         return forecast, new_l, new_b
 
-    def _check_trend(self, time_ms: int) -> list[dict[str, Any]]:
-        results = []
+    def _check_trend(self, time_ms: int) -> list[DetectionResult]:
+        results: list[DetectionResult] = []
         try:
             if self._b is None or abs(self._b) < 1e-6:
                 return results
@@ -196,20 +253,28 @@ class AnomalyDetector:
                 return results
 
             should_report = False
-            if self._last_trend_direction is None or direction != self._last_trend_direction or self._last_trend_slope is not None and abs(self._b) > abs(self._last_trend_slope) + 1e-6:
+            if self._last_trend_direction is None or direction != self._last_trend_direction or (self._last_trend_slope is not None and abs(self._b) > abs(self._last_trend_slope) + 1e-6):
                 should_report = True
 
             if should_report:
-                time_str = f"{time_to_breach_sec / 60:.1f} мин" if time_to_breach_sec < 3600 else f"{time_to_breach_sec / 3600:.1f} ч"
+                # Улучшенное форматирование времени: секунды, если меньше минуты
+                if time_to_breach_sec < 60:
+                    time_str = f"{time_to_breach_sec:.1f} сек"
+                elif time_to_breach_sec < 3600:
+                    time_str = f"{time_to_breach_sec / 60:.1f} мин"
+                else:
+                    time_str = f"{time_to_breach_sec / 3600:.1f} ч"
+
                 dir_str = "рост" if direction == "growth" else "убывание"
-                results.append({
-                    "type": "TREND",
-                    "description": f"Тренд ({dir_str}): наклон {self._b:.6f} ед/сек. Прогноз выхода за {bound_name} предел через {time_str}.",
-                    "value": current_value,
-                    "time_ms": time_ms
-                })
+                results.append(DetectionResult(
+                    time_ms=time_ms,
+                    detection_type=DetectionType.TREND,
+                    description=f"Тренд ({dir_str}): наклон {self._b:.6f} ед/сек. Прогноз выхода за {bound_name} предел через {time_str}.",
+                    value=current_value,
+                    metadata={"direction": direction, "time_to_breach_sec": time_to_breach_sec}
+                ))
                 self._last_trend_direction = direction
                 self._last_trend_slope = self._b
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обнаружения тренда: {e}")
         return results
