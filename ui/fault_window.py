@@ -1,5 +1,6 @@
 """
 ui/fault_window.py
+
 Окно управления неисправностями с тремя вкладками: Шаблоны, Ручное внедрение, Правила.
 Позволяет создавать заготовки неисправностей, внедрять их вручную на выбранные графики
 и настраивать автоматическое внедрение через правила с параметрами периода и вероятности.
@@ -8,7 +9,8 @@ ui/fault_window.py
 
 import logging
 
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import QSettings, pyqtSignal
+from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -64,15 +66,32 @@ class FaultWindow(QMainWindow):
 
         self._scheduler = scheduler
         self._engine = engine
+        self._settings = QSettings("signalSimulator", "signalSimulatorApp")
 
         try:
             self._init_ui()
+            self._restore_geometry()
             self._refresh_templates_list()
             self._refresh_rules_list()
             logger.info("Окно управления неисправностями инициализировано.")
         except Exception as e:
             logger.error(f"Ошибка инициализации окна неисправностей: {e}")
             raise
+
+    def _restore_geometry(self) -> None:
+        """Восстановление размера и положения окна из настроек."""
+        try:
+            geometry = self._settings.value("FaultWindow/geometry")
+            if geometry:
+                self.restoreGeometry(geometry)
+
+            is_maximized = self._settings.value("FaultWindow/maximized", False, type=bool)
+            if is_maximized:
+                self.showMaximized()
+
+            logger.debug("Геометрия окна управления неисправностями восстановлена.")
+        except Exception as e:
+            logger.error(f"Ошибка восстановления геометрии окна управления неисправностями: {e}")
 
     def _init_ui(self) -> None:
         """Создание интерфейса окна."""
@@ -132,8 +151,6 @@ class FaultWindow(QMainWindow):
         # Выбор графика
         plot_layout = QHBoxLayout()
         plot_layout.addWidget(QLabel("Внедрить на график:"))
-        self._plot_combo = QWidget()  # Будет заменен на QComboBox в refresh
-        # Используем временный placeholder, реальный QComboBox создается в _refresh_plots_combo
         from PyQt6.QtWidgets import QComboBox
         self._plot_combo = QComboBox()
         plot_layout.addWidget(self._plot_combo)
@@ -386,3 +403,17 @@ class FaultWindow(QMainWindow):
         except Exception as e:
             logger.error(f"Ошибка удаления правила: {e}")
             QMessageBox.critical(self, "Ошибка", f"Не удалось удалить правило:\n{e}")
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """
+        Обработка закрытия окна.
+        Сохраняет геометрию перед закрытием.
+        """
+        try:
+            self._settings.setValue("FaultWindow/geometry", self.saveGeometry())
+            self._settings.setValue("FaultWindow/maximized", self.isMaximized())
+            logger.info("Геометрия окна управления неисправностями сохранена.")
+            super().closeEvent(event)
+        except Exception as e:
+            logger.error(f"Ошибка при закрытии окна управления неисправностями: {e}")
+            super().closeEvent(event)

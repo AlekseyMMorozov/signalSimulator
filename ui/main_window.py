@@ -9,8 +9,8 @@ ui/main_window.py
 
 import logging
 
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtCore import QSettings, Qt, pyqtSignal
+from PyQt6.QtGui import QCloseEvent, QGuiApplication
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -54,6 +54,7 @@ class MainWindow(QMainWindow):
         hidden_markers_toggled: Режим скрытых меток включён (True) или выключён (False).
         save_config_requested: Запрос на сохранение конфигурации по указанному пути.
         load_config_requested: Запрос на загрузку конфигурации по указанному пути.
+        window_closed: Сигнал о закрытии главного окна (для завершения работы приложения).
     """
 
     plot_open_requested = pyqtSignal(str)
@@ -65,6 +66,7 @@ class MainWindow(QMainWindow):
     hidden_markers_toggled = pyqtSignal(bool)
     save_config_requested = pyqtSignal(str)
     load_config_requested = pyqtSignal(str)
+    window_closed = pyqtSignal()
 
     def __init__(self, clock: GlobalClock, parent: QWidget | None = None) -> None:
         """
@@ -77,14 +79,8 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.setWindowTitle("signalSimulator")
 
-        # Компактный размер: не более 1/4 площади экрана (1/2 ширины * 1/2 высоты)
-        # но с гарантированным минимальным размером для вмещения всех элементов
-        screen = QGuiApplication.primaryScreen().availableGeometry()
-        target_width = max(600, screen.width() // 2)
-        target_height = max(450, screen.height() // 2)
-
-        self.resize(target_width, target_height)
-        self.setMinimumSize(600, 450)
+        # Инициализация QSettings для сохранения состояния интерфейса
+        self._settings = QSettings("signalSimulator", "signalSimulatorApp")
 
         self._clock = clock
         self._journal_visible = False
@@ -94,10 +90,52 @@ class MainWindow(QMainWindow):
             self._init_menu()
             self._init_ui()
             self._connect_signals()
+            self._restore_geometry()
             logger.info("Главное окно инициализировано (компактный режим).")
         except Exception as e:
             logger.error(f"Ошибка инициализации главного окна: {e}")
             raise
+
+    def _restore_geometry(self) -> None:
+        """Восстановление размера и положения окна из настроек."""
+        try:
+            geometry = self._settings.value("MainWindow/geometry")
+            if geometry:
+                self.restoreGeometry(geometry)
+            else:
+                # Fallback: если настроек нет, используем дефолтный компактный размер
+                screen = QGuiApplication.primaryScreen().availableGeometry()
+                target_width = max(600, screen.width() // 2)
+                target_height = max(450, screen.height() // 2)
+                self.resize(target_width, target_height)
+                self.setMinimumSize(600, 450)
+
+            is_maximized = self._settings.value("MainWindow/maximized", False, type=bool)
+            if is_maximized:
+                self.showMaximized()
+
+            logger.debug("Геометрия главного окна восстановлена.")
+        except Exception as e:
+            logger.error(f"Ошибка восстановления геометрии главного окна: {e}")
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """
+        Обработка события закрытия окна.
+        Сохраняет геометрию и уведомляет координатора о завершении работы.
+        """
+        try:
+            # Сохраняем текущее состояние
+            self._settings.setValue("MainWindow/geometry", self.saveGeometry())
+            self._settings.setValue("MainWindow/maximized", self.isMaximized())
+            logger.info("Геометрия главного окна сохранена.")
+
+            # Уведомляем координатора, чтобы он закрыл остальные окна
+            self.window_closed.emit()
+
+            super().closeEvent(event)
+        except Exception as e:
+            logger.error(f"Ошибка при закрытии главного окна: {e}")
+            super().closeEvent(event)
 
     def _init_menu(self) -> None:
         """Создание строки меню."""
@@ -483,3 +521,4 @@ class MainWindow(QMainWindow):
         except Exception as e:  # noqa: BLE001
             logger.error(f"Непредвиденная ошибка при запросе загрузки: {e}")
             QMessageBox.critical(self, "Ошибка", f"Непредвиденная ошибка:\n{e}")
+

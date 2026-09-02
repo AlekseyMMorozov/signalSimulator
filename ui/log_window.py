@@ -10,6 +10,8 @@ ui/log_window.py
 
 import logging
 
+from PyQt6.QtCore import QSettings
+from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -72,10 +74,8 @@ class LogWindow(QMainWindow):
         super().__init__(parent)
         self.setWindowTitle("Журнал событий")
 
-        # Компактный размер по умолчанию (не более четверти экрана)
-        self.resize(500, 400)
-        # Минимальный размер позволяет пользователю сделать окно ещё меньше при необходимости
-        self.setMinimumSize(300, 200)
+        # Инициализация QSettings для сохранения состояния интерфейса
+        self._settings = QSettings("signalSimulator", "signalSimulatorApp")
 
         self._event_log = event_log
         self._records: list[EventRecord] = []
@@ -87,11 +87,27 @@ class LogWindow(QMainWindow):
             self._event_log.event_added.connect(self._on_event_added)
 
             self._init_ui()
+            self._restore_geometry()
             self._apply_filter()
             logger.info(f"Окно журнала инициализировано. Записей: {len(self._records)}.")
         except Exception as e:
             logger.error(f"Ошибка инициализации окна журнала: {e}")
             raise
+
+    def _restore_geometry(self) -> None:
+        """Восстановление размера и положения окна из настроек."""
+        try:
+            geometry = self._settings.value("LogWindow/geometry")
+            if geometry:
+                self.restoreGeometry(geometry)
+
+            is_maximized = self._settings.value("LogWindow/maximized", False, type=bool)
+            if is_maximized:
+                self.showMaximized()
+
+            logger.debug("Геометрия окна журнала восстановлена.")
+        except Exception as e:
+            logger.error(f"Ошибка восстановления геометрии окна журнала: {e}")
 
     def _init_ui(self) -> None:
         """Создание интерфейса окна журнала."""
@@ -316,10 +332,17 @@ class LogWindow(QMainWindow):
         except Exception as e:
             logger.error(f"Ошибка автопрокрутки лога: {e}")
 
-    def closeEvent(self, event) -> None:
-        """Обработка закрытия окна журнала."""
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """
+        Обработка закрытия окна.
+        Сохраняет геометрию перед закрытием.
+        """
         try:
-            logger.info("Окно журнала закрывается.")
+            self._settings.setValue("LogWindow/geometry", self.saveGeometry())
+            self._settings.setValue("LogWindow/maximized", self.isMaximized())
+            logger.info("Геометрия окна журнала сохранена.")
+            super().closeEvent(event)
         except Exception as e:
             logger.error(f"Ошибка при закрытии окна журнала: {e}")
-        super().closeEvent(event)
+            super().closeEvent(event)
+

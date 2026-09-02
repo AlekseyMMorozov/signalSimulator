@@ -12,7 +12,8 @@ import logging
 
 import numpy as np
 import pyqtgraph as pg
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import QSettings, Qt, pyqtSignal
+from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtWidgets import (
     QCheckBox,
     QHBoxLayout,
@@ -89,6 +90,9 @@ class PlotWindow(QMainWindow):
         self._max_allowed = float(max_allowed)
         self._observation_interval_ms = int(observation_interval_ms)
 
+        # Инициализация QSettings для сохранения состояния интерфейса
+        self._settings = QSettings("signalSimulator", "signalSimulatorApp")
+
         # Накопленные данные (полная история для децимации)
         self._times: list[int] = []
         self._values: list[float] = []
@@ -101,6 +105,7 @@ class PlotWindow(QMainWindow):
 
         try:
             self._init_ui()
+            self._restore_geometry()
             logger.info(
                 f"Окно графика '{plot_id}' инициализировано. "
                 f"Пределы: [{self._min_allowed}, {self._max_allowed}] {self._unit}."
@@ -108,6 +113,22 @@ class PlotWindow(QMainWindow):
         except Exception as e:
             logger.error(f"Ошибка инициализации окна графика '{plot_id}': {e}")
             raise
+
+    def _restore_geometry(self) -> None:
+        """Восстановление размера и положения окна из настроек."""
+        try:
+            key_prefix = f"PlotWindow_{self.plot_id}"
+            geometry = self._settings.value(f"{key_prefix}/geometry")
+            if geometry:
+                self.restoreGeometry(geometry)
+
+            is_maximized = self._settings.value(f"{key_prefix}/maximized", False, type=bool)
+            if is_maximized:
+                self.showMaximized()
+
+            logger.debug(f"Геометрия окна графика '{self.plot_id}' восстановлена.")
+        except Exception as e:
+            logger.error(f"Ошибка восстановления геометрии окна графика '{self.plot_id}': {e}")
 
     def _init_ui(self) -> None:
         """Создание интерфейса окна."""
@@ -422,11 +443,20 @@ class PlotWindow(QMainWindow):
         except Exception as e:
             logger.error(f"Ошибка обработки нажатия кнопки обнаружения: {e}")
 
-    def closeEvent(self, event) -> None:
-        """Обработка закрытия окна."""
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """
+        Обработка закрытия окна.
+        Сохраняет геометрию и уведомляет координатора о закрытии.
+        """
         try:
-            logger.info(f"Окно графика '{self.plot_id}' закрывается.")
+            key_prefix = f"PlotWindow_{self.plot_id}"
+            self._settings.setValue(f"{key_prefix}/geometry", self.saveGeometry())
+            self._settings.setValue(f"{key_prefix}/maximized", self.isMaximized())
+            logger.info(f"Геометрия окна графика '{self.plot_id}' сохранена.")
+
             self.window_closed.emit(self.plot_id)
+            super().closeEvent(event)
         except Exception as e:
-            logger.error(f"Ошибка при закрытии окна графика: {e}")
-        super().closeEvent(event)
+            logger.error(f"Ошибка при закрытии окна графика '{self.plot_id}': {e}")
+            super().closeEvent(event)
+

@@ -78,8 +78,9 @@ class Coordinator:
             self.main_window.reset_requested.connect(self._on_reset)
             self.main_window.journal_toggled.connect(self._on_toggle_journal)
             self.main_window.hidden_markers_toggled.connect(self._on_toggle_hidden_markers)
+            self.main_window.window_closed.connect(self._on_main_window_closed)
 
-            # Сигналы сохранения и загрузки конфигурации (будут использоваться на следующем шаге)
+            # Сигналы сохранения и загрузки конфигурации
             self.main_window.save_config_requested.connect(self._on_save_config_requested)
             self.main_window.load_config_requested.connect(self._on_load_config_requested)
 
@@ -92,6 +93,21 @@ class Coordinator:
             logger.debug("Сигналы координатора подключены.")
         except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка подключения сигналов: {e}")
+
+    def _on_main_window_closed(self) -> None:
+        """
+        Обработка закрытия главного окна.
+        Закрывает все остальные окна (что сохраняет их геометрию) и завершает приложение.
+        """
+        try:
+            logger.info("Главное окно закрыто. Завершение работы приложения.")
+            self.log_window.close()
+            self.fault_window.close()
+            for pw in list(self.plot_windows.values()):
+                pw.close()
+            QApplication.instance().quit()
+        except Exception as e:  # noqa: BLE001
+            logger.error(f"Ошибка при закрытии приложения: {e}")
 
     def _on_add_plot(self) -> None:
         """Обработка запроса на создание нового графика."""
@@ -487,3 +503,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
