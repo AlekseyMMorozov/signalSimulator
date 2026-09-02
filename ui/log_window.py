@@ -46,7 +46,7 @@ def format_time_ms(time_ms: int) -> str:
         minutes = (total_seconds % 3600) // 60
         seconds = total_seconds % 60
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{ms:03d}"
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         logger.error(f"Ошибка форматирования времени {time_ms}: {e}")
         return "00:00:00.000"
 
@@ -90,7 +90,7 @@ class LogWindow(QMainWindow):
             self._restore_geometry()
             self._apply_filter()
             logger.info(f"Окно журнала инициализировано. Записей: {len(self._records)}.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка инициализации окна журнала: {e}")
             raise
 
@@ -106,7 +106,7 @@ class LogWindow(QMainWindow):
                 self.showMaximized()
 
             logger.debug("Геометрия окна журнала восстановлена.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка восстановления геометрии окна журнала: {e}")
 
     def _init_ui(self) -> None:
@@ -199,7 +199,7 @@ class LogWindow(QMainWindow):
                 self._update_count()
                 if self._autoscroll_check.isChecked():
                     self._scroll_to_bottom()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обработки новой записи журнала: {e}")
 
     def _apply_filter(self) -> None:
@@ -217,7 +217,7 @@ class LogWindow(QMainWindow):
             if self._autoscroll_check.isChecked():
                 self._scroll_to_bottom()
             logger.debug("Фильтр журнала применён.")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка применения фильтра журнала: {e}")
 
     def _get_filter_params(self) -> tuple[str, str, int | None, int | None]:
@@ -233,7 +233,7 @@ class LogWindow(QMainWindow):
             start_ms = self._parse_time_ms(self._start_edit.text())
             end_ms = self._parse_time_ms(self._end_edit.text())
             return type_filter, plot_filter, start_ms, end_ms
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка получения параметров фильтра: {e}")
             return "Все типы", "", None, None
 
@@ -291,10 +291,10 @@ class LogWindow(QMainWindow):
             # Фильтр по времени
             if start_ms is not None and record.time_ms < start_ms:
                 return False
-            if end_ms is not None and record.time_ms > end_ms:
-                return False
-            return True
-        except Exception as e:
+
+            # Упрощённый возврат условия (исправлено SIM103)
+            return end_ms is None or record.time_ms <= end_ms
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка проверки фильтра для записи: {e}")
             return True
 
@@ -312,7 +312,7 @@ class LogWindow(QMainWindow):
             plot_str = record.plot_id if record.plot_id else "—"
             line = f"{time_str} | {record.event_type.name} | {plot_str} | {record.description}"
             self._log_view.appendPlainText(line)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка добавления записи в лог: {e}")
 
     def _update_count(self) -> None:
@@ -321,7 +321,7 @@ class LogWindow(QMainWindow):
             total = len(self._records)
             visible = self._log_view.blockCount()
             self._count_label.setText(f"Записей: {visible} из {total}")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обновления счётчика записей: {e}")
 
     def _scroll_to_bottom(self) -> None:
@@ -329,7 +329,7 @@ class LogWindow(QMainWindow):
         try:
             scrollbar = self._log_view.verticalScrollBar()
             scrollbar.setValue(scrollbar.maximum())
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка автопрокрутки лога: {e}")
 
     def closeEvent(self, event: QCloseEvent) -> None:
@@ -342,7 +342,6 @@ class LogWindow(QMainWindow):
             self._settings.setValue("LogWindow/maximized", self.isMaximized())
             logger.info("Геометрия окна журнала сохранена.")
             super().closeEvent(event)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка при закрытии окна журнала: {e}")
             super().closeEvent(event)
-

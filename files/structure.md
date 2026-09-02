@@ -9,9 +9,9 @@
 
 ## Статистика проекта
 - Папок: 6
-- Python-файлов: 22
-- Всего файлов: 22
-- Классов: 49
+- Python-файлов: 24
+- Всего файлов: 24
+- Классов: 50
 - Функций: 2
 
 ## Дерево проекта
@@ -41,8 +41,10 @@ signalSimulator/
     fault_window.py
     log_window.py
     main_window.py
+    period_widget.py
     plot_creation_dialog.py
     plot_window.py
+    signal_params_form.py
   main.py
 ```
 
@@ -61,9 +63,17 @@ signalSimulator/
 > analytics/detector.py
 
 Продвинутая статистическая модель обнаружения аномалий и трендов в реальном времени.
-Реализует робастную оценку шума (MAD), двойное экспоненциальное сглаживание (модель Хольта)
-для прогноза и тренда, анализ остатков для точечных аномалий и учет пропадания данных.
-Все параметры настраиваются через DetectorConfig.
+Поддерживает две стратегии детекции:
+- Модель Хольта (двойное экспоненциальное сглаживание) — для плавных сигналов
+  (синус, пила, треугольник, шум, экспонента, линейный тренд).
+- Бимодальная модель — для сигналов с двумя устойчивыми уровнями и резкими
+  переходами (меандр, ступеньки). Игнорирует фронты, анализирует отклонения
+  от локальных уровней и тренды по каждому уровню отдельно.
+
+Выбор стратегии определяется полем signal_model в DetectorConfig:
+- "auto" (по умолчанию) — автоматический выбор по типу сигнала.
+- "holt" — принудительное использование модели Хольта.
+- "bimodal" — принудительное использование бимодальной модели.
 #### Импорты
 - **Стандартная библиотека:**
   - `from collections import deque`
@@ -91,16 +101,35 @@ signalSimulator/
 - `@classmethod def from_dict(cls, data: dict[str, Any]) -> 'DetectorConfig'`
 ##### `class AnomalyDetector`
 > Легкая модель обнаружения аномалий (O(1) по памяти на точку).
-Использует модель Хольта для прогноза, MAD для оценки шума и анализ остатков.
+Поддерживает две стратегии: модель Хольта для плавных сигналов
+и бимодальную модель для меандра/ступенек.
 Методы:
 - `def __init__(self, min_allowed: float, max_allowed: float, config: DetectorConfig | None) -> None`
+- `def _resolve_model(self) -> str`
+  - Определить активную модель детекции на основе конфигурации.
 - `def set_config(self, config: DetectorConfig) -> None`
+- `def get_config(self) -> DetectorConfig`
+  - Возвращает текущую конфигурацию детектора.
 - `def process(self, time_ms: int, value: float) -> list[DetectionResult]`
   - Обработать новую точку. Возвращает список обнаружений.
 - `def reset(self) -> None`
+- `def _process_holt(self, time_ms: int, value: float, dt_sec: float) -> list[DetectionResult]`
+  - Обработка точки моделью Хольта.
 - `def _update_sigma_noise(self) -> None`
 - `def _holt_step(self, value: float, dt_sec: float) -> tuple[float, float, float]`
-- `def _check_trend(self, time_ms: int) -> list[DetectionResult]`
+- `def _check_trend_holt(self, time_ms: int) -> list[DetectionResult]`
+- `def _process_bimodal(self, time_ms: int, value: float) -> list[DetectionResult]`
+  - Обработка точки бимодальной моделью.
+- `def _initialize_bimodal_levels(self) -> None`
+  - Инициализация двух уровней по накопленным данным (квантили 25% и 75%).
+- `def _assign_to_level(self, value: float) -> tuple[str | None, float]`
+  - Определить, к какому уровню относится точка. Возвращает (level, distance).
+- `def _add_point_to_level(self, level: str, time_ms: int, value: float) -> None`
+  - Добавить точку в историю соответствующего уровня.
+- `def _update_level_stats(self, level: str) -> None`
+  - Обновить медиану и MAD для указанного уровня.
+- `def _check_trend_bimodal(self, time_ms: int, level: str) -> list[DetectionResult]`
+  - Проверка тренда по точкам одного уровня (линейная регрессия).
 
 ### Файл: `metrics.py`
 > analytics/metrics.py
@@ -1071,6 +1100,7 @@ Args:
 
 ### Файл: `fault_window.py`
 > ui/fault_window.py
+
 Окно управления неисправностями с тремя вкладками: Шаблоны, Ручное внедрение, Правила.
 Позволяет создавать заготовки неисправностей, внедрять их вручную на выбранные графики
 и настраивать автоматическое внедрение через правила с параметрами периода и вероятности.
@@ -1079,7 +1109,8 @@ Args:
 - **Стандартная библиотека:**
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtCore import pyqtSignal`
+  - `from PyQt6.QtCore import QSettings, pyqtSignal`
+  - `from PyQt6.QtGui import QCloseEvent`
   - `from PyQt6.QtWidgets import QComboBox`
   - `from PyQt6.QtWidgets import QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QTabWidget, QVBoxLayout, QWidget`
   - `from simulation.scheduler import FaultScheduler, FaultTemplate`
@@ -1104,6 +1135,8 @@ Args:
     scheduler: Планировщик случайных неисправностей.
     engine: Движок симуляции.
     parent: Родительский виджет.
+- `def _restore_geometry(self) -> None`
+  - Восстановление размера и положения окна из настроек.
 - `def _init_ui(self) -> None`
   - Создание интерфейса окна.
 - `def _create_templates_tab(self) -> QWidget`
@@ -1134,6 +1167,9 @@ Args:
   - Включение/выключение выбранного правила.
 - `def _on_delete_rule(self) -> None`
   - Удаление выбранного правила.
+- `def closeEvent(self, event: QCloseEvent) -> None`
+  - Обработка закрытия окна.
+Сохраняет геометрию перед закрытием.
 
 ### Файл: `log_window.py`
 > ui/log_window.py
@@ -1147,6 +1183,8 @@ Args:
 - **Стандартная библиотека:**
   - `import logging`
 - **Сторонние библиотеки:**
+  - `from PyQt6.QtCore import QSettings`
+  - `from PyQt6.QtGui import QCloseEvent`
   - `from PyQt6.QtWidgets import QCheckBox, QComboBox, QHBoxLayout, QLabel, QLineEdit, QMainWindow, QPlainTextEdit, QVBoxLayout, QWidget`
   - `from core.event_log import EventLog, EventRecord, EventType`
 #### Классы
@@ -1166,6 +1204,8 @@ Args:
 Args:
     event_log: Журнал событий (источник записей).
     parent: Родительский виджет.
+- `def _restore_geometry(self) -> None`
+  - Восстановление размера и положения окна из настроек.
 - `def _init_ui(self) -> None`
   - Создание интерфейса окна журнала.
 - `def _on_event_added(self, record: EventRecord) -> None`
@@ -1215,8 +1255,9 @@ Args:
   - Обновить счётчик записей с учётом фильтра.
 - `def _scroll_to_bottom(self) -> None`
   - Прокрутить лог к последней записи.
-- `def closeEvent(self, event) -> None`
-  - Обработка закрытия окна журнала.
+- `def closeEvent(self, event: QCloseEvent) -> None`
+  - Обработка закрытия окна.
+Сохраняет геометрию перед закрытием.
 #### Функции
 - `def format_time_ms(time_ms: int) -> str`
   - Форматировать время в миллисекундах в строку ЧЧ:ММ:СС.мс.
@@ -1232,13 +1273,15 @@ Returns:
 Главное окно приложения — центральная панель управления симуляцией.
 Содержит панель управления временем, список графиков, меню и кнопки
 для открытия вспомогательных окон и изменения настроек графиков.
-Интерфейс разделен на логические горизонтальные блоки для улучшения читаемости.
+Интерфейс оптимизирован для компактного размещения (до 1/4 экрана)
+без потери видимости элементов.
 #### Импорты
 - **Стандартная библиотека:**
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtCore import Qt, pyqtSignal`
-  - `from PyQt6.QtWidgets import QCheckBox, QFileDialog, QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget`
+  - `from PyQt6.QtCore import QSettings, Qt, pyqtSignal`
+  - `from PyQt6.QtGui import QCloseEvent, QGuiApplication`
+  - `from PyQt6.QtWidgets import QCheckBox, QComboBox, QFileDialog, QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMainWindow, QMessageBox, QPushButton, QVBoxLayout, QWidget`
   - `from core.clock import GlobalClock`
 #### Классы
 ##### `class MainWindow(QMainWindow)`
@@ -1259,6 +1302,7 @@ Signals:
     hidden_markers_toggled: Режим скрытых меток включён (True) или выключён (False).
     save_config_requested: Запрос на сохранение конфигурации по указанному пути.
     load_config_requested: Запрос на загрузку конфигурации по указанному пути.
+    window_closed: Сигнал о закрытии главного окна (для завершения работы приложения).
 Методы:
 - `def __init__(self, clock: GlobalClock, parent: QWidget | None) -> None`
   - Инициализация главного окна.
@@ -1266,6 +1310,11 @@ Signals:
 Args:
     clock: Глобальные часы симуляции.
     parent: Родительский виджет.
+- `def _restore_geometry(self) -> None`
+  - Восстановление размера и положения окна из настроек.
+- `def closeEvent(self, event: QCloseEvent) -> None`
+  - Обработка события закрытия окна.
+Сохраняет геометрию и уведомляет координатора о завершении работы.
 - `def _init_menu(self) -> None`
   - Создание строки меню.
 - `def _init_ui(self) -> None`
@@ -1299,8 +1348,8 @@ Args:
   - Остановка симуляции.
 - `def _on_reset(self) -> None`
   - Сброс симуляции.
-- `def _on_speed_change(self, multiplier: int) -> None`
-  - Изменение множителя ускорения времени.
+- `def _on_speed_change(self, index: int) -> None`
+  - Изменение множителя ускорения времени через выпадающий список.
 - `def _on_time_updated(self, time_ms: int) -> None`
   - Обновление отображения времени.
 - `def _on_toggle_hidden_markers(self, checked: bool) -> None`
@@ -1322,22 +1371,16 @@ Args:
 - `def _on_load_config(self) -> None`
   - Запрос на загрузку конфигурации из файла.
 
-### Файл: `plot_creation_dialog.py`
-> ui/plot_creation_dialog.py
+### Файл: `period_widget.py`
+> ui/period_widget.py
 
-Модальный диалог создания и редактирования графика телеметрии.
-Позволяет настроить все параметры графика: название, единицу измерения,
-тип сигнала с его параметрами, допустимые пределы, интервал наблюдения
-и настройки детектора аномалий.
-Вызывается из главного окна по сигналу plot_add_requested или plot_settings_requested.
+Специализированный виджет для удобного ввода периода сигнала
+с автоматическим выбором и конвертацией единиц измерения.
 #### Импорты
 - **Стандартная библиотека:**
-  - `from typing import Any`
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QSpinBox, QTabWidget, QVBoxLayout, QWidget`
-  - `from analytics.detector import DetectorConfig`
-  - `from ui.detector_settings_tab import DetectorSettingsTab`
+  - `from PyQt6.QtWidgets import QComboBox, QHBoxLayout, QSpinBox, QWidget`
 #### Классы
 ##### `class PeriodWidget(QWidget)`
 > Виджет для удобного ввода периода с выбором единицы измерения.
@@ -1351,44 +1394,44 @@ Args:
 
 Args:
     ms: Значение периода в миллисекундах.
+
+### Файл: `plot_creation_dialog.py`
+> ui/plot_creation_dialog.py
+
+Модальный диалог создания и редактирования графика телеметрии.
+Позволяет настроить все параметры графика: название, единицу измерения,
+тип сигнала, допустимые пределы, интервал наблюдения и настройки детектора.
+Использует делегирование для динамических полей параметров сигнала.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from typing import Any`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtWidgets import QComboBox, QDialog, QDialogButtonBox, QDoubleSpinBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QMessageBox, QSpinBox, QTabWidget, QVBoxLayout, QWidget`
+  - `from analytics.detector import DetectorConfig`
+  - `from ui.detector_settings_tab import DetectorSettingsTab`
+  - `from ui.signal_params_form import SIGNAL_TYPE_DISPLAY, SignalParamsForm`
+#### Классы
 ##### `class PlotCreationDialog(QDialog)`
 > Модальный диалог создания и редактирования графика телеметрии.
-
-Позволяет настроить:
-- Основные параметры (название, единица, макс. значение)
-- Интервал наблюдения (через пресеты или ручной ввод в секундах)
-- Допустимые пределы (min_allowed, max_allowed)
-- Тип сигнала и его параметры (динамически меняются)
-- Настройки детектора аномалий (размер окна, сигмы, пороги)
-
-Если передан initial_params, диалог переходит в режим редактирования и предзаполняет поля.
-После подтверждения результат доступен через метод get_plot_params().
+Делегирует управление динамическими полями сигнала классу SignalParamsForm.
 Методы:
 - `def __init__(self, parent: QWidget | None, initial_params: dict[str, Any] | None) -> None`
   - Инициализация диалога создания/редактирования графика.
 
 Args:
     parent: Родительский виджет.
-    initial_params: Словарь существующих параметров для предзаполнения (режим редактирования).
+    initial_params: Словарь существующих параметров (режим редактирования).
 - `def _init_ui(self) -> None`
-  - Создание интерфейса диалога.
+  - Создание интерфейса диалога с использованием делегированных виджетов.
 - `def _populate_fields(self, params: dict[str, Any]) -> None`
-  - Предзаполняет поля диалога переданными параметрами (для режима редактирования).
-
-Args:
-    params: Словарь параметров графика.
+  - Предзаполняет поля диалога переданными параметрами.
 - `def _on_preset_changed(self, index: int) -> None`
   - Обработчик изменения пресета интервала.
-При выборе пресета подставляет значение в поле ручного ввода.
-- `def _update_signal_params_fields(self) -> None`
-  - Обновление полей параметров сигнала при смене типа.
-Удаляет старые поля и создаёт новые в соответствии с выбранным типом сигнала.
-- `def _add_signal_param(self, param_name: str, label: str, default_value: float, is_int: bool, tooltip: str) -> None`
-  - Добавить поле параметра сигнала в форму.
-Для периода используется специализированный виджет с выбором единицы измерения.
+- `def _on_signal_type_changed(self) -> None`
+  - Обновление полей параметров сигнала при смене типа (делегирование).
 - `def _on_accept(self) -> None`
-  - Обработчик нажатия кнопки ОК.
-Выполняет валидацию и при успехе сохраняет параметры и закрывает диалог.
+  - Обработчик нажатия кнопки ОК с валидацией и сбором данных.
 - `def _validate(self) -> bool`
   - Валидация введённых данных.
 - `def get_plot_params(self) -> dict[str, Any] | None`
@@ -1406,7 +1449,8 @@ Args:
 - **Стандартная библиотека:**
   - `import logging`
 - **Сторонние библиотеки:**
-  - `from PyQt6.QtCore import Qt, pyqtSignal`
+  - `from PyQt6.QtCore import QSettings, Qt, pyqtSignal`
+  - `from PyQt6.QtGui import QCloseEvent`
   - `from PyQt6.QtWidgets import QCheckBox, QHBoxLayout, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget`
   - `import numpy as np`
   - `import pyqtgraph as pg`
@@ -1433,6 +1477,8 @@ Args:
     max_allowed: Максимально допустимое значение.
     observation_interval_ms: Интервал наблюдения (длительность по оси X).
     parent: Родительский виджет.
+- `def _restore_geometry(self) -> None`
+  - Восстановление размера и положения окна из настроек.
 - `def _init_ui(self) -> None`
   - Создание интерфейса окна.
 - `def clear_data(self) -> None`
@@ -1489,8 +1535,61 @@ Returns:
     Кортеж (прореженные времена, прореженные значения).
 - `def _on_detect_clicked(self) -> None`
   - Обработчик нажатия кнопки обнаружения.
-- `def closeEvent(self, event) -> None`
+- `def closeEvent(self, event: QCloseEvent) -> None`
   - Обработка закрытия окна.
+Сохраняет геометрию и уведомляет координатора о закрытии.
+
+### Файл: `signal_params_form.py`
+> ui/signal_params_form.py
+
+Виджет для динамического построения полей параметров сигнала.
+Поддерживает различные типы сигналов (синус, пила, меандр и т.д.)
+и автоматически создает соответствующие поля ввода для каждого типа.
+#### Импорты
+- **Стандартная библиотека:**
+  - `from typing import Any`
+  - `import logging`
+- **Сторонние библиотеки:**
+  - `from PyQt6.QtWidgets import QDoubleSpinBox, QFormLayout, QSpinBox, QWidget`
+  - `from ui.period_widget import PeriodWidget`
+#### Классы
+##### `class SignalParamsForm(QWidget)`
+> Виджет для динамического построения полей параметров сигнала.
+
+Автоматически создает поля ввода в зависимости от выбранного типа сигнала.
+Поддерживает получение и установку значений параметров.
+Методы:
+- `def __init__(self, parent: QWidget | None) -> None`
+  - Инициализация формы параметров сигнала.
+
+Args:
+    parent: Родительский виджет.
+- `def update_fields(self, signal_type: str) -> None`
+  - Обновление полей параметров сигнала при смене типа.
+Удаляет старые поля и создаёт новые в соответствии с выбранным типом сигнала.
+
+Args:
+    signal_type: Внутренний ключ типа сигнала.
+- `def _add_param(self, param_name: str, label: str, default_value: float, is_int: bool, tooltip: str) -> None`
+  - Добавить поле параметра сигнала в форму.
+Для периода используется специализированный виджет с выбором единицы измерения.
+
+Args:
+    param_name: Внутреннее имя параметра.
+    label: Отображаемая метка поля.
+    default_value: Значение по умолчанию.
+    is_int: True если параметр целочисленный.
+    tooltip: Всплывающая подсказка.
+- `def get_signal_params(self) -> dict[str, Any]`
+  - Получить текущие значения всех параметров сигнала.
+
+Returns:
+    dict: Словарь параметров {param_name: value}.
+- `def set_signal_params(self, params: dict[str, Any]) -> None`
+  - Установить значения параметров сигнала (для режима редактирования).
+
+Args:
+    params: Словарь параметров {param_name: value}.
 
 ### Файл: `main.py`
 > main.py
@@ -1529,6 +1628,9 @@ Returns:
   - Инициализация всех компонентов и подключение сигналов.
 - `def _connect_signals(self) -> None`
   - Подключение всех сигналов и слотов.
+- `def _on_main_window_closed(self) -> None`
+  - Обработка закрытия главного окна.
+Закрывает все остальные окна (что сохраняет их геометрию) и завершает приложение.
 - `def _on_add_plot(self) -> None`
   - Обработка запроса на создание нового графика.
 - `def _on_open_plot(self, plot_id: str) -> None`
@@ -1618,6 +1720,7 @@ Args:
 - `fault_template_dialog.py` → `simulation.faults`
 - `fault_template_dialog.py` → `simulation.scheduler`
 - `fault_window.py` → `PyQt6.QtCore`
+- `fault_window.py` → `PyQt6.QtGui`
 - `fault_window.py` → `PyQt6.QtWidgets`
 - `fault_window.py` → `PyQt6.QtWidgets`
 - `fault_window.py` → `logging`
@@ -1629,6 +1732,8 @@ Args:
 - `faults.py` → `logging`
 - `faults.py` → `random`
 - `faults.py` → `typing`
+- `log_window.py` → `PyQt6.QtCore`
+- `log_window.py` → `PyQt6.QtGui`
 - `log_window.py` → `PyQt6.QtWidgets`
 - `log_window.py` → `core.event_log`
 - `log_window.py` → `logging`
@@ -1650,18 +1755,23 @@ Args:
 - `main.py` → `ui.plot_creation_dialog`
 - `main.py` → `ui.plot_window`
 - `main_window.py` → `PyQt6.QtCore`
+- `main_window.py` → `PyQt6.QtGui`
 - `main_window.py` → `PyQt6.QtWidgets`
 - `main_window.py` → `core.clock`
 - `main_window.py` → `logging`
 - `metrics.py` → `core.event_log`
 - `metrics.py` → `dataclasses`
 - `metrics.py` → `logging`
+- `period_widget.py` → `PyQt6.QtWidgets`
+- `period_widget.py` → `logging`
 - `plot_creation_dialog.py` → `PyQt6.QtWidgets`
 - `plot_creation_dialog.py` → `analytics.detector`
 - `plot_creation_dialog.py` → `logging`
 - `plot_creation_dialog.py` → `typing`
 - `plot_creation_dialog.py` → `ui.detector_settings_tab`
+- `plot_creation_dialog.py` → `ui.signal_params_form`
 - `plot_window.py` → `PyQt6.QtCore`
+- `plot_window.py` → `PyQt6.QtGui`
 - `plot_window.py` → `PyQt6.QtWidgets`
 - `plot_window.py` → `logging`
 - `plot_window.py` → `numpy`
@@ -1670,6 +1780,10 @@ Args:
 - `scheduler.py` → `logging`
 - `scheduler.py` → `random`
 - `scheduler.py` → `typing`
+- `signal_params_form.py` → `PyQt6.QtWidgets`
+- `signal_params_form.py` → `logging`
+- `signal_params_form.py` → `typing`
+- `signal_params_form.py` → `ui.period_widget`
 - `signals.py` → `abc`
 - `signals.py` → `logging`
 - `signals.py` → `math`
