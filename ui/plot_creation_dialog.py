@@ -37,7 +37,8 @@ logger = logging.getLogger(__name__)
 class PlotCreationDialog(QDialog):
     """
     Модальный диалог создания и редактирования графика телеметрии.
-    Делегирует управление динамическими полями сигнала классу SignalParamsForm.
+    Делегирует управление динамическими полями сигнала классу SignalParamsForm,
+    а настройку детекторов — классу DetectorSettingsTab.
     """
 
     def __init__(self, parent: QWidget | None = None, initial_params: dict[str, Any] | None = None) -> None:
@@ -59,7 +60,7 @@ class PlotCreationDialog(QDialog):
             if initial_params:
                 self._populate_fields(initial_params)
             else:
-                # Инициализация полей сигнала для типа по умолчанию
+                # Инициализация полей сигнала и детекторов для типа по умолчанию
                 self._on_signal_type_changed()
             logger.info("Диалог графика инициализирован.")
         except Exception as e:
@@ -191,7 +192,10 @@ class PlotCreationDialog(QDialog):
             signal_type = params.get("signal_type", "sine")
             index = self._signal_type_combo.findData(signal_type)
             if index != -1:
+                # Блокируем сигнал, чтобы не вызвать двойное обновление
+                self._signal_type_combo.blockSignals(True)
                 self._signal_type_combo.setCurrentIndex(index)
+                self._signal_type_combo.blockSignals(False)
 
             # Делегируем заполнение параметров сигнала
             self._signal_params_form.update_fields(signal_type)
@@ -202,9 +206,14 @@ class PlotCreationDialog(QDialog):
             if detector_config_dict:
                 try:
                     config = DetectorConfig.from_dict(detector_config_dict)
+                    config.signal_type = signal_type  # Гарантируем актуальность типа для пояснений
                     self._detector_settings_tab.set_config(config)
                 except Exception as e:
                     logger.error(f"Ошибка загрузки конфигурации детектора: {e}")
+            else:
+                # Если конфига нет, просто обновляем информацию о детекторах для типа по умолчанию
+                default_config = self._detector_settings_tab.get_config()
+                self._detector_settings_tab.update_model_info(signal_type, default_config)
 
             logger.debug("Поля диалога предзаполнены параметрами.")
         except Exception as e:
@@ -227,10 +236,19 @@ class PlotCreationDialog(QDialog):
             logger.error(f"Ошибка обработки изменения пресета: {e}")
 
     def _on_signal_type_changed(self) -> None:
-        """Обновление полей параметров сигнала при смене типа (делегирование)."""
+        """Обновление полей параметров сигнала и информации об активных детекторах при смене типа."""
         try:
             signal_type = self._signal_type_combo.currentData()
+            if not signal_type:
+                return
+
+            # 1. Обновляем форму параметров сигнала
             self._signal_params_form.update_fields(signal_type)
+
+            # 2. Обновляем отображение активных детекторов для нового типа сигнала
+            current_detector_config = self._detector_settings_tab.get_config()
+            self._detector_settings_tab.update_model_info(signal_type, current_detector_config)
+
         except Exception as e:
             logger.error(f"Ошибка обновления полей параметров сигнала: {e}")
 
@@ -287,4 +305,3 @@ class PlotCreationDialog(QDialog):
     def get_plot_params(self) -> dict[str, Any] | None:
         """Получить параметры графика после подтверждения диалога."""
         return self._plot_params
-

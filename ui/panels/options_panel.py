@@ -48,7 +48,7 @@ class OptionsPanel(QWidget):
             self._init_ui()
             self._connect_signals()
             logger.debug("Панель дополнительных настроек инициализирована.")
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error(f"Ошибка инициализации панели дополнительных настроек: {e}")
             raise
 

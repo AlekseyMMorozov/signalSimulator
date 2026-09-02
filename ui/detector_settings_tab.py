@@ -2,8 +2,14 @@
 ui/detector_settings_tab.py
 
 Вкладка настроек детектора аномалий для диалога создания/редактирования графика.
-Позволяет настроить параметры скользящего окна, пороги сигм, автокалибровку тренда
-и уровень толерантности к шуму без отключения самих проверок.
+Отображает информацию об активных детекторах (тренд, аномалия, отклонение)
+с пояснениями, почему они выбраны для текущего типа сигнала, и предоставляет
+элементы настройки параметров каждого детектора с подробными подсказками.
+
+Поддерживает новую архитектуру с разделением ответственности:
+- Детектор тренда (модель Хольта)
+- Детектор аномалий (остатки прогноза)
+- Детектор отклонений (CUSUM)
 """
 
 import logging
@@ -12,6 +18,7 @@ from PyQt6.QtWidgets import (
     QDoubleSpinBox,
     QFormLayout,
     QGroupBox,
+    QLabel,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -26,10 +33,12 @@ class DetectorSettingsTab(QWidget):
     """
     Виджет вкладки настроек детектора.
 
-    Предоставляет элементы управления для конфигурации `DetectorConfig`,
-    включая размер окна, множители сигмы, пороги тренда и толерантность к шуму.
-    Все виды проверок (тренд, статистика, пороги) остаются активными,
-    меняется только их чувствительность.
+    Отображает активные детекторы для выбранного типа сигнала
+    и предоставляет элементы управления для конфигурации каждого:
+    - Общие параметры (окно, мин. точек, толерантность к шуму)
+    - Детектор тренда (порог, авто-сигма, подтверждение временем)
+    - Детектор аномалий (множитель сигмы, подтверждение временем)
+    - Детектор отклонений CUSUM (дрейф, порог, адаптация базовой линии)
     """
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -45,107 +54,260 @@ class DetectorSettingsTab(QWidget):
     def _init_ui(self) -> None:
         """Создание интерфейса вкладки настроек детектора."""
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(6)
 
-        group = QGroupBox("Параметры обнаружения аномалий")
-        form_layout = QFormLayout()
+        # Блок информации об активных детекторах
+        info_group = QGroupBox("Активные детекторы")
+        self._detectors_info_layout = QVBoxLayout()
+        self._detectors_info_layout.setSpacing(4)
+        info_group.setLayout(self._detectors_info_layout)
+        layout.addWidget(info_group)
 
-        # Размер окна
+        # Группы параметров
+        layout.addWidget(self._create_common_params_group())
+        layout.addWidget(self._create_trend_params_group())
+        layout.addWidget(self._create_anomaly_params_group())
+        layout.addWidget(self._create_deviation_params_group())
+        layout.addStretch(1)
+
+        logger.debug("Интерфейс вкладки настроек детектора создан.")
+
+    def _create_common_params_group(self) -> QGroupBox:
+        """Создание группы общих параметров детекторов."""
+        group = QGroupBox("Общие параметры")
+        form = QFormLayout()
+
         self._window_size_spin = QSpinBox()
         self._window_size_spin.setRange(10, 500)
         self._window_size_spin.setValue(50)
         self._window_size_spin.setToolTip(
             "<b>Размер скользящего окна (в точках).</b><br>"
-            "Определяет, сколько последних точек данных используется для оценки "
-            "статистики (уровня шума) и тренда.<br>"
-            "<i>Диапазон:</i> 10 – 500.<br>"
-            "<i>Рекомендация:</i> Меньшие значения (10-30) дают быструю реакцию, "
-            "но чувствительны к шуму. Большие значения (100-500) надежно сглаживают "
-            "шум, но увеличивают задержку обнаружения резких аномалий."
+            "Определяет глубину анализа для оценки статистики шума.<br>"
+            "<i>Рекомендация:</i> 10-30 для быстрой реакции, 100-500 для "
+            "сильно зашумлённых сигналов."
         )
-        form_layout.addRow("Размер окна (точек):", self._window_size_spin)
+        form.addRow("Размер окна (точек):", self._window_size_spin)
 
-        # Множитель сигмы
-        self._sigma_factor_spin = QDoubleSpinBox()
-        self._sigma_factor_spin.setRange(1.0, 10.0)
-        self._sigma_factor_spin.setSingleStep(0.1)
-        self._sigma_factor_spin.setValue(3.0)
-        self._sigma_factor_spin.setToolTip(
-            "<b>Множитель стандартного отклонения (K).</b><br>"
-            "Коэффициент, на который умножается оцененный уровень шума для получения "
-            "порога срабатывания статистического детектора.<br>"
-            "<i>Диапазон:</i> 1.0 – 10.0.<br>"
-            "<i>Рекомендация:</i> Значение 3.0 соответствует классическому правилу "
-            "'трех сигм' (охватывает 99.7% нормальных флуктуаций). Увеличивайте до "
-            "4.0–5.0 для сильно зашумленных сигналов, чтобы снизить число ложных тревог."
-        )
-        form_layout.addRow("Множитель сигмы (K):", self._sigma_factor_spin)
-
-        # Минимальное количество образцов
         self._min_samples_spin = QSpinBox()
         self._min_samples_spin.setRange(5, 100)
         self._min_samples_spin.setValue(20)
         self._min_samples_spin.setToolTip(
             "<b>Минимальное количество точек для старта анализа.</b><br>"
-            "Детектор не будет выдавать предупреждения об аномалиях или трендах, "
-            "пока не накопит указанное количество точек.<br>"
-            "<i>Диапазон:</i> 5 – 100.<br>"
-            "<i>Рекомендация:</i> Значение 20–30 оптимально защищает от ложных "
-            "срабатываний на 'холодном старте', когда статистика еще не стабилизировалась."
+            "Защита от ложных срабатываний на «холодном старте».<br>"
+            "<i>Рекомендация:</i> 20–30 для большинства сигналов."
         )
-        form_layout.addRow("Мин. точек для анализа:", self._min_samples_spin)
+        form.addRow("Мин. точек для анализа:", self._min_samples_spin)
 
-        # Порог тренда (0.0 = авто)
+        self._noise_tolerance_spin = QDoubleSpinBox()
+        self._noise_tolerance_spin.setRange(0.0, 1.0)
+        self._noise_tolerance_spin.setSingleStep(0.1)
+        self._noise_tolerance_spin.setValue(0.0)
+        self._noise_tolerance_spin.setToolTip(
+            "<b>Толерантность к высокочастотному шуму.</b><br>"
+            "Дополнительно расширяет порог срабатывания.<br>"
+            "0.0 — базовый порог, 1.0 — удвоенный порог."
+        )
+        form.addRow("Толерантность к шуму:", self._noise_tolerance_spin)
+
+        self._tau_corr_spin = QDoubleSpinBox()
+        self._tau_corr_spin.setRange(1.0, 300.0)
+        self._tau_corr_spin.setSingleStep(1.0)
+        self._tau_corr_spin.setValue(10.0)
+        self._tau_corr_spin.setToolTip(
+            "<b>Характерное время корреляции сигнала (сек).</b><br>"
+            "Используется для расширения доверительного интервала "
+            "при дефиците данных (пропадание телеметрии).<br>"
+            "<i>Рекомендация:</i> 10 с для быстрых сигналов, "
+            "60–300 с для медленных процессов."
+        )
+        form.addRow("τ корреляции (сек):", self._tau_corr_spin)
+
+        self._preprocessor_window_spin = QSpinBox()
+        self._preprocessor_window_spin.setRange(10, 500)
+        self._preprocessor_window_spin.setValue(100)
+        self._preprocessor_window_spin.setToolTip(
+            "<b>Размер окна препроцессора (в точках).</b><br>"
+            "Определяет глубину анализа для извлечения информативного "
+            "параметра (амплитуда, уровень плато, наклон).<br>"
+            "<i>Рекомендация:</i> 50–200 для периодических сигналов."
+        )
+        form.addRow("Окно препроцессора:", self._preprocessor_window_spin)
+
+        group.setLayout(form)
+        return group
+
+    def _create_trend_params_group(self) -> QGroupBox:
+        """Создание группы параметров детектора тренда."""
+        group = QGroupBox("📈 Детектор тренда (модель Хольта)")
+        form = QFormLayout()
+
         self._trend_threshold_spin = QDoubleSpinBox()
         self._trend_threshold_spin.setRange(0.0, 10.0)
         self._trend_threshold_spin.setSingleStep(0.01)
         self._trend_threshold_spin.setValue(0.0)
         self._trend_threshold_spin.setToolTip(
             "<b>Фиксированный порог наклона тренда (ед/сек).</b><br>"
-            "Минимальное абсолютное значение скорости изменения сигнала, при котором "
-            "фиксируется тренд.<br>"
-            "<i>Диапазон:</i> 0.0 – 10.0.<br>"
-            "<i>Рекомендация:</i> Установите конкретное значение, если известна "
-            "физическая скорость деградации. Если установлено 0.0, детектор переключается "
-            "в автоматический режим, вычисляя порог динамически на основе текущего шума."
+            "Если 0.0 — используется автоматический режим.<br>"
+            "<i>Рекомендация:</i> установите конкретное значение, "
+            "если известна физическая скорость деградации."
         )
-        form_layout.addRow("Порог тренда (0.0 = авто):", self._trend_threshold_spin)
+        form.addRow("Порог тренда (0.0 = авто):", self._trend_threshold_spin)
 
-        # Авто-сигма для тренда
         self._trend_auto_sigma_spin = QDoubleSpinBox()
         self._trend_auto_sigma_spin.setRange(1.0, 10.0)
         self._trend_auto_sigma_spin.setSingleStep(0.1)
         self._trend_auto_sigma_spin.setValue(3.0)
         self._trend_auto_sigma_spin.setToolTip(
-            "<b>Множитель стандартной ошибки наклона (для авто-режима).</b><br>"
-            "Используется только если 'Порог тренда' равен 0.0. Определяет, насколько "
-            "значимым должен быть вычисленный наклон относительно естественных "
-            "флуктуаций сигнала, чтобы быть признанным трендом.<br>"
-            "<i>Диапазон:</i> 1.0 – 10.0.<br>"
-            "<i>Рекомендация:</i> 3.0 является сбалансированным значением для большинства задач."
+            "<b>Множитель сигмы для авто-режима.</b><br>"
+            "Наклон значим, если |b| > K·σ/√N.<br>"
+            "<i>Рекомендация:</i> 3.0 — баланс чувствительности "
+            "и ложных срабатываний."
         )
-        form_layout.addRow("Авто-сигма тренда:", self._trend_auto_sigma_spin)
+        form.addRow("Авто-сигма тренда:", self._trend_auto_sigma_spin)
 
-        # Толерантность к шуму
-        self._noise_tolerance_spin = QDoubleSpinBox()
-        self._noise_tolerance_spin.setRange(0.0, 1.0)
-        self._noise_tolerance_spin.setSingleStep(0.1)
-        self._noise_tolerance_spin.setValue(0.0)
-        self._noise_tolerance_spin.setToolTip(
-            "<b>Уровень толерантности к высокочастотному шуму.</b><br>"
-            "Коэффициент, дополнительно расширяющий порог срабатывания детектора "
-            "в условиях нестабильного шума.<br>"
-            "<i>Диапазон:</i> 0.0 – 1.0.<br>"
-            "<i>Рекомендация:</i> 0.0 означает использование базового порога. "
-            "Значение 1.0 удваивает порог, делая детектор максимально устойчивым к "
-            "шумовым всплескам, ценой небольшого увеличения задержки реакции."
+        self._trend_ttl_spin = QSpinBox()
+        self._trend_ttl_spin.setRange(1, 20)
+        self._trend_ttl_spin.setValue(5)
+        self._trend_ttl_spin.setToolTip(
+            "<b>Подтверждение временем (точек).</b><br>"
+            "Тренд фиксируется, если наклон значим в течение "
+            "указанного числа последовательных точек.<br>"
+            "<i>Рекомендация:</i> 3–7 для подавления ложных срабатываний."
         )
-        form_layout.addRow("Толерантность к шуму:", self._noise_tolerance_spin)
+        form.addRow("Подтверждение (точек):", self._trend_ttl_spin)
 
-        group.setLayout(form_layout)
-        layout.addWidget(group)
-        layout.addStretch(1)
+        group.setLayout(form)
+        return group
 
-        logger.debug("Интерфейс вкладки настроек детектора создан.")
+    def _create_anomaly_params_group(self) -> QGroupBox:
+        """Создание группы параметров детектора аномалий."""
+        group = QGroupBox("⚡ Детектор аномалий (остатки прогноза)")
+        form = QFormLayout()
+
+        self._sigma_factor_spin = QDoubleSpinBox()
+        self._sigma_factor_spin.setRange(1.0, 10.0)
+        self._sigma_factor_spin.setSingleStep(0.1)
+        self._sigma_factor_spin.setValue(3.0)
+        self._sigma_factor_spin.setToolTip(
+            "<b>Множитель сигмы для порога аномалии (K).</b><br>"
+            "Аномалия фиксируется при |остаток| > K·σ.<br>"
+            "<i>Рекомендация:</i> 3.0 — правило «трёх сигм», "
+            "4.0–5.0 для сильно зашумлённых сигналов."
+        )
+        form.addRow("Множитель сигмы (K):", self._sigma_factor_spin)
+
+        self._anomaly_ttl_spin = QSpinBox()
+        self._anomaly_ttl_spin.setRange(1, 10)
+        self._anomaly_ttl_spin.setValue(3)
+        self._anomaly_ttl_spin.setToolTip(
+            "<b>Подтверждение временем (точек).</b><br>"
+            "Аномалия фиксируется, если остаток превышает порог "
+            "в течение указанного числа последовательных точек.<br>"
+            "<i>Рекомендация:</i> 2–4 для подавления одиночных "
+            "шумовых всплесков."
+        )
+        form.addRow("Подтверждение (точек):", self._anomaly_ttl_spin)
+
+        group.setLayout(form)
+        return group
+
+    def _create_deviation_params_group(self) -> QGroupBox:
+        """Создание группы параметров детектора отклонений (CUSUM)."""
+        group = QGroupBox("📊 Детектор отклонений (CUSUM)")
+        form = QFormLayout()
+
+        self._cusum_drift_spin = QDoubleSpinBox()
+        self._cusum_drift_spin.setRange(0.1, 2.0)
+        self._cusum_drift_spin.setSingleStep(0.1)
+        self._cusum_drift_spin.setValue(0.5)
+        self._cusum_drift_spin.setToolTip(
+            "<b>Допустимое смещение δ = drift_factor · σ.</b><br>"
+            "Чувствительность к малым отклонениям. Меньшие значения — "
+            "выше чувствительность, но больше ложных срабатываний.<br>"
+            "<i>Рекомендация:</i> 0.5 для большинства сигналов."
+        )
+        form.addRow("Фактор дрейфа (δ):", self._cusum_drift_spin)
+
+        self._cusum_threshold_spin = QDoubleSpinBox()
+        self._cusum_threshold_spin.setRange(2.0, 10.0)
+        self._cusum_threshold_spin.setSingleStep(0.5)
+        self._cusum_threshold_spin.setValue(4.0)
+        self._cusum_threshold_spin.setToolTip(
+            "<b>Порог срабатывания H = threshold_factor · σ.</b><br>"
+            "Отклонение фиксируется, когда накопленная статистика "
+            "превышает порог. Меньшие значения — быстрее обнаружение.<br>"
+            "<i>Рекомендация:</i> 4.0 — классическое значение."
+        )
+        form.addRow("Фактор порога (H):", self._cusum_threshold_spin)
+
+        self._cusum_alpha_spin = QDoubleSpinBox()
+        self._cusum_alpha_spin.setRange(0.01, 0.5)
+        self._cusum_alpha_spin.setSingleStep(0.01)
+        self._cusum_alpha_spin.setValue(0.05)
+        self._cusum_alpha_spin.setToolTip(
+            "<b>Коэффициент адаптации базовой линии (α).</b><br>"
+            "Скорость подстройки базовой линии под медленные изменения.<br>"
+            "<i>Рекомендация:</i> 0.01–0.1. Меньшие значения — "
+            "медленнее адаптация, но стабильнее базовая линия."
+        )
+        form.addRow("Адаптация базы (α):", self._cusum_alpha_spin)
+
+        group.setLayout(form)
+        return group
+
+    def update_model_info(self, signal_type: str, config: DetectorConfig) -> None:
+        """
+        Обновить отображение активных детекторов и пояснений к ним.
+
+        Очищает блок информации и создаёт новые метки для каждого
+        активного детектора с его названием и описанием.
+
+        Args:
+            signal_type: Тип сигнала (например, 'sine', 'square').
+            config: Текущая конфигурация детектора.
+        """
+        try:
+            # Обновляем тип сигнала в конфиге
+            config.signal_type = signal_type
+
+            # Очищаем существующие метки
+            while self._detectors_info_layout.count():
+                item = self._detectors_info_layout.takeAt(0)
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+
+            # Получаем информацию об активных детекторах
+            active = config.get_active_detectors()
+            display_names = config.get_detector_display_names()
+            explanations = config.get_model_explanations()
+
+            if not active:
+                label = QLabel("<i>Детекторы не активны для данного типа сигнала.</i>")
+                label.setWordWrap(True)
+                self._detectors_info_layout.addWidget(label)
+                return
+
+            # Создаём метку для каждого активного детектора
+            for detector_key in active:
+                name = display_names.get(detector_key, detector_key)
+                explanation = explanations.get(detector_key, "")
+
+                label = QLabel(f"<b>{name}</b><br><i style='color:#555;'>{explanation}</i>")
+                label.setWordWrap(True)
+                label.setStyleSheet(
+                    "QLabel { background-color: #f8f9fa; padding: 6px; "
+                    "border-radius: 3px; border-left: 3px solid #4a90d9; }"
+                )
+                self._detectors_info_layout.addWidget(label)
+
+            logger.debug(
+                f"Обновлена информация о детекторах для типа '{signal_type}': "
+                f"активны {active}."
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.error(f"Ошибка обновления информации о детекторах: {e}")
 
     def get_config(self) -> DetectorConfig:
         """
@@ -156,7 +318,6 @@ class DetectorSettingsTab(QWidget):
         """
         try:
             trend_threshold = self._trend_threshold_spin.value()
-            # Если 0.0, передаем None, чтобы детектор использовал авто-режим
             threshold_val = None if trend_threshold == 0.0 else trend_threshold
 
             return DetectorConfig(
@@ -164,8 +325,15 @@ class DetectorSettingsTab(QWidget):
                 sigma_factor=self._sigma_factor_spin.value(),
                 trend_threshold=threshold_val,
                 trend_auto_sigma=self._trend_auto_sigma_spin.value(),
+                trend_ttl=self._trend_ttl_spin.value(),
+                anomaly_ttl=self._anomaly_ttl_spin.value(),
+                cusum_drift_factor=self._cusum_drift_spin.value(),
+                cusum_threshold_factor=self._cusum_threshold_spin.value(),
+                cusum_baseline_alpha=self._cusum_alpha_spin.value(),
                 min_samples=self._min_samples_spin.value(),
                 noise_tolerance=self._noise_tolerance_spin.value(),
+                tau_corr=self._tau_corr_spin.value(),
+                preprocessor_window=self._preprocessor_window_spin.value(),
             )
         except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка считывания конфигурации детектора: {e}")
@@ -182,14 +350,28 @@ class DetectorSettingsTab(QWidget):
             self._window_size_spin.setValue(config.window_size)
             self._sigma_factor_spin.setValue(config.sigma_factor)
             self._min_samples_spin.setValue(config.min_samples)
-            self._trend_auto_sigma_spin.setValue(config.trend_auto_sigma)
             self._noise_tolerance_spin.setValue(config.noise_tolerance)
+            self._tau_corr_spin.setValue(config.tau_corr)
+            self._preprocessor_window_spin.setValue(config.preprocessor_window)
 
-            # Обработка None для trend_threshold (возвращаем к 0.0 для UI)
+            # Детектор тренда
             threshold = config.trend_threshold if config.trend_threshold is not None else 0.0
             self._trend_threshold_spin.setValue(threshold)
+            self._trend_auto_sigma_spin.setValue(config.trend_auto_sigma)
+            self._trend_ttl_spin.setValue(config.trend_ttl)
+
+            # Детектор аномалий
+            self._anomaly_ttl_spin.setValue(config.anomaly_ttl)
+
+            # Детектор отклонений
+            self._cusum_drift_spin.setValue(config.cusum_drift_factor)
+            self._cusum_threshold_spin.setValue(config.cusum_threshold_factor)
+            self._cusum_alpha_spin.setValue(config.cusum_baseline_alpha)
+
+            # Обновляем информацию о детекторах, если тип сигнала известен
+            if hasattr(config, "signal_type") and config.signal_type:
+                self.update_model_info(config.signal_type, config)
 
             logger.debug("Настройки детектора загружены в интерфейс.")
         except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка загрузки конфигурации детектора в интерфейс: {e}")
-

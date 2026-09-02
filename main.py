@@ -3,6 +3,9 @@ main.py
 Точка входа в приложение signalSimulator.
 Инициализирует все компоненты системы (часы, журнал, движок, планировщик, окна)
 и координирует их взаимодействие через паттерн Coordinator.
+
+Детектор аномалий теперь полностью управляется движком симуляции (SimulationEngine),
+координатор только подписывается на события журнала для визуализации меток на графиках.
 """
 
 import json
@@ -12,10 +15,10 @@ import sys
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QMessageBox
 
-from analytics.detector import AnomalyDetector, DetectorConfig
 from core.clock import GlobalClock
 from core.config import ConfigManager
-from core.event_log import EventLog
+from core.event_log import EventLog, EventRecord, EventType
+from analytics.detector import DetectorConfig
 from simulation.scheduler import FaultScheduler
 from simulation.signals import SignalFactory
 from simulation.simulator import SimulationEngine
@@ -41,6 +44,12 @@ class Coordinator:
     Связывает компоненты бизнес-логики (движок, часы, планировщик)
     с компонентами пользовательского интерфейса, обрабатывая сигналы
     и перенаправляя данные между ними.
+
+    Детектор аномалий живёт внутри PlotState (в движке симуляции).
+    Координатор не хранит отдельные экземпляры детекторов и не прогоняет
+    через них данные — это делает движок при генерации точек.
+    Координатор только подписывается на события журнала для визуализации
+    меток обнаружений на графиках.
     """
 
     def __init__(self) -> None:
@@ -61,7 +70,6 @@ class Coordinator:
 
         # Состояние
         self.plot_windows: dict[str, PlotWindow] = {}
-        self.detectors: dict[str, AnomalyDetector] = {}
         self._hidden_markers_visible = False
 
         self._connect_signals()
@@ -84,8 +92,11 @@ class Coordinator:
             self.main_window.save_config_requested.connect(self._on_save_config_requested)
             self.main_window.load_config_requested.connect(self._on_load_config_requested)
 
-            # Движок симуляции
+            # Движок симуляции (только данные для UI)
             self.engine.plot_data_updated.connect(self._on_plot_data_updated)
+
+            # Журнал событий — для визуализации меток детектора на графиках
+            self.event_log.event_added.connect(self._on_event_added)
 
             # Окно неисправностей
             self.fault_window.fault_injected.connect(self._on_fault_injected)
@@ -119,7 +130,12 @@ class Coordinator:
                     plot_id = f"plot_{len(self.engine.get_all_plot_ids()) + 1}"
                     signal = SignalFactory.create(params["signal_type"], params["signal_params"])
 
-                    # Добавляем в движок
+                    # Парсим конфигурацию детектора и гарантируем, что signal_type установлен
+                    detector_config_dict = params.get("detector_config", {})
+                    detector_config = DetectorConfig.from_dict(detector_config_dict)
+                    detector_config.signal_type = params["signal_type"]
+
+                    # Добавляем в движок (детектор создаётся внутри PlotState)
                     self.engine.add_plot(
                         plot_id=plot_id,
                         name=params["name"],
@@ -128,21 +144,12 @@ class Coordinator:
                         signal=signal,
                         min_allowed=params["min_allowed"],
                         max_allowed=params["max_allowed"],
-                        observation_interval_ms=params["observation_interval_ms"]
+                        observation_interval_ms=params["observation_interval_ms"],
+                        detector_config=detector_config,
                     )
 
                     # Обновляем главное окно
                     self.main_window.add_plot_to_list(plot_id, params["name"])
-
-                    # Создаем конфигурацию и детектор для графика
-                    detector_config_dict = params.get("detector_config", {})
-                    detector_config = DetectorConfig.from_dict(detector_config_dict)
-
-                    self.detectors[plot_id] = AnomalyDetector(
-                        min_allowed=params["min_allowed"],
-                        max_allowed=params["max_allowed"],
-                        config=detector_config
-                    )
 
                     # Создаем и настраиваем окно графика
                     plot_window = PlotWindow(
@@ -201,7 +208,7 @@ class Coordinator:
                 "observation_interval_ms": plot_state.observation_interval_ms,
                 "signal_type": signal_type,
                 "signal_params": plot_state.signal.get_params(),
-                "detector_config": self.detectors[plot_id].get_config().to_dict() if plot_id in self.detectors else {}
+                "detector_config": plot_state.detector_config.to_dict(),
             }
 
             dialog = PlotCreationDialog(self.main_window, initial_params=initial_params)
@@ -217,11 +224,12 @@ class Coordinator:
                     plot_state.observation_interval_ms = params["observation_interval_ms"]
                     plot_state.signal = SignalFactory.create(params["signal_type"], params["signal_params"])
 
-                    # 2. Обновляем конфигурацию детектора аномалий
-                    if plot_id in self.detectors:
-                        detector_config_dict = params.get("detector_config", {})
-                        new_detector_config = DetectorConfig.from_dict(detector_config_dict)
-                        self.detectors[plot_id].set_config(new_detector_config)
+                    # 2. Обновляем конфигурацию детектора через движок
+                    #    (пересоздаёт детектор с новыми параметрами и типом сигнала)
+                    detector_config_dict = params.get("detector_config", {})
+                    new_detector_config = DetectorConfig.from_dict(detector_config_dict)
+                    new_detector_config.signal_type = params["signal_type"]
+                    self.engine.update_plot_detector_config(plot_id, new_detector_config)
 
                     # 3. Обновляем список в главном окне
                     self.main_window.remove_plot_from_list(plot_id)
@@ -252,14 +260,12 @@ class Coordinator:
     def _on_reset(self) -> None:
         """Обработка запроса на сброс симуляции: очистка данных графиков и детекторов."""
         try:
-            # Сброс движка симуляции (очищает историю и метки на уровне движка)
+            # Сброс движка симуляции (очищает историю, метки и детекторы на уровне движка)
             self.engine.reset()
 
-            # Сброс и очистка всех окон графиков и их детекторов
-            for plot_id, pw in self.plot_windows.items():
+            # Сброс всех окон графиков
+            for pw in self.plot_windows.values():
                 pw.clear_data()
-                if plot_id in self.detectors:
-                    self.detectors[plot_id].reset()
 
             logger.info("Симуляция и все графики сброшены.")
         except Exception as e:  # noqa: BLE001
@@ -275,8 +281,6 @@ class Coordinator:
                 # deleteLater гарантирует безопасное и полное уничтожение виджета Qt
                 self.plot_windows[plot_id].deleteLater()
                 del self.plot_windows[plot_id]
-            if plot_id in self.detectors:
-                del self.detectors[plot_id]
 
             logger.info(f"График '{plot_id}' полностью удален.")
         except Exception as e:  # noqa: BLE001
@@ -304,7 +308,8 @@ class Coordinator:
     def _on_plot_data_updated(self, plot_id: str, data: tuple) -> None:
         """
         Обработка новых данных графика.
-        Обновляет окно графика и прогоняет данные через детектор аномалий.
+        Только обновляет окно графика. Детектор работает внутри движка
+        при генерации точек, его результаты приходят через сигнал event_added.
         """
         try:
             times, values = data
@@ -313,28 +318,30 @@ class Coordinator:
             if plot_id in self.plot_windows:
                 self.plot_windows[plot_id].update_data(list(times), list(values))
 
-            # Анализ детектором
-            if plot_id in self.detectors:
-                detector = self.detectors[plot_id]
-                detected_in_batch = False
-
-                for t, v in zip(times, values):
-                    detections = detector.process(t, v)
-                    if detections:
-                        # Логируем детальную информацию о каждом срабатывании детектора
-                        for detection in detections:
-                            logger.info(f"Детектор ({detection['type']}) на графике '{plot_id}': {detection['description']}")
-
-                        if not detected_in_batch:
-                            # Передаём детальное описание первого обнаружения в Журнал событий
-                            first_description = detections[0]['description']
-                            self.engine.record_detector_detection(plot_id, first_description)
-                            if plot_id in self.plot_windows:
-                                # Добавляем визуальную метку по времени первого обнаружения в пакете
-                                self.plot_windows[plot_id].add_detector_marker(detections[0]['time_ms'])
-                            detected_in_batch = True  # Избегаем множественных маркеров за один пакет
         except Exception as e:  # noqa: BLE001
             logger.error(f"Ошибка обработки данных графика '{plot_id}': {e}")
+
+    def _on_event_added(self, record: EventRecord) -> None:
+        """
+        Обработчик новых событий журнала.
+        При обнаружении детектором аномалии добавляет визуальную метку на график.
+        """
+        try:
+            if record.event_type != EventType.DETECTOR_DETECTION:
+                return
+
+            plot_id = record.plot_id
+            if not plot_id or plot_id not in self.plot_windows:
+                return
+
+            # Добавляем визуальную метку детектора на график
+            self.plot_windows[plot_id].add_detector_marker(record.time_ms)
+            logger.debug(
+                f"Добавлена метка детектора на график '{plot_id}' "
+                f"в {record.time_ms} мс: {record.description}"
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.error(f"Ошибка обработки события журнала: {e}")
 
     def _on_fault_injected(self, plot_id: str, fault_type: str, fault_params: dict) -> None:
         """Добавление скрытой метки неисправности в окно графика при ручном внедрении."""
@@ -378,10 +385,6 @@ class Coordinator:
                 signal_class_name = type(plot_state.signal).__name__
                 signal_type = signal_class_name.replace("Signal", "").lower()
 
-                detector_cfg = {}
-                if plot_id in self.detectors:
-                    detector_cfg = self.detectors[plot_id].get_config().to_dict()
-
                 plot_data = {
                     "plot_id": plot_id,
                     "name": plot_state.name,
@@ -392,7 +395,7 @@ class Coordinator:
                     "observation_interval_ms": plot_state.observation_interval_ms,
                     "signal_type": signal_type,
                     "signal_params": plot_state.signal.get_params(),
-                    "detector_config": detector_cfg
+                    "detector_config": plot_state.detector_config.to_dict(),
                 }
                 config["plots"].append(plot_data)
         return config
@@ -441,6 +444,11 @@ class Coordinator:
 
                 signal = SignalFactory.create(plot_data["signal_type"], plot_data.get("signal_params", {}))
 
+                # Парсим конфигурацию детектора
+                detector_cfg_dict = plot_data.get("detector_config", {})
+                detector_cfg = DetectorConfig.from_dict(detector_cfg_dict)
+                detector_cfg.signal_type = plot_data["signal_type"]
+
                 self.engine.add_plot(
                     plot_id=plot_id,
                     name=plot_data["name"],
@@ -449,18 +457,11 @@ class Coordinator:
                     signal=signal,
                     min_allowed=plot_data["min_allowed"],
                     max_allowed=plot_data["max_allowed"],
-                    observation_interval_ms=plot_data["observation_interval_ms"]
+                    observation_interval_ms=plot_data["observation_interval_ms"],
+                    detector_config=detector_cfg,
                 )
 
                 self.main_window.add_plot_to_list(plot_id, plot_data["name"])
-
-                detector_cfg_dict = plot_data.get("detector_config", {})
-                detector_cfg = DetectorConfig.from_dict(detector_cfg_dict)
-                self.detectors[plot_id] = AnomalyDetector(
-                    min_allowed=plot_data["min_allowed"],
-                    max_allowed=plot_data["max_allowed"],
-                    config=detector_cfg
-                )
 
                 plot_window = PlotWindow(
                     plot_id=plot_id,
@@ -503,5 +504,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-

@@ -18,7 +18,6 @@ from PyQt6.QtGui import QCloseEvent, QGuiApplication
 from PyQt6.QtWidgets import (
     QFileDialog,
     QFrame,
-    QHBoxLayout,
     QMainWindow,
     QMessageBox,
     QVBoxLayout,
@@ -94,7 +93,7 @@ class MainWindow(QMainWindow):
             self._connect_signals()
             self._restore_geometry()
             logger.info("Главное окно инициализировано (компактный режим).")
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error(f"Ошибка инициализации главного окна: {e}")
             raise
 

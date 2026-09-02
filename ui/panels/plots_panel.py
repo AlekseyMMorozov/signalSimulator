@@ -53,7 +53,7 @@ class PlotsPanel(QWidget):
             self._init_ui()
             self._connect_signals()
             logger.debug("Панель управления графиками инициализирована.")
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error(f"Ошибка инициализации панели управления графиками: {e}")
             raise
 

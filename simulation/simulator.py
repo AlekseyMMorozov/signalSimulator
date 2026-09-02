@@ -2,9 +2,10 @@
 simulation/simulator.py
 
 Движок симуляции — центральный связующий компонент.
-Объединяет часы, генераторы сигналов, неисправности, планировщик и журнал
-событий. Вычисляет значения графиков на каждом тике времени с шагом
-1 симуляционная секунда и обрабатывает события внедрения неисправностей.
+Объединяет часы, генераторы сигналов, неисправности, планировщик, детектор
+аномалий и журнал событий. Вычисляет значения графиков на каждом тике времени
+с шагом 1 симуляционная секунда, обрабатывает события внедрения неисправностей
+и прогоняет данные через трёхкомпонентный детектор аномалий.
 """
 
 import logging
@@ -13,6 +14,7 @@ from typing import Any
 import numpy as np
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from analytics.detector import AnomalyDetector, DetectorConfig
 from core.clock import GlobalClock
 from core.event_log import EventLog, EventType
 from simulation.faults import Fault, FaultChain, FaultFactory
@@ -111,7 +113,8 @@ class PlotState:
         signal: SignalGenerator,
         min_allowed: float,
         max_allowed: float,
-        observation_interval_ms: int
+        observation_interval_ms: int,
+        detector_config: DetectorConfig | None = None,
     ) -> None:
         self.plot_id = plot_id
         self.name = name
@@ -123,6 +126,11 @@ class PlotState:
         self.observation_interval_ms = observation_interval_ms
         self.fault_chain = FaultChain()
         self.history = HistoryBuffer()
+
+        # Детектор аномалий (фасад, координирующий препроцессор и три детектора)
+        self.detector_config = detector_config if detector_config is not None else DetectorConfig()
+        self.detector: AnomalyDetector | None = None
+
         # Метки: время внедрения неисправностей (скрытые)
         self.fault_markers: list[dict[str, Any]] = []
         # Метки: обнаружения оператором
@@ -132,6 +140,28 @@ class PlotState:
         # Время последней сгенерированной точки
         self.last_generated_time_ms: int = -GENERATION_STEP_MS
 
+    def init_detector(self) -> None:
+        """Инициализировать детектор аномалий с текущей конфигурацией."""
+        self.detector = AnomalyDetector(
+            min_allowed=self.min_allowed,
+            max_allowed=self.max_allowed,
+            config=self.detector_config,
+        )
+        logger.debug(
+            f"Детектор инициализирован для графика '{self.plot_id}' "
+            f"(тип сигнала: {self.detector_config.signal_type})."
+        )
+
+    def update_detector_config(self, config: DetectorConfig) -> None:
+        """
+        Обновить конфигурацию детектора. Пересоздаёт детектор с новыми параметрами.
+
+        Args:
+            config: Новая конфигурация детектора.
+        """
+        self.detector_config = config
+        self.init_detector()
+
 
 class SimulationEngine(QObject):
     """
@@ -139,7 +169,8 @@ class SimulationEngine(QObject):
 
     Подписывается на сигнал `time_updated` глобальных часов, генерирует
     данные графиков с шагом 1 симуляционная секунда, обрабатывает события
-    планировщика неисправностей и ведёт журнал событий.
+    планировщика неисправностей, прогоняет данные через детектор аномалий
+    и ведёт журнал событий.
     """
 
     # Сигнал обновления данных графика: (plot_id, (times, values))
@@ -183,9 +214,26 @@ class SimulationEngine(QObject):
         signal: SignalGenerator,
         min_allowed: float,
         max_allowed: float,
-        observation_interval_ms: int
+        observation_interval_ms: int,
+        detector_config: DetectorConfig | None = None,
     ) -> PlotState:
-        """Добавить график в симуляцию."""
+        """
+        Добавить график в симуляцию и инициализировать для него детектор аномалий.
+
+        Args:
+            plot_id: Уникальный идентификатор графика.
+            name: Название графика.
+            unit: Единица измерения.
+            max_unit_value: Максимальное значение единицы измерения.
+            signal: Генератор сигнала.
+            min_allowed: Минимально допустимое значение.
+            max_allowed: Максимально допустимое значение.
+            observation_interval_ms: Интервал наблюдения.
+            detector_config: Конфигурация детектора (опционально).
+
+        Returns:
+            PlotState: Состояние созданного графика.
+        """
         try:
             plot = PlotState(
                 plot_id=plot_id,
@@ -196,14 +244,23 @@ class SimulationEngine(QObject):
                 min_allowed=min_allowed,
                 max_allowed=max_allowed,
                 observation_interval_ms=observation_interval_ms,
+                detector_config=detector_config,
             )
+            # Инициализируем детектор аномалий
+            plot.init_detector()
+
             self._plots[plot_id] = plot
             self._event_log.add(
                 time_ms=self._clock.get_current_time_ms(),
                 event_type=EventType.PLOT_CREATED,
                 description=f"Создан график: {name}",
                 plot_id=plot_id,
-                metadata={"unit": unit, "min_allowed": min_allowed, "max_allowed": max_allowed},
+                metadata={
+                    "unit": unit,
+                    "min_allowed": min_allowed,
+                    "max_allowed": max_allowed,
+                    "signal_type": plot.detector_config.signal_type,
+                },
             )
             logger.info(f"Добавлен график '{plot_id}' ({name}).")
             return plot
@@ -236,6 +293,33 @@ class SimulationEngine(QObject):
         """Получить список всех идентификаторов графиков."""
         return list(self._plots.keys())
 
+    def update_plot_detector_config(
+        self, plot_id: str, detector_config: DetectorConfig
+    ) -> None:
+        """
+        Обновить конфигурацию детектора для существующего графика.
+
+        Args:
+            plot_id: Идентификатор графика.
+            detector_config: Новая конфигурация детектора.
+        """
+        plot = self._plots.get(plot_id)
+        if plot is None:
+            logger.warning(
+                f"Не удалось обновить конфиг детектора: график '{plot_id}' не найден."
+            )
+            return
+        try:
+            plot.update_detector_config(detector_config)
+            logger.info(
+                f"Конфигурация детектора обновлена для графика '{plot_id}' "
+                f"(тип сигнала: {detector_config.signal_type})."
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.error(
+                f"Ошибка обновления конфигурации детектора для '{plot_id}': {e}"
+            )
+
     def _on_time_updated(self, time_ms: int) -> None:
         """Обработка тика часов: генерация данных и обработка событий."""
         try:
@@ -252,7 +336,10 @@ class SimulationEngine(QObject):
             logger.error(f"Ошибка обработки тика времени {time_ms}: {e}")
 
     def _generate_points(self, plot: PlotState, current_time_ms: int) -> None:
-        """Генерация точек для графика до текущего времени с шагом 1 секунда."""
+        """
+        Генерация точек для графика до текущего времени с шагом 1 секунда.
+        Каждая точка пропускается через детектор аномалий.
+        """
         new_times: list[int] = []
         new_values: list[float] = []
         try:
@@ -264,28 +351,50 @@ class SimulationEngine(QObject):
                 new_times.append(t)
                 new_values.append(final_value)
 
+                # Прогоняем точку через детектор аномалий
+                if plot.detector is not None:
+                    detections = plot.detector.process(t, final_value)
+                    for detection in detections:
+                        self.record_detector_detection(
+                            plot.plot_id, str(detection)
+                        )
+
                 # Проверка выхода за допустимые пределы
                 if final_value < plot.min_allowed or final_value > plot.max_allowed:
                     self._event_log.add(
                         time_ms=t,
                         event_type=EventType.LIMIT_EXCEEDED,
-                        description=f"Выход за пределы: {final_value:.4f} {plot.unit}",
+                        description=(
+                            f"Выход за пределы: {final_value:.4f} {plot.unit}"
+                        ),
                         plot_id=plot.plot_id,
-                        metadata={"value": final_value, "min": plot.min_allowed, "max": plot.max_allowed},
+                        metadata={
+                            "value": final_value,
+                            "min": plot.min_allowed,
+                            "max": plot.max_allowed,
+                        },
                     )
                     self.limit_exceeded.emit(plot.plot_id, t)
 
                 t += GENERATION_STEP_MS
 
-            plot.last_generated_time_ms = current_time_ms - (current_time_ms % GENERATION_STEP_MS)
+            plot.last_generated_time_ms = (
+                current_time_ms - (current_time_ms % GENERATION_STEP_MS)
+            )
 
             # Испускаем сигнал с новыми данными (списком для эффективности)
             if new_times:
-                self.plot_data_updated.emit(plot.plot_id, (new_times, new_values))
+                self.plot_data_updated.emit(
+                    plot.plot_id, (new_times, new_values)
+                )
         except Exception as e:  # noqa: BLE001
-            logger.error(f"Ошибка генерации точек для графика '{plot.plot_id}': {e}")
+            logger.error(
+                f"Ошибка генерации точек для графика '{plot.plot_id}': {e}"
+            )
 
-    def inject_fault(self, plot_id: str, fault_type: str, fault_params: dict[str, Any]) -> Fault | None:
+    def inject_fault(
+        self, plot_id: str, fault_type: str, fault_params: dict[str, Any]
+    ) -> Fault | None:
         """
         Ручное внедрение неисправности на график.
 
@@ -303,12 +412,17 @@ class SimulationEngine(QObject):
         try:
             plot = self._plots.get(plot_id)
             if plot is None:
-                logger.warning(f"Не удалось внедрить неисправность: график '{plot_id}' не найден.")
+                logger.warning(
+                    f"Не удалось внедрить неисправность: "
+                    f"график '{plot_id}' не найден."
+                )
                 return None
 
             fault = FaultFactory.create(fault_type, fault_params)
             if fault is None:
-                logger.warning(f"Не удалось создать неисправность типа '{fault_type}'.")
+                logger.warning(
+                    f"Не удалось создать неисправность типа '{fault_type}'."
+                )
                 return None
 
             current_time = self._clock.get_current_time_ms()
@@ -327,15 +441,25 @@ class SimulationEngine(QObject):
                 event_type=EventType.FAULT_INJECTED,
                 description=f"Внедрена неисправность: {fault_type}",
                 plot_id=plot_id,
-                metadata={"fault_type": fault_type, "fault_params": fault_params},
+                metadata={
+                    "fault_type": fault_type,
+                    "fault_params": fault_params,
+                },
             )
-            logger.info(f"Внедрена неисправность '{fault_type}' на график '{plot_id}' в {current_time} мс.")
+            logger.info(
+                f"Внедрена неисправность '{fault_type}' на график "
+                f"'{plot_id}' в {current_time} мс."
+            )
             return fault
         except Exception as e:  # noqa: BLE001
-            logger.error(f"Ошибка внедрения неисправности на график '{plot_id}': {e}")
+            logger.error(
+                f"Ошибка внедрения неисправности на график '{plot_id}': {e}"
+            )
             return None
 
-    def process_injection_events(self, events: list[FaultInjectionEvent]) -> None:
+    def process_injection_events(
+        self, events: list[FaultInjectionEvent]
+    ) -> None:
         """
         Обработка событий внедрения от планировщика.
 
@@ -347,16 +471,22 @@ class SimulationEngine(QObject):
         """
         for event in events:
             try:
-                self.inject_fault(event.plot_id, event.fault_type, event.fault_params)
+                self.inject_fault(
+                    event.plot_id, event.fault_type, event.fault_params
+                )
             except Exception as e:  # noqa: BLE001
-                logger.error(f"Ошибка обработки события внедрения {event}: {e}")
+                logger.error(
+                    f"Ошибка обработки события внедрения {event}: {e}"
+                )
 
     def record_operator_detection(self, plot_id: str) -> None:
         """Фиксация обнаружения неисправности оператором."""
         try:
             plot = self._plots.get(plot_id)
             if plot is None:
-                logger.warning(f"Обнаружение оператора: график '{plot_id}' не найден.")
+                logger.warning(
+                    f"Обнаружение оператора: график '{plot_id}' не найден."
+                )
                 return
             current_time = self._clock.get_current_time_ms()
             plot.operator_markers.append(current_time)
@@ -366,22 +496,34 @@ class SimulationEngine(QObject):
                 description="Оператор обнаружил неисправность",
                 plot_id=plot_id,
             )
-            logger.info(f"Оператор обнаружил неисправность на графике '{plot_id}' в {current_time} мс.")
+            logger.info(
+                f"Оператор обнаружил неисправность на графике "
+                f"'{plot_id}' в {current_time} мс."
+            )
         except Exception as e:  # noqa: BLE001
-            logger.error(f"Ошибка фиксации обнаружения оператора на '{plot_id}': {e}")
+            logger.error(
+                f"Ошибка фиксации обнаружения оператора на '{plot_id}': {e}"
+            )
 
-    def record_detector_detection(self, plot_id: str, description: str = "Детектор обнаружил аномалию") -> None:
+    def record_detector_detection(
+        self,
+        plot_id: str,
+        description: str = "Детектор обнаружил аномалию",
+    ) -> None:
         """
         Фиксация обнаружения неисправности детектором.
 
         Args:
             plot_id: Идентификатор графика.
-            description: Детальное описание причины обнаружения (для журнала событий).
+            description: Детальное описание причины обнаружения
+                         (для журнала событий).
         """
         try:
             plot = self._plots.get(plot_id)
             if plot is None:
-                logger.warning(f"Обнаружение детектора: график '{plot_id}' не найден.")
+                logger.warning(
+                    f"Обнаружение детектора: график '{plot_id}' не найден."
+                )
                 return
             current_time = self._clock.get_current_time_ms()
             plot.detector_markers.append(current_time)
@@ -394,14 +536,16 @@ class SimulationEngine(QObject):
                 plot_id=plot_id,
             )
 
-            # Убран logger.info для устранения спама в консоли.
-            # Детальная информация теперь пишется в Журнал событий и логируется в main.py
-            logger.debug(f"Детектор сработал на графике '{plot_id}': {description}")
+            logger.debug(
+                f"Детектор сработал на графике '{plot_id}': {description}"
+            )
         except Exception as e:  # noqa: BLE001
-            logger.error(f"Ошибка фиксации обнаружения детектора на '{plot_id}': {e}")
+            logger.error(
+                f"Ошибка фиксации обнаружения детектора на '{plot_id}': {e}"
+            )
 
     def reset(self) -> None:
-        """Сброс состояния движка (очистка историй и меток)."""
+        """Сброс состояния движка (очистка историй, меток и детекторов)."""
         try:
             for plot in self._plots.values():
                 plot.history.clear()
@@ -410,6 +554,8 @@ class SimulationEngine(QObject):
                 plot.detector_markers.clear()
                 plot.fault_chain.clear()
                 plot.last_generated_time_ms = -GENERATION_STEP_MS
+                if plot.detector is not None:
+                    plot.detector.reset()
             if self._scheduler is not None:
                 self._scheduler.reset()
             logger.info("Состояние движка симуляции сброшено.")

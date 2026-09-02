@@ -90,7 +90,7 @@ class LogWindow(QMainWindow):
             self._restore_geometry()
             self._apply_filter()
             logger.info(f"Окно журнала инициализировано. Записей: {len(self._records)}.")
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error(f"Ошибка инициализации окна журнала: {e}")
             raise
 
